@@ -1,0 +1,172 @@
+# ============================================================
+# Infinipaper - Docker Compose orchestration
+#
+# Services:
+#   frontend    → Next.js app          (http://localhost:3000)
+#   backend     → NestJS API           (http://localhost:3001)
+#   db          → PostgreSQL database  (localhost:5433)
+#   minio       → S3-compatible store  (http://localhost:9000, consola :9001)
+#   whisper     → ASR service          (http://localhost:8000)
+#
+# Run from this directory:
+#   docker compose build
+#   docker compose up -d
+# ============================================================
+
+name: infinipaper
+
+services:
+  # ------------------------------------------------------------
+  # PostgreSQL database
+  # ------------------------------------------------------------
+  db:
+    image: postgres:17-alpine
+    container_name: infinipaper-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-infinipaper}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infinipaper}
+      POSTGRES_DB: ${POSTGRES_DB:-infinipaper}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-infinipaper} -d ${POSTGRES_DB:-infinipaper}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - infinipaper
+
+  # ------------------------------------------------------------
+  # MinIO - almacenamiento S3 compatible (imagen con Admin Console)
+  # https://hub.docker.com/r/firstfinger/minio
+  # ------------------------------------------------------------
+  minio:
+    image: firstfinger/minio:${MINIO_IMAGE_TAG:-latest-amd64}
+    container_name: infinipaper-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-infinipaper}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-infinipaper}
+      MINIO_REGION: ${S3_REGION:-us-east-1}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "${MINIO_ADMIN_CONSOLE_PORT:-9002}:9002"
+    volumes:
+      - miniodata:/data
+    networks:
+      - infinipaper
+
+  # ------------------------------------------------------------
+  # Whisper - reconocimiento automático del habla (ASR)
+  # ------------------------------------------------------------
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: infinipaper-whisper
+    restart: unless-stopped
+    environment:
+      WHISPER__MODEL: ${WHISPER_MODEL:-Systran/faster-whisper-small}
+      WHISPER__DEVICE: cpu
+    ports:
+      - "${WHISPER_PORT:-8000}:8000"
+    volumes:
+      - whisperdata:/root/.cache/huggingface
+    networks:
+      - infinipaper
+
+  # ------------------------------------------------------------
+  # NestJS backend API
+  # ------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: infinipaper-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-3001}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-infinipaper}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-infinipaper}
+      DB_NAME: ${POSTGRES_DB:-infinipaper}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-infinipaper}:${POSTGRES_PASSWORD:-infinipaper}@db:5432/${POSTGRES_DB:-infinipaper}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-7}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-session}
+      COOKIE_SECURE: "false"
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-infinipaper}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-infinipaper}
+      S3_BUCKET: ${S3_BUCKET:-infinipaper}
+      S3_FORCE_PATH_STYLE: "true"
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-50}
+      ASR_URL: http://whisper:8000
+      ASR_API_KEY: ${ASR_API_KEY:-}
+      ASR_DEFAULT_LANGUAGE: ${ASR_DEFAULT_LANGUAGE:-es}
+      ASR_MAX_DURATION_MINUTES: ${ASR_MAX_DURATION_MINUTES:-120}
+      AVISO_FILENAME: ${AVISO_FILENAME:-aviso.md}
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - infinipaper
+
+  # ------------------------------------------------------------
+  # Next.js frontend
+  # ------------------------------------------------------------
+  frontend:
+    build:
+      context: ../infinipaper-frontend
+      dockerfile: Dockerfile
+      args:
+        # Server-side base URL used by Next.js rewrites (/api/* → backend).
+        API_URL: http://backend:3000
+    container_name: infinipaper-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      API_URL: http://backend:3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - infinipaper
+
+volumes:
+  pgdata:
+    driver: local
+  miniodata:
+    driver: local
+  whisperdata:
+    driver: local
+
+networks:
+  infinipaper:
+    driver: bridge

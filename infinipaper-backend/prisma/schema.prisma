@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------
+
+enum UserStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProjectVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ProjectRole {
+  EDITOR
+  VIEWER
+}
+
+enum ResourceKind {
+  DOCUMENT
+  IMAGE
+  AUDIO
+  VIDEO
+  MARKDOWN
+}
+
+enum TranscriptionStatus {
+  QUEUED
+  PROCESSING
+  DONE
+  FAILED
+}
+
+// ---------------------------------------------------------------
+// Usuarios y sesiones
+// ---------------------------------------------------------------
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  email        String     @unique
+  passwordHash String
+  displayName  String
+  avatarUrl    String?
+  bio          String?
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  sessions       Session[]
+  projects       Project[]
+  memberships    ProjectMember[]
+  uploads        Resource[]
+  transcriptions TranscriptionJob[]
+
+  @@index([status])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ---------------------------------------------------------------
+// Proyectos
+// ---------------------------------------------------------------
+
+model Project {
+  id          String            @id @default(cuid())
+  ownerId     String
+  name        String
+  description String?
+  visibility  ProjectVisibility @default(PRIVATE)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  owner   User            @relation(fields: [ownerId], references: [id])
+  folders Folder[]
+  members ProjectMember[]
+
+  @@index([ownerId])
+  @@index([visibility])
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------
+// Carpetas y recursos
+// ---------------------------------------------------------------
+
+model Folder {
+  id        String   @id @default(cuid())
+  projectId String
+  parentId  String?
+  name      String
+  isRoot    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent    Folder?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[] @relation("FolderChildren")
+  resources Resource[]
+
+  @@unique([projectId, parentId, name])
+  @@index([projectId])
+  @@index([parentId])
+}
+
+model Resource {
+  id        String       @id @default(cuid())
+  folderId  String
+  authorId  String
+  name      String
+  kind      ResourceKind
+  mimeType  String
+  size      Int
+  s3Key     String       @unique
+  checksum  String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  folder         Folder             @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  author         User               @relation(fields: [authorId], references: [id])
+  transcriptions TranscriptionJob[]
+
+  @@unique([folderId, name])
+  @@index([folderId])
+  @@index([kind])
+}
+
+// ---------------------------------------------------------------
+// Transcripción
+// ---------------------------------------------------------------
+
+model TranscriptionJob {
+  id            String              @id @default(cuid())
+  resourceId    String
+  requestedById String
+  status        TranscriptionStatus @default(QUEUED)
+  language      String              @default("es")
+  text          String?
+  error         String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  requestedBy User     @relation(fields: [requestedById], references: [id])
+
+  @@index([resourceId])
+  @@index([status])
+}
