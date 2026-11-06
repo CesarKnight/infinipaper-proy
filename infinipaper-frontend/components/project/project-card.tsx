@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { userAvatarUrl } from "@/lib/api";
 import type { Project } from "@/lib/types";
 import { GlobeIcon, LockIcon } from "lucide-react";
@@ -51,7 +53,10 @@ export function ProjectCard({ project }: { project: Project }) {
           <CardDescription className="line-clamp-2">
             {project.description ?? "Sin descripción"}
           </CardDescription>
-          <div className="mt-2 flex items-center gap-2">
+        </CardHeader>
+        <Separator className="-my-2" />
+        <CardContent>
+          <div className="flex items-center gap-2">
             <Avatar size="sm">
               {project.owner.avatarUrl ? (
                 <AvatarImage
@@ -75,7 +80,7 @@ export function ProjectCard({ project }: { project: Project }) {
               </Badge>
             ) : null}
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
     </Link>
   );
