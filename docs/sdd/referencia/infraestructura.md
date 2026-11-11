@@ -152,4 +152,4 @@ Una **única variable** gobierna el límite: `MAX_UPLOAD_SIZE_MB`.
 ## 9. Migraciones y seed
 
 - `prisma migrate dev` en desarrollo, `prisma migrate deploy` en el contenedor.
-- Seed inicial: usuario de prueba y un proyecto público de ejemplo (opcional).
+- **No hay seed automático:** el primer usuario se crea desde `/register`. El contenedor aplica migraciones al arrancar.

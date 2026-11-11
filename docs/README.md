@@ -1,4 +1,26 @@
 # Infinipaper
+
+> **Proceso de desarrollo:** este proyecto usa **SDD ligero** (Spec-Driven Development). Antes de implementar un cambio, consulta el [proceso SDD](./sdd/README.md) y la [constitución](./sdd/constitucion.md).
+
+## Desarrollo guiado por especificaciones (SDD)
+
+La especificación es la fuente de verdad del **qué** y el **por qué**; el plan describe el **cómo**; las tareas describen los pasos verificables. El código se implementa después.
+
+```
+spec.md  →  plan.md  →  tasks.md  →  implementación  →  verificación  →  spec actualizada
+```
+
+- **Constitución:** principios no negociables y puertas de calidad → [`sdd/constitucion.md`](./sdd/constitucion.md).
+- **Proceso:** flujo, estados, nomenclatura y checklists → [`sdd/README.md`](./sdd/README.md).
+- **Plantillas:** `spec.md`, `plan.md` y `tasks.md` → [`sdd/plantillas/`](./sdd/plantillas/).
+- **Specs vigentes:** 11 specs que cubren todo el producto → [`sdd/specs/README.md`](./sdd/specs/README.md).
+- **Referencia transversal:** infraestructura, librerías, modelo de datos, decisiones y API → [`sdd/referencia/README.md`](./sdd/referencia/README.md).
+- **Scaffold:** `./docs/sdd/nueva-spec.sh <slug>` crea una spec nueva con las tres plantillas.
+
+Cada cambio de producto debe tener una spec con requisitos `RF-*`/`RNF-*` y criterios `CA-*`, un plan con decisiones y rollback, y tareas trazables. Los cambios triviales (typos, formato) están exentos; los hotfix deben registrar una spec retroactiva.
+
+`docs/sdd/specs/` es la única fuente vigente del comportamiento. No hay documentación de producto duplicada fuera de SDD.
+
 ## Guías de ejecución
 
 Índice rápido:
@@ -216,111 +238,46 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 
 
 
-## Especificaciones - Índice
+## Especificaciones
+
+| ID | Spec | Estado |
+|---|---|---|
+| `001` | [Usuarios, autenticación y sesiones](./sdd/specs/001-usuarios/spec.md) | Implementada con brechas |
+| `002` | [Proyectos](./sdd/specs/002-proyectos/spec.md) | Implementada con brechas |
+| `003` | [Carpetas](./sdd/specs/003-carpetas/spec.md) | Implementada con brechas |
+| `004` | [Aviso en el listado de carpeta](./sdd/specs/004-aviso/spec.md) | Implementada con brechas |
+| `005` | [Gestión de archivos](./sdd/specs/005-archivos/spec.md) | Implementada con brechas |
+| `006` | [Visualización multimedia](./sdd/specs/006-visualizacion/spec.md) | Implementada con brechas |
+| `007` | [Participantes](./sdd/specs/007-participantes/spec.md) | Implementada con brechas |
+| `008` | [Permisos y roles de proyecto](./sdd/specs/008-permisos/spec.md) | Implementada con brechas |
+| `009` | [Apuntes Markdown con editor WYSIWYG y autoguardado](./sdd/specs/009-apuntes/spec.md) | Implementada con brechas |
+| `010` | [Transcripción de audio](./sdd/specs/010-transcripcion/spec.md) | Implementada con brechas |
+| `011` | [Dashboard personal](./sdd/specs/011-dashboard/spec.md) | Implementada con brechas |
+
+## Referencia transversal
 
 | Documento | Contenido |
 |---|---|
-| [infraestructura.md](./infraestructura.md) | Servicios, docker-compose, variables de entorno, CORS, auth y almacenamiento |
-| [librerias.md](./librerias.md) | Dependencias de frontend y backend, con propósito |
-| [modelo-datos.md](./modelo-datos.md) | Esquema Prisma completo |
-| [hu/HU01-usuarios.md](./hu/HU01-usuarios.md) | Gestión de usuarios |
-| [hu/HU02-proyectos.md](./hu/HU02-proyectos.md) | Gestión de proyectos |
-| [hu/HU03-carpetas.md](./hu/HU03-carpetas.md) | Gestión de carpetas |
-| [hu/HU04-aviso.md](./hu/HU04-aviso.md) | Aviso en listado de carpeta |
-| [hu/HU05-archivos.md](./hu/HU05-archivos.md) | Gestión de archivos |
-| [hu/HU06-visualizacion.md](./hu/HU06-visualizacion.md) | Visualización multimedia |
-| [hu/HU07-participantes.md](./hu/HU07-participantes.md) | Gestión de participantes |
-| [hu/HU08-permisos.md](./hu/HU08-permisos.md) | Gestión de permisos |
-| [hu/HU09-apuntes.md](./hu/HU09-apuntes.md) | Gestión de apuntes |
-| [hu/HU10-transcripcion.md](./hu/HU10-transcripcion.md) | Transcripción de audio |
-| [hu/HU11-dashboard.md](./hu/HU11-dashboard.md) | Dashboard personal |
-| [Guías de ejecución](#guías-de-ejecución) | Docker completo, desarrollo local y backend/frontend en modo dev |
+| [`sdd/README.md`](./sdd/README.md) | Proceso SDD: flujo, estados, nomenclatura y checklists |
+| [`sdd/constitucion.md`](./sdd/constitucion.md) | Principios no negociables y puertas de calidad |
+| [`sdd/plantillas/`](./sdd/plantillas/) | Plantillas de `spec.md`, `plan.md` y `tasks.md` |
+| [`sdd/referencia/infraestructura.md`](./sdd/referencia/infraestructura.md) | Servicios, Docker Compose, rewrites, variables de entorno, S3, cola y auth |
+| [`sdd/referencia/librerias.md`](./sdd/referencia/librerias.md) | Dependencias de backend y frontend |
+| [`sdd/referencia/modelo-datos.md`](./sdd/referencia/modelo-datos.md) | Esquema Prisma vigente y notas de diseño |
+| [`sdd/referencia/decisiones.md`](./sdd/referencia/decisiones.md) | Decisiones cerradas de arquitectura y producto |
+| [`sdd/referencia/api.md`](./sdd/referencia/api.md) | Convenciones de API, errores y paginación |
 
+## Estado del proyecto
 
-## Decisiones cerradas
-
-| Área | Decisión |
-|---|---|
-| Base de datos | PostgreSQL 17 |
-| ORM | Prisma |
-| Auth | Cookie `httpOnly` + sesión server-side (token opaco hasheado en DB). Login por email **o** username |
-| Roles de plataforma | Ninguno (todos los usuarios son iguales) |
-| Roles de proyecto | **Owner** (implícito en `Project.owner`) / **Editor** / **Viewer** |
-| Almacenamiento de archivos | MinIO (S3), subida **proxy por el backend** |
-| Límite de subida | **50 MB** por archivo, configurable por env var `MAX_UPLOAD_SIZE_MB` |
-| Aviso (HU4) | Archivo real `aviso.md` **visible** en el listado; nombre configurable por `AVISO_FILENAME` |
-| Apuntes (HU9) | Archivos `.md`; edición mono-usuario; **autoguardado** (*debounce* 1–2 s, last-write-wins); sin historial de versiones |
-| Colaboración en tiempo real | Fuera de alcance |
-| Carpetas (HU3) | Borrado en **cascada** (con confirmación fuerte) |
-| Proyectos públicos | Visibles **para usuarios anónimos** |
-| Permisos / participantes | Gestión **solo Owner**; sin cambio de propietario en v1 |
-| Transcripción (HU10) | Whisper autoalojado; **job en background**; notificación por **polling** |
-| API | Prefijo `/api/v1`, errores uniformes, paginación por cursor |
-| Peticiones del navegador | **Same-origin** vía rewrites de Next (`/api/*` → backend); la cookie es *first-party* |
-
-## Matriz de permisos
-
-| Acción | Viewer | Editor | Owner |
-|---|:---:|:---:|:---:|
-| Ver proyecto, carpetas, archivos y apuntes | ✅ | ✅ | ✅ |
-| Crear / editar / eliminar carpetas y archivos | ❌ | ✅ | ✅ |
-| Crear / editar / eliminar aviso y apuntes | ❌ | ✅ | ✅ |
-| Ejecutar transcripciones (HU10) | ❌ | ✅ | ✅ |
-| Gestionar participantes | ❌ | ❌ | ✅ |
-| Asignar / modificar permisos | ❌ | ❌ | ✅ |
-| Editar / eliminar el proyecto | ❌ | ❌ | ✅ |
-
-> Un proyecto **público** es visible en modo lectura para cualquier usuario (incluso anónimo). El resto de acciones sigue requiriendo rol dentro del proyecto.
-
-## Convenciones de API
-
-- Prefijo: `/api/v1`
-- Autenticación: cookie de sesión `httpOnly` (same-origin). El backend no usa `Authorization: Bearer`.
-- Formato de error uniforme:
-
-```json
-{
-  "statusCode": 409,
-  "code": "USER_EMAIL_TAKEN",
-  "message": "El correo ya está registrado",
-  "details": null
-}
-```
-
-- Paginación por cursor: `?cursor=<id>&limit=20`. Respuesta: `{ "items": [...], "nextCursor": "..." }`.
-- Fechas en ISO 8601 (UTC).
-
-## Roadmap
-
-| Fase | Entregable | HUs |
-|---|---|---|
-| 0 | Fundaciones: Prisma, config, `/health`, manejo de errores, AuthModule + guards; frontend: cliente API, layouts, rutas protegidas | base |
-| 1 | Usuarios y proyectos | HU1, HU2 |
-| 2 | Carpetas, archivos y visores | HU3, HU5, HU6 |
-| 3 | Aviso y apuntes Markdown | HU4, HU9 |
-| 4 | Participantes y permisos | HU7, HU8 |
-| 5 | Transcripción ASR | HU10 |
-| 6 | Dashboard personal | HU11 |
-
-> Los guards y la resolución de permisos se implementan en la **Fase 0** aunque los participantes lleguen en la Fase 4.
-
-## Estado de implementación
-
-**Backend (NestJS):** implementado y compilando.
-- Fundaciones: Prisma 7 (`prisma-client` + `@prisma/adapter-pg`), `ConfigModule` con validación Joi, manejo de errores uniforme, `AuthGuard` global, `ProjectAccessGuard` + `@RequireProjectRole`, StorageService (S3), `pg-boss`, Swagger en `/api/v1/docs`.
-- HU1 usuarios · HU2 proyectos · HU3 carpetas · HU4 aviso · HU5 archivos · HU6 visor (contenido con *range*) · HU7 participantes · HU8 permisos · HU9 apuntes · HU10 transcripción (cola + worker ASR) · HU11 dashboard (`/dashboard` como ruta raíz `/`).
-- Endpoint `GET /api/v1/dashboard` y filtro `?scope=owned|participating|public|all` en `GET /api/v1/projects`.
-- El contenedor aplica migraciones al arrancar (`npx prisma migrate deploy`).
-
-**Frontend (Next.js):** implementado y compilando, lint limpio.
-- Cliente API same-origin (`lib/api.ts`) + rewrites, React Query, `proxy.ts` para rutas protegidas.
-- Páginas: login, registro, proyectos (lista/crear), workspace (árbol de carpetas, aviso, archivos, apuntes), configuración (edición, participantes/permisos, eliminación), visor de archivos (imagen/PDF/audio/video/Markdown + transcripción), usuarios (búsqueda y perfil público), perfil propio.
-- Visor PDF con el visor nativo del navegador (`<iframe>` al contenido proxeado).
+Las 11 specs están implementadas y el proyecto compila y pasa lint. Cada spec registra sus brechas funcionales en `G-*`; la deuda transversal principal es la ausencia de tests automatizados específicos, que se irá cerrando con nuevas tareas.
 
 **Verificado en este entorno:**
-- `npm run build`, `npm run lint` y `npm test` (backend) y `npm run build`/`npm run lint` (frontend).
-- Flujo end-to-end a través del proxy same-origin: registro/login con cookie `httpOnly` first-party, sesión, proyectos, carpetas, participantes y permisos.
 
-**No verificable en el sandbox de desarrollo:**
-- MinIO y Whisper no pudieron levantarse aquí (no hay acceso a Docker Hub). Por eso HU4/HU5/HU6/HU9/HU10 (subida de archivos, avisos, apuntes y transcripción) están implementadas pero no probadas de extremo a extremo. En una máquina con acceso a Docker Hub, `docker compose up -d --build` levanta `minio` y `whisper`.
-- Imágenes relativas dentro de avisos/apuntes aún no se resuelven a otros archivos de la carpeta (limitación conocida de v1).
+- Backend: `npm run build`, `npm run lint` y `npm test`.
+- Frontend: `npm run build` y `npm run lint`.
+- Flujo end-to-end a través del proxy same-origin: registro/login con cookie `httpOnly` first-party, sesión, proyectos, carpetas, participantes, permisos y dashboard.
+
+**Limitaciones conocidas:**
+
+- MinIO y Whisper requieren Docker; en entornos sin acceso a las imágenes no se pueden probar subidas ni transcripciones de extremo a extremo.
+- Las brechas `G-*` de cada spec están documentadas y priorizadas, no ocultas.

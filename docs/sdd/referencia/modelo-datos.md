@@ -1,6 +1,18 @@
 # Modelo de datos (Prisma)
 
+> Esquema vigente en `infinipaper-backend/prisma/schema.prisma`. Cualquier cambio requiere una migración versionada y una spec que lo justifique.
+
 ```prisma
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
 // ---------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------
@@ -86,10 +98,9 @@ model Project {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  owner        User              @relation(fields: [ownerId], references: [id])
-  folders      Folder[]
-  members      ProjectMember[]
-  transcriptions TranscriptionJob[]
+  owner   User            @relation(fields: [ownerId], references: [id])
+  folders Folder[]
+  members ProjectMember[]
 
   @@index([ownerId])
   @@index([visibility])
@@ -140,7 +151,7 @@ model Resource {
   name      String
   kind      ResourceKind
   mimeType  String
-  size      BigInt
+  size      Int
   s3Key     String       @unique
   checksum  String?
   createdAt DateTime     @default(now())
@@ -180,11 +191,12 @@ model TranscriptionJob {
 
 ## Notas de diseño
 
-- **No hay entidad `Note` ni `Notice`:** el aviso (`aviso.md`, HU4) y los apuntes (`.md`, HU9) son `Resource` con `kind = MARKDOWN`. El aviso se detecta por nombre (`AVISO_FILENAME`) y se renderiza; ambos permanecen visibles en el listado.
-- **Propietario:** `Project.ownerId` es la única fuente del rol Owner. El Owner **no** genera fila en `ProjectMember`; la resolución de permisos lo evalúa primero.
+- **No hay entidad `Note` ni `Notice`:** el aviso (`aviso.md`, spec 004) y los apuntes (`.md`, spec 009) son `Resource` con `kind = MARKDOWN`. El aviso se detecta por nombre (`AVISO_FILENAME`) y se renderiza; ambos permanecen visibles en el listado.
+- **Propietario:** `Project.ownerId` es la única fuente del rol Owner. El Owner no genera fila en `ProjectMember`; la resolución de permisos lo evalúa primero.
 - **`ProjectMember.role`** solo admite `EDITOR` o `VIEWER`.
 - **Borrado en cascada:** al eliminar `Project` se eliminan carpetas, recursos, membresías y jobs; al eliminar `Folder` se eliminan subcarpetas y recursos. El servicio borra además los objetos en S3.
-- **`Resource.s3Key`** reemplaza al `url`; la URL de descarga se resuelve en el backend.
-- **`@@unique([folderId, name])`** garantiza nombres únicos por carpeta a nivel de BD; la comparación case-insensitive se hace en el servicio.
+- **`Resource.s3Key`** reemplaza a cualquier URL persistida; la descarga se resuelve en el backend.
+- **`@@unique([folderId, name])`** garantiza nombres únicos por carpeta a nivel de base de datos; la comparación case-insensitive se hace en el servicio.
 - **`Session.tokenHash`** almacena el SHA-256 del token; nunca el token en claro.
-- **Límite de subida:** no vive en el esquema; se controla con `MAX_UPLOAD_SIZE_MB`.
+- **`Resource.size`** es un entero en bytes; el límite de subida no vive en el esquema y se controla con `MAX_UPLOAD_SIZE_MB`.
+- **Transcripciones:** `TranscriptionJob` referencia al `Resource` de audio; el listado por proyecto se resuelve mediante `resource.folder.projectId`.
