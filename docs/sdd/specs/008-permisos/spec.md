@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 002` (proyectos), `spec 007` (participantes) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/008-permisos.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Los proyectos pueden ser privados o públicos y pueden tener varios colaboradores. Se necesita un modelo de permisos simple pero seguro: el propietario controla todo, los editores modifican contenido y los viewers solo consultan. La autorización debe aplicarse en el servidor en cada petición, no depender de la UI.

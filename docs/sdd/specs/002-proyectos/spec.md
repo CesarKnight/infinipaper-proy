@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/002-proyectos.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Un proyecto es el espacio de estudio donde se organizan carpetas, archivos, avisos y apuntes. Necesita un propietario claro, una visibilidad configurable y una carpeta raíz desde la que crece todo el contenido. El propietario debe poder administrarlo sin que otros participantes modifiquen su configuración.

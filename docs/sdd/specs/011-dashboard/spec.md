@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 002` (proyectos), `spec 007` (participantes), `spec 008` (permisos) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/011-dashboard.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Al iniciar sesión, el usuario necesita una vista que le permita retomar rápidamente su trabajo: sus proyectos, aquellos en los que participa y proyectos públicos que puedan interesarle. Un listado plano obliga a buscar y no distingue el rol ni la relación con cada proyecto. El dashboard debe ser la vista inicial y funcionar incluso si la API falla, sin romper la página.

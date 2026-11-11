@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 002` (proyectos), `spec 008` (permisos) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/003-carpetas.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 El contenido de un proyecto necesita una estructura jerárquica que permita agrupar materiales por tema, unidad o clase. La jerarquía debe ser navegable, segura ante ciclos y coherente al eliminar: borrar una carpeta no puede dejar recursos huérfanos ni objetos en S3.

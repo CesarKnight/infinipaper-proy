@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 003` (carpetas), `spec 005` (archivos), `spec 008` (permisos), `spec 009` (apuntes) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/004-aviso.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Los participantes necesitan un canal de comunicación asíncrona dentro de cada carpeta: indicaciones de la unidad, tareas, fechas o enlaces. El aviso debe ser fácil de crear, visible para todos y editable por quienes tienen permisos, sin introducir una entidad nueva ni un sistema de notificaciones.

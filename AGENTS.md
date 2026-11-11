@@ -88,6 +88,8 @@ npx prisma generate
 | Librerías | [`docs/sdd/referencia/librerias.md`](./docs/sdd/referencia/librerias.md) |
 | Decisiones | [`docs/sdd/referencia/decisiones.md`](./docs/sdd/referencia/decisiones.md) |
 | Convenciones de API | [`docs/sdd/referencia/api.md`](./docs/sdd/referencia/api.md) |
+| Diagramas | [`docs/sdd/diagramas/README.md`](./docs/sdd/diagramas/README.md) |
+| Modelo EA | [`docs/sdd/ea/README.md`](./docs/sdd/ea/README.md) |
 | Guías de ejecución | [`docs/README.md`](./docs/README.md) |
 
 ## Frontend

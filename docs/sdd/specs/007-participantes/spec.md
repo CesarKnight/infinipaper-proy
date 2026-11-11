@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 002` (proyectos), `spec 008` (permisos) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/007-participantes.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Un proyecto puede ser individual o colaborativo. El Owner necesita incorporar a otros usuarios para que consulten o editen el contenido, y retirarlos cuando ya no deben tener acceso. La gestión debe ser simple, sin invitaciones pendientes ni roles personalizados.

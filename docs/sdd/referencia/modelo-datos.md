@@ -1,6 +1,6 @@
 # Modelo de datos (Prisma)
 
-> Esquema vigente en `infinipaper-backend/prisma/schema.prisma`. Cualquier cambio requiere una migración versionada y una spec que lo justifique.
+> Esquema vigente en `infinipaper-backend/prisma/schema.prisma`. Cualquier cambio requiere una migración versionada y una spec que lo justifique. Diagrama de clases: [`diagramas/clases.md`](../diagramas/clases.md).
 
 ```prisma
 generator client {

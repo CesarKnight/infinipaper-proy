@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 003` (carpetas), `spec 005` (archivos), `spec 008` (permisos) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/009-apuntes.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Los proyectos de Infinipaper agrupan material académico en carpetas. Además de subir archivos, los participantes necesitan escribir apuntes propios dentro del proyecto: tomar notas de una clase, resumir una lectura o documentar una transcripción. Un formulario de texto plano no basta: el contenido debe poder estructurarse con títulos, listas, enlaces, tablas y bloques de código, y no debe perderse si el usuario olvida guardar.

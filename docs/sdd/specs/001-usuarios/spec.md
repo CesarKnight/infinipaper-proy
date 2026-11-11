@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | — (fundacional) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/001-usuarios.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Todas las capacidades de Infinipaper dependen de una identidad de usuario y de una sesión válida. Se necesita un registro sin fricción, login por email o username, edición de perfil con avatar, cambio de contraseña y una baja de cuenta que no deje proyectos privados huérfanos ni accesibles.

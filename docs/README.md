@@ -15,6 +15,7 @@ spec.md  →  plan.md  →  tasks.md  →  implementación  →  verificación  
 - **Plantillas:** `spec.md`, `plan.md` y `tasks.md` → [`sdd/plantillas/`](./sdd/plantillas/).
 - **Specs vigentes:** 11 specs que cubren todo el producto → [`sdd/specs/README.md`](./sdd/specs/README.md).
 - **Referencia transversal:** infraestructura, librerías, modelo de datos, decisiones y API → [`sdd/referencia/README.md`](./sdd/referencia/README.md).
+- **Diagramas:** casos de uso, clases, paquetes, C4 y una secuencia por spec → [`sdd/diagramas/README.md`](./sdd/diagramas/README.md).
 - **Scaffold:** `./docs/sdd/nueva-spec.sh <slug>` crea una spec nueva con las tres plantillas.
 
 Cada cambio de producto debe tener una spec con requisitos `RF-*`/`RNF-*` y criterios `CA-*`, un plan con decisiones y rollback, y tareas trazables. Los cambios triviales (typos, formato) están exentos; los hotfix deben registrar una spec retroactiva.
@@ -266,6 +267,8 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 | [`sdd/referencia/modelo-datos.md`](./sdd/referencia/modelo-datos.md) | Esquema Prisma vigente y notas de diseño |
 | [`sdd/referencia/decisiones.md`](./sdd/referencia/decisiones.md) | Decisiones cerradas de arquitectura y producto |
 | [`sdd/referencia/api.md`](./sdd/referencia/api.md) | Convenciones de API, errores y paginación |
+| [`sdd/diagramas/README.md`](./sdd/diagramas/README.md) | Casos de uso, clases, paquetes, C4 y secuencias por spec |
+| [`sdd/ea/README.md`](./sdd/ea/README.md) | Modelo formal y script de importación para Enterprise Architect |
 
 ## Estado del proyecto
 

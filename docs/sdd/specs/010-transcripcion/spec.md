@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 003` (carpetas), `spec 005` (archivos), `spec 006` (visualización), `spec 008` (permisos), `spec 009` (apuntes) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/010-transcripcion.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Los audios de clases o apuntes son material valioso, pero consultarlos requiere escucharlos completos. El usuario necesita una transcripción automática que pueda revisar, editar y convertir en un apunte dentro de la misma carpeta. La transcripción puede tardar, por lo que debe ejecutarse en segundo plano y notificar su estado sin bloquear la UI.

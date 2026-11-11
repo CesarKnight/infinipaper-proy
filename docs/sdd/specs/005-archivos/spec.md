@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 001` (usuarios), `spec 003` (carpetas), `spec 008` (permisos) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/005-archivos.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 Los proyectos necesitan incorporar material de estudio en múltiples formatos: documentos, imágenes, audio, video y Markdown. La carga debe validar tamaño y formato, guardar metadatos, permitir descargas y no exponer el almacenamiento S3 al navegador. Además, el límite de subida debe poder cambiarse en un solo lugar.

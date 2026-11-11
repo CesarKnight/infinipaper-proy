@@ -8,6 +8,8 @@
 | Fecha | 2026-11-11 |
 | Dependencias | `spec 005` (archivos), `spec 008` (permisos) |
 
+> **Diagramas:** [Secuencia](../../diagramas/secuencia/006-visualizacion.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
+
 ## 1. Contexto y problema
 
 El material de estudio incluye imágenes, documentos, audio y video. El usuario necesita consultarlos sin descargarlos obligatoriamente y sin salir del proyecto. El visor debe elegirse según el tipo de recurso y respetar los permisos de acceso.

@@ -45,6 +45,18 @@ docs/sdd/
 │   ├── modelo-datos.md
 │   ├── decisiones.md
 │   └── api.md
+├── diagramas/                 # UML/C4 en Mermaid
+│   ├── README.md
+│   ├── casos-de-uso.md
+│   ├── clases.md
+│   ├── paquetes.md
+│   ├── arquitectura-c4.md
+│   └── secuencia/             # una secuencia por spec
+├── ea/                        # modelo formal para Enterprise Architect
+│   ├── README.md
+│   ├── modelo.json
+│   ├── generar.mjs
+│   └── importar-modelo.js
 └── specs/
     ├── README.md              # índice de specs
     ├── 001-usuarios/
@@ -55,7 +67,7 @@ docs/sdd/
         └── tasks.md
 ```
 
-`specs/` es la única fuente vigente del comportamiento. `referencia/` contiene la documentación estable que las specs deben respetar: infraestructura, librerías, modelo de datos, decisiones y convenciones de API.
+`specs/` es la única fuente vigente del comportamiento. `referencia/` contiene la documentación estable que las specs deben respetar: infraestructura, librerías, modelo de datos, decisiones y convenciones de API. `diagramas/` contiene las vistas UML/C4 en Mermaid, incluida una secuencia por spec. `ea/` contiene el modelo canónico y el script que crea el modelo formal en Enterprise Architect.
 
 ## 3. Flujo de trabajo
 
