@@ -254,6 +254,10 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 | `009` | [Apuntes Markdown con editor WYSIWYG y autoguardado](./sdd/specs/009-apuntes/spec.md) | Implementada con brechas |
 | `010` | [Transcripción de audio](./sdd/specs/010-transcripcion/spec.md) | Implementada con brechas |
 | `011` | [Dashboard personal](./sdd/specs/011-dashboard/spec.md) | Implementada con brechas |
+| `012` | [Confirmación de perfil docente](./012-confirmacion-perfil-docente/spec.md) | Aprobada |
+| `013` | [Creación de cuestionarios tarea](./013-creacion-cuestionarios/spec.md) | Aprobada |
+| `014` | [Resolver cuestionarios](./014-resolver-cuestionarios/spec.md) | Aprobada |
+
 
 ## Referencia transversal
 
