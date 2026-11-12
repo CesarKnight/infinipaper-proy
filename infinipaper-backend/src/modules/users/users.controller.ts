@@ -26,6 +26,7 @@ import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { SearchUsersDto } from './dto/search-users.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { UsersService } from './users.service.js';
+import { VerifyTeacherDto } from './dto/verify-teacher.dto.js';
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -106,5 +107,14 @@ export class UsersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async archive(@CurrentUser() user: User): Promise<void> {
     await this.users.archive(user.id);
+  }
+  // Endpoint dentro de UsersController:
+  @Post('me/teacher-verification')
+  @HttpCode(HttpStatus.OK)
+  verifyTeacher(
+    @CurrentUser() user: User,
+    @Body() dto: VerifyTeacherDto,
+  ) {
+    return this.users.verifyTeacher(user, dto.code);
   }
 }

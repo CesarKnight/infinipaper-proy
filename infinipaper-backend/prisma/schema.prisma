@@ -42,27 +42,36 @@ enum TranscriptionStatus {
   FAILED
 }
 
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+}
+
 // ---------------------------------------------------------------
 // Usuarios y sesiones
 // ---------------------------------------------------------------
 
 model User {
-  id           String     @id @default(cuid())
-  username     String     @unique
-  email        String     @unique
-  passwordHash String
-  displayName  String
-  avatarUrl    String?
-  bio          String?
-  status       UserStatus @default(ACTIVE)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id                String     @id @default(cuid())
+  username          String     @unique
+  email             String     @unique
+  passwordHash      String
+  displayName       String
+  avatarUrl         String?
+  bio               String?
+  status            UserStatus @default(ACTIVE)
+  isTeacher         Boolean    @default(false)
+  teacherVerifiedAt DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
-  sessions       Session[]
-  projects       Project[]
-  memberships    ProjectMember[]
-  uploads        Resource[]
-  transcriptions TranscriptionJob[]
+  sessions        Session[]
+  projects        Project[]
+  memberships     ProjectMember[]
+  uploads         Resource[]
+  transcriptions  TranscriptionJob[]
+  createdQuizzes  Quiz[]
+  quizSubmissions QuizSubmission[]
 
   @@index([status])
 }
@@ -96,6 +105,7 @@ model Project {
   owner   User            @relation(fields: [ownerId], references: [id])
   folders Folder[]
   members ProjectMember[]
+  quizzes Quiz[]
 
   @@index([ownerId])
   @@index([visibility])
@@ -129,10 +139,11 @@ model Folder {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  parent    Folder?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Folder[] @relation("FolderChildren")
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent    Folder?    @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[]   @relation("FolderChildren")
   resources Resource[]
+  quizzes   Quiz[]
 
   @@unique([projectId, parentId, name])
   @@index([projectId])
@@ -181,4 +192,89 @@ model TranscriptionJob {
 
   @@index([resourceId])
   @@index([status])
+}
+
+// ---------------------------------------------------------------
+// Cuestionarios tarea (HU12 y HU13)
+// ---------------------------------------------------------------
+
+model Quiz {
+  id          String     @id @default(cuid())
+  projectId   String
+  folderId    String?
+  creatorId   String
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      QuizStatus @default(PUBLISHED)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  project     Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  folder      Folder?          @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  creator     User             @relation(fields: [creatorId], references: [id])
+  questions   QuizQuestion[]
+  submissions QuizSubmission[]
+
+  @@index([projectId])
+  @@index([creatorId])
+  @@index([status])
+}
+
+model QuizQuestion {
+  id     String @id @default(cuid())
+  quizId String
+  text   String
+  points Int    @default(1)
+  order  Int    @default(0)
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options QuizOption[]
+  answers QuizAnswer[]
+
+  @@index([quizId])
+}
+
+model QuizOption {
+  id         String  @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean @default(false)
+
+  question QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers  QuizAnswer[]
+
+  @@index([questionId])
+}
+
+model QuizSubmission {
+  id          String   @id @default(cuid())
+  quizId      String
+  userId      String
+  score       Int
+  maxScore    Int
+  submittedAt DateTime @default(now())
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers QuizAnswer[]
+
+  @@unique([quizId, userId])
+  @@index([quizId])
+  @@index([userId])
+}
+
+model QuizAnswer {
+  id               String  @id @default(cuid())
+  submissionId     String
+  questionId       String
+  selectedOptionId String
+  isCorrect        Boolean
+
+  submission     QuizSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question       QuizQuestion   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption QuizOption     @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, questionId])
+  @@index([submissionId])
 }

@@ -23,7 +23,8 @@ import {
 } from "@/components/project/workspace-context";
 import { apiFetch } from "@/lib/api";
 import type { FolderNode, FolderTree, Project } from "@/lib/types";
-import { SettingsIcon } from "lucide-react";
+import { ClipboardListIcon, SettingsIcon } from "lucide-react";
+
 
 function findPath(
   nodes: FolderNode[],
@@ -144,17 +145,26 @@ function ProjectWorkspaceLayoutInner({
             })}
           </BreadcrumbList>
         </Breadcrumb>
-          {project?.role === "owner" ? (
+          <div className="flex shrink-0 items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="shrink-0"
-              render={<Link href={`/projects/${projectId}/settings`} />}
+              render={<Link href={`/projects/${projectId}/quizzes`} />}
             >
-              <SettingsIcon data-icon="inline-start" />
-              Configuración
+              <ClipboardListIcon data-icon="inline-start" />
+              Cuestionarios
             </Button>
-          ) : null}
+            {project?.role === "owner" ? (
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href={`/projects/${projectId}/settings`} />}
+              >
+                <SettingsIcon data-icon="inline-start" />
+                Configuración
+              </Button>
+            ) : null}
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)_260px]">

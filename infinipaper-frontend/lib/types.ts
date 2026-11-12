@@ -12,6 +12,8 @@ export interface User {
   avatarUrl: string | null;
   bio: string | null;
   status: UserStatus;
+  isTeacher: boolean;
+  teacherVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,6 +24,8 @@ export interface PublicUser {
   displayName: string;
   avatarUrl: string | null;
   bio: string | null;
+  isTeacher?: boolean;
+  teacherVerifiedAt?: string | null;
   createdAt: string;
 }
 
@@ -113,4 +117,56 @@ export interface Paged<T> {
 export interface AppConfig {
   maxUploadSizeMb: number;
   avisoFilename: string;
+}
+
+export type QuizStatus = "DRAFT" | "PUBLISHED";
+
+export interface QuizOption {
+  id: string;
+  text: string;
+  isCorrect?: boolean;
+}
+
+export interface QuizQuestion {
+  id: string;
+  text: string;
+  points: number;
+  order: number;
+  options: QuizOption[];
+}
+
+export interface QuizSubmissionSummary {
+  id: string;
+  score: number;
+  maxScore: number;
+  submittedAt: string;
+}
+
+export interface Quiz {
+  id: string;
+  projectId: string;
+  folderId: string | null;
+  creatorId: string;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  status: QuizStatus;
+  createdAt: string;
+  creator?: { id: string; username: string; displayName: string };
+  _count?: { questions: number; submissions: number };
+  mySubmission?: QuizSubmissionSummary | null;
+  questions?: QuizQuestion[];
+}
+
+export interface QuizSubmissionDetail extends QuizSubmissionSummary {
+  quizId: string;
+  userId: string;
+  answers: Array<{
+    id: string;
+    questionId: string;
+    selectedOptionId: string;
+    isCorrect: boolean;
+    question?: { id: string; text: string; points: number };
+    selectedOption?: { id: string; text: string };
+  }>;
 }

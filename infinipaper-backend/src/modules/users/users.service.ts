@@ -16,6 +16,8 @@ const PUBLIC_USER_SELECT = {
   displayName: true,
   avatarUrl: true,
   bio: true,
+  isTeacher: true,
+  teacherVerifiedAt: true,
   createdAt: true,
 } as const;
 
@@ -173,5 +175,34 @@ export class UsersService {
       ...keys.map((key) => this.storage.delete(key)),
       this.storage.delete(`avatars/${userId}`),
     ]);
+  }
+  async verifyTeacher(user: User, code: string) {
+    if (user.isTeacher) {
+      throw new AppException(
+        'TEACHER_ALREADY_VERIFIED',
+        'Tu perfil ya está confirmado como docente',
+        HttpStatus.CONFLICT,
+      );
+    }
+
+    const expectedCode =
+      process.env.TEACHER_VERIFICATION_CODE?.trim() || 'DOCENTE-2026';
+
+    if (code.trim() !== expectedCode) {
+      throw new AppException(
+        'TEACHER_INVALID_CODE',
+        'El código de verificación docente es incorrecto',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isTeacher: true,
+        teacherVerifiedAt: new Date(),
+      },
+      select: PUBLIC_USER_SELECT,
+    });
   }
 }

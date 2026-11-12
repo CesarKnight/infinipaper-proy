@@ -16,6 +16,8 @@ import { ResourcesModule } from './modules/resources/resources.module.js';
 import { SystemModule } from './modules/system/system.module.js';
 import { TranscriptionsModule } from './modules/transcriptions/transcriptions.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { QuizzesModule } from './modules/quizzes/quizzes.module.js';
+
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { UsersModule } from './modules/users/users.module.js';
       isGlobal: true,
       validationSchema: envValidationSchema,
     }),
+    QuizzesModule,
     PrismaModule,
     StorageModule,
     PermissionsModule,
