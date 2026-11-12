@@ -57,6 +57,7 @@ Usa Next.js 16, React 19, shadcn/ui sobre Base UI, Tailwind v4, `lucide-react`, 
 | `@mdxeditor/editor` | Editor Markdown WYSIWYG para avisos y apuntes (specs 004, 009); carga diferida con `ssr: false` |
 | `react-dropzone` | Disponible para arrastrar y soltar (spec 005); v1 usa `<input type="file">` |
 | `date-fns` | Formato de fechas |
+| `diff` | Diff de líneas para el preview de estructuración IA (spec 012) |
 
 > **PDF (spec 006):** se usa el visor nativo del navegador mediante `<iframe src="/api/v1/files/:id/content">`, que evita configurar un worker de PDF.js y mantiene el proxy same-origin.
 
@@ -65,6 +66,24 @@ Usa Next.js 16, React 19, shadcn/ui sobre Base UI, Tailwind v4, `lucide-react`, 
 ### Componentes shadcn disponibles
 
 `button`, `input`, `textarea`, `label`, `select`, `checkbox`, `switch`, `dialog`, `alert-dialog`, `sheet`, `dropdown-menu`, `command`, `tabs`, `breadcrumb`, `table`, `avatar`, `badge`, `card`, `alert`, `progress`, `skeleton`, `empty`, `tooltip`, `sonner`, `separator`, `accordion`, `input-group`, `carousel`.
+
+## Servicio de agentes (`infinipaper-agents`)
+
+Python 3.12+ con `uv`.
+
+| Librería | Propósito |
+|---|---|
+| `fastapi` | API HTTP interna |
+| `uvicorn[standard]` | Servidor ASGI |
+| `httpx` | Descarga de URLs presignadas |
+| `pydantic` / `pydantic-settings` | Schemas y configuración |
+| `langgraph` | Grafo de agentes |
+| `langchain-core` | Mensajes, modelos y utilidades |
+| `langchain-openai` | Cliente OpenAI-compatible configurable |
+| `langchain-aws` / `boto3` | Cliente AWS Bedrock y cadena de credenciales AWS |
+| `pytest` / `pytest-asyncio` | Tests |
+| `ruff` | Lint y formato |
+| `pyright` | Tipado estático |
 
 ## Comandos útiles
 

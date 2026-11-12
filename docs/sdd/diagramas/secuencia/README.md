@@ -15,6 +15,7 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 | 009 Apuntes | [009-apuntes.md](./009-apuntes.md) | Editor, API, DB, MinIO |
 | 010 Transcripción | [010-transcripcion.md](./010-transcripcion.md) | Editor, API, DB, pg-boss, MinIO, Whisper |
 | 011 Dashboard | [011-dashboard.md](./011-dashboard.md) | Usuario, API, DB |
+| 012 Estructuración IA | [012-estructuracion-apuntes.md](./012-estructuracion-apuntes.md) | Editor, API, pg-boss, Agents, MinIO, LLM |
 
 ## Convenciones
 

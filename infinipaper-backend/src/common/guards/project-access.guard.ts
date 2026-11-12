@@ -19,6 +19,7 @@ interface RouteParams {
   folderId?: string;
   fileId?: string;
   transcriptionId?: string;
+  jobId?: string;
 }
 
 @Injectable()
@@ -84,6 +85,15 @@ export class ProjectAccessGuard implements CanActivate {
       const job = await this.prisma.transcriptionJob.findUnique({
         where: { id: params.transcriptionId },
         select: { resource: { select: { folder: { select: { projectId: true } } } } },
+      });
+      return job?.resource.folder.projectId ?? null;
+    }
+    if (params.jobId) {
+      const job = await this.prisma.noteStructureJob.findUnique({
+        where: { id: params.jobId },
+        select: {
+          resource: { select: { folder: { select: { projectId: true } } } },
+        },
       });
       return job?.resource.folder.projectId ?? null;
     }

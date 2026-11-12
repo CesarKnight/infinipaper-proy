@@ -29,4 +29,11 @@ export const envValidationSchema = Joi.object({
   ASR_MAX_DURATION_MINUTES: Joi.number().default(120),
 
   AVISO_FILENAME: Joi.string().default('aviso.md'),
+
+  AGENT_SERVICE_URL: Joi.string().uri().default('http://localhost:8100'),
+  AGENT_SERVICE_TOKEN: Joi.string().allow('').default('dev-agent-token'),
+  AGENT_TIMEOUT_MS: Joi.number().default(120000),
+  AGENT_STRUCTURING_ENABLED: Joi.boolean().default(true),
+  AGENT_MAX_INPUT_CHARS: Joi.number().default(120000),
+  S3_PRESIGN_TTL_SECONDS: Joi.number().default(900),
 });

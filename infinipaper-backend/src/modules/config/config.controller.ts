@@ -14,6 +14,8 @@ export class ConfigController {
     return {
       maxUploadSizeMb: this.config.get<number>('MAX_UPLOAD_SIZE_MB') ?? 50,
       avisoFilename: this.config.get<string>('AVISO_FILENAME') ?? 'aviso.md',
+      agentStructuringEnabled:
+        this.config.get<boolean>('AGENT_STRUCTURING_ENABLED') ?? true,
     };
   }
 }

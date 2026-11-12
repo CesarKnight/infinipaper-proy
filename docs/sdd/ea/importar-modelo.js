@@ -40,6 +40,10 @@ var MODEL = {
     {
       "name": "MinIO",
       "notes": "Sistema externo de almacenamiento de objetos compatible con S3."
+    },
+    {
+      "name": "LLM",
+      "notes": "Proveedor de modelo de lenguaje configurable usado por el servicio de agentes."
     }
   ],
   "useCases": [
@@ -167,6 +171,17 @@ var MODEL = {
         "Viewer"
       ],
       "notes": "Resumen de proyectos propios, participados y públicos en carruseles."
+    },
+    {
+      "id": "UC-12",
+      "name": "Estructuración de apuntes con IA",
+      "spec": "012",
+      "actors": [
+        "Owner",
+        "Editor",
+        "LLM"
+      ],
+      "notes": "Job asíncrono que estructura un apunte Markdown con LangGraph y devuelve un nuevo apunte."
     }
   ],
   "packageModel": {
@@ -197,7 +212,7 @@ var MODEL = {
         "children": [
           {
             "name": "modules",
-            "notes": "auth, users, projects, folders, resources, members, transcriptions y dashboard."
+            "notes": "auth, users, projects, folders, resources, members, transcriptions, note-structure y dashboard."
           },
           {
             "name": "common",
@@ -206,6 +221,24 @@ var MODEL = {
           {
             "name": "prisma",
             "notes": "Esquema, migraciones y cliente generado."
+          }
+        ]
+      },
+      {
+        "name": "infinipaper-agents",
+        "notes": "Servicio FastAPI + LangGraph para estructuración de apuntes.",
+        "children": [
+          {
+            "name": "api",
+            "notes": "Endpoints FastAPI y autenticación interna."
+          },
+          {
+            "name": "graph",
+            "notes": "Grafo LangGraph y nodos de extracción y estructuración."
+          },
+          {
+            "name": "tools",
+            "notes": "Descarga presignada y utilidades de Markdown."
           }
         ]
       },
@@ -228,6 +261,10 @@ var MODEL = {
           {
             "name": "pg-boss",
             "notes": "Cola de trabajos respaldada por PostgreSQL."
+          },
+          {
+            "name": "LLM",
+            "notes": "Proveedor de modelo de lenguaje: AWS Bedrock, OpenCode Go u OpenAI-compatible."
           }
         ]
       }
@@ -288,6 +325,31 @@ var MODEL = {
       "from": "Sistema/Infraestructura/pg-boss",
       "to": "Sistema/Infraestructura/PostgreSQL",
       "label": "persistencia"
+    },
+    {
+      "from": "Sistema/infinipaper-backend/modules",
+      "to": "Sistema/infinipaper-agents/api",
+      "label": "HTTP interno"
+    },
+    {
+      "from": "Sistema/infinipaper-agents/api",
+      "to": "Sistema/infinipaper-agents/graph",
+      "label": "invoca"
+    },
+    {
+      "from": "Sistema/infinipaper-agents/graph",
+      "to": "Sistema/infinipaper-agents/tools",
+      "label": "usa"
+    },
+    {
+      "from": "Sistema/infinipaper-agents/tools",
+      "to": "Sistema/Infraestructura/MinIO",
+      "label": "GET presignado"
+    },
+    {
+      "from": "Sistema/infinipaper-agents/graph",
+      "to": "Sistema/Infraestructura/LLM",
+      "label": "prompts"
     }
   ],
   "c4": {
@@ -329,6 +391,12 @@ var MODEL = {
           "type": "Component",
           "stereotype": "external_system",
           "notes": "Reconocimiento automático del habla."
+        },
+        {
+          "name": "LLM",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Proveedor de modelo de lenguaje."
         }
       ],
       "relationships": [
@@ -361,6 +429,12 @@ var MODEL = {
           "to": "Whisper ASR",
           "label": "Transcribe audio",
           "notes": "HTTP"
+        },
+        {
+          "from": "Infinipaper",
+          "to": "LLM",
+          "label": "Estructura apuntes",
+          "notes": "HTTPS"
         }
       ]
     },
@@ -408,6 +482,18 @@ var MODEL = {
           "type": "Component",
           "stereotype": "external_system",
           "notes": "faster-whisper."
+        },
+        {
+          "name": "LLM",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Proveedor AWS Bedrock / OpenCode Go / OpenAI-compatible."
+        },
+        {
+          "name": "Agents",
+          "type": "Component",
+          "stereotype": "container",
+          "notes": "FastAPI + LangGraph. Grafo de agentes."
         },
         {
           "name": "pg-boss",
@@ -464,6 +550,24 @@ var MODEL = {
           "to": "Whisper ASR",
           "label": "Audio",
           "notes": "HTTP"
+        },
+        {
+          "from": "Backend",
+          "to": "Agents",
+          "label": "Estructura apuntes",
+          "notes": "HTTP interno"
+        },
+        {
+          "from": "Agents",
+          "to": "MinIO",
+          "label": "GET presignado",
+          "notes": "HTTP"
+        },
+        {
+          "from": "Agents",
+          "to": "LLM",
+          "label": "Prompts",
+          "notes": "HTTPS"
         }
       ]
     },
@@ -519,6 +623,12 @@ var MODEL = {
           "notes": "Jobs ASR, worker y guardado como apunte."
         },
         {
+          "name": "NoteStructure",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Jobs de estructuración y cliente de agentes."
+        },
+        {
           "name": "Dashboard",
           "type": "Component",
           "stereotype": "component",
@@ -535,6 +645,18 @@ var MODEL = {
           "type": "Component",
           "stereotype": "component",
           "notes": "Acceso a PostgreSQL."
+        },
+        {
+          "name": "Agents",
+          "type": "Component",
+          "stereotype": "container",
+          "notes": "FastAPI + LangGraph."
+        },
+        {
+          "name": "LLM",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Proveedor AWS Bedrock / OpenCode Go / OpenAI-compatible."
         },
         {
           "name": "PostgreSQL",
@@ -623,6 +745,21 @@ var MODEL = {
           "label": "Guarda apunte"
         },
         {
+          "from": "NoteStructure",
+          "to": "Prisma",
+          "label": "Lee y escribe jobs"
+        },
+        {
+          "from": "NoteStructure",
+          "to": "Agents",
+          "label": "Solicita estructuración"
+        },
+        {
+          "from": "Agents",
+          "to": "LLM",
+          "label": "Prompts"
+        },
+        {
           "from": "Dashboard",
           "to": "Prisma",
           "label": "Consulta"
@@ -636,6 +773,101 @@ var MODEL = {
           "from": "Storage",
           "to": "MinIO",
           "label": "S3"
+        }
+      ]
+    },
+    "agents": {
+      "name": "C4 · Componentes de agentes",
+      "elements": [
+        {
+          "name": "Agents API",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Endpoint FastAPI y autenticación interna."
+        },
+        {
+          "name": "LangGraph",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Orquesta router, extracción, estructuración y validación."
+        },
+        {
+          "name": "MarkdownExtractor",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Descarga presignada y extrae el Markdown."
+        },
+        {
+          "name": "OutlinePlanner",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Propone el esquema de secciones."
+        },
+        {
+          "name": "NoteStructurer",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Genera el Markdown estructurado."
+        },
+        {
+          "name": "Validator",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Valida estructura, enlaces y cobertura."
+        },
+        {
+          "name": "LLM",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Proveedor AWS Bedrock / OpenCode Go / OpenAI-compatible."
+        },
+        {
+          "name": "MinIO",
+          "type": "Component",
+          "stereotype": "container",
+          "notes": "Almacenamiento S3."
+        }
+      ],
+      "relationships": [
+        {
+          "from": "Agents API",
+          "to": "LangGraph",
+          "label": "Invoca"
+        },
+        {
+          "from": "LangGraph",
+          "to": "MarkdownExtractor",
+          "label": "route_sources"
+        },
+        {
+          "from": "LangGraph",
+          "to": "OutlinePlanner",
+          "label": "plan_outline"
+        },
+        {
+          "from": "LangGraph",
+          "to": "NoteStructurer",
+          "label": "structure_note"
+        },
+        {
+          "from": "LangGraph",
+          "to": "Validator",
+          "label": "validate"
+        },
+        {
+          "from": "MarkdownExtractor",
+          "to": "MinIO",
+          "label": "GET presignado"
+        },
+        {
+          "from": "OutlinePlanner",
+          "to": "LLM",
+          "label": "Prompt"
+        },
+        {
+          "from": "NoteStructurer",
+          "to": "LLM",
+          "label": "Prompt"
         }
       ]
     }
@@ -911,6 +1143,85 @@ var MODEL = {
             "type": "DateTime"
           }
         ]
+      },
+      {
+        "name": "NoteStructureJob",
+        "stereotype": "entity",
+        "notes": "resultMarkdown, outline, warnings, error y usage son opcionales.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "resourceId",
+            "type": "String"
+          },
+          {
+            "name": "requestedById",
+            "type": "String"
+          },
+          {
+            "name": "status",
+            "type": "AgentJobStatus"
+          },
+          {
+            "name": "language",
+            "type": "String"
+          },
+          {
+            "name": "instructions",
+            "type": "String"
+          },
+          {
+            "name": "sourceChecksum",
+            "type": "String"
+          },
+          {
+            "name": "resultMarkdown",
+            "type": "String"
+          },
+          {
+            "name": "resultResourceId",
+            "type": "String"
+          },
+          {
+            "name": "outline",
+            "type": "Json"
+          },
+          {
+            "name": "warnings",
+            "type": "Json"
+          },
+          {
+            "name": "error",
+            "type": "String"
+          },
+          {
+            "name": "model",
+            "type": "String"
+          },
+          {
+            "name": "promptVersion",
+            "type": "String"
+          },
+          {
+            "name": "inputTokens",
+            "type": "Int"
+          },
+          {
+            "name": "outputTokens",
+            "type": "Int"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
       }
     ],
     "enums": [
@@ -947,6 +1258,15 @@ var MODEL = {
       },
       {
         "name": "TranscriptionStatus",
+        "values": [
+          "QUEUED",
+          "PROCESSING",
+          "DONE",
+          "FAILED"
+        ]
+      },
+      {
+        "name": "AgentJobStatus",
         "values": [
           "QUEUED",
           "PROCESSING",
@@ -997,6 +1317,14 @@ var MODEL = {
         "label": "requestedBy"
       },
       {
+        "from": "User",
+        "to": "NoteStructureJob",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "requestedBy"
+      },
+      {
         "from": "Project",
         "to": "ProjectMember",
         "type": "Composition",
@@ -1037,6 +1365,22 @@ var MODEL = {
         "label": "transcriptions"
       },
       {
+        "from": "Resource",
+        "to": "NoteStructureJob",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "structureJobs"
+      },
+      {
+        "from": "NoteStructureJob",
+        "to": "Resource",
+        "type": "Association",
+        "fromMultiplicity": "0..1",
+        "toMultiplicity": "0..1",
+        "label": "resultResource"
+      },
+      {
         "from": "User",
         "to": "UserStatus",
         "type": "Dependency",
@@ -1063,6 +1407,12 @@ var MODEL = {
       {
         "from": "TranscriptionJob",
         "to": "TranscriptionStatus",
+        "type": "Dependency",
+        "label": "status"
+      },
+      {
+        "from": "NoteStructureJob",
+        "to": "AgentJobStatus",
         "type": "Dependency",
         "label": "status"
       }
@@ -2225,6 +2575,170 @@ var MODEL = {
           "name": "GET /dashboard?limit=12"
         }
       ]
+    },
+    {
+      "id": "012",
+      "name": "012 · Estructuración IA",
+      "participants": [
+        {
+          "alias": "E",
+          "name": "Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "Q",
+          "name": "pg-boss",
+          "type": "Object"
+        },
+        {
+          "alias": "AG",
+          "name": "Agents LangGraph",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        },
+        {
+          "alias": "LLM",
+          "name": "Proveedor LLM",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Pulsa Estructurar con IA"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /files/:fileId/structure"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea NoteStructureJob QUEUED"
+        },
+        {
+          "from": "API",
+          "to": "Q",
+          "name": "Encola el job"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "202 job",
+          "notes": "respuesta"
+        },
+        {
+          "from": "Q",
+          "to": "API",
+          "name": "Worker toma el job"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Marca PROCESSING"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Genera URL presignada"
+        },
+        {
+          "from": "API",
+          "to": "AG",
+          "name": "POST /v1/notes/structure"
+        },
+        {
+          "from": "AG",
+          "to": "S3",
+          "name": "GET del .md presignado"
+        },
+        {
+          "from": "AG",
+          "to": "LLM",
+          "name": "plan_outline"
+        },
+        {
+          "from": "LLM",
+          "to": "AG",
+          "name": "Outline",
+          "notes": "respuesta"
+        },
+        {
+          "from": "AG",
+          "to": "LLM",
+          "name": "structure_note"
+        },
+        {
+          "from": "LLM",
+          "to": "AG",
+          "name": "Markdown estructurado",
+          "notes": "respuesta"
+        },
+        {
+          "from": "AG",
+          "to": "API",
+          "name": "Resultado con warnings",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Job DONE"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /structure-jobs/:jobId"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Estado y resultado",
+          "notes": "respuesta"
+        },
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Revisa preview y diff"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /structure-jobs/:jobId/apply"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea Resource MARKDOWN"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Apunte estructurado",
+          "notes": "respuesta"
+        }
+      ]
     }
   ]
 };
@@ -2389,7 +2903,7 @@ function createPackageModel(root) {
 
 function createC4Model(root) {
   var base = ensurePackage(root, MODEL.diagramPackages.c4, "Arquitectura C4 de Infinipaper.");
-  var keys = ["context", "containers", "components"];
+  var keys = ["context", "containers", "components", "agents"];
   for (var k = 0; k < keys.length; k++) {
     var cfg = MODEL.c4[keys[k]];
     var elements = {};
@@ -2411,7 +2925,7 @@ function createC4Model(root) {
     diagram.Update();
     Repository.ReloadDiagram(diagram.DiagramID);
   }
-  out("C4: contexto, contenedores y componentes.");
+  out("C4: contexto, contenedores, componentes y agentes.");
 }
 
 function createClassModel(root) {

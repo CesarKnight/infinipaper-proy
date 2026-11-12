@@ -13,7 +13,7 @@ spec.md  →  plan.md  →  tasks.md  →  implementación  →  verificación  
 - **Constitución:** principios no negociables y puertas de calidad → [`sdd/constitucion.md`](./sdd/constitucion.md).
 - **Proceso:** flujo, estados, nomenclatura y checklists → [`sdd/README.md`](./sdd/README.md).
 - **Plantillas:** `spec.md`, `plan.md` y `tasks.md` → [`sdd/plantillas/`](./sdd/plantillas/).
-- **Specs vigentes:** 11 specs que cubren todo el producto → [`sdd/specs/README.md`](./sdd/specs/README.md).
+- **Specs vigentes:** 12 specs que cubren todo el producto → [`sdd/specs/README.md`](./sdd/specs/README.md).
 - **Referencia transversal:** infraestructura, librerías, modelo de datos, decisiones y API → [`sdd/referencia/README.md`](./sdd/referencia/README.md).
 - **Diagramas:** casos de uso, clases, paquetes, C4 y una secuencia por spec → [`sdd/diagramas/README.md`](./sdd/diagramas/README.md).
 - **Scaffold:** `./docs/sdd/nueva-spec.sh <slug>` crea una spec nueva con las tres plantillas.
@@ -61,17 +61,19 @@ docker compose ps
 | http://localhost:9001 | MinIO consola |
 | http://localhost:9002 | MinIO Admin Console |
 | http://localhost:8000 | Whisper (ASR) |
+| http://localhost:8100 | Agents (FastAPI + LangGraph) |
 
 **Qué ocurre al arrancar**
 
 - `backend` espera a que `db` esté *healthy* y aplica migraciones (`npx prisma migrate deploy`) antes de escuchar.
 - El bucket S3 (`S3_BUCKET`) se crea automáticamente; si MinIO no está listo, solo se registra una advertencia.
 - `frontend` espera a `backend`; recibe `API_URL=http://backend:3000` como *build arg* para reescribir `/api/*`.
+- `agents` arranca FastAPI + LangGraph en `:8100`; `backend` lo llama por `AGENT_SERVICE_URL=http://agents:8000`.
 - **No hay seed**: el primer usuario se crea desde http://localhost:3000/register.
 
 **Configuración**
 
-Se lee desde `infinipaper-backend/.env` (mismo archivo que usa Compose). Claves habituales: `POSTGRES_*`, `S3_*`, `MINIO_IMAGE_TAG` (usa `latest-arm64` en equipos ARM), `MAX_UPLOAD_SIZE_MB`, `WHISPER_MODEL`, `ASR_*`, `AVISO_FILENAME`. Los puertos de host se pueden cambiar con `BACKEND_PORT`, `FRONTEND_PORT`, `POSTGRES_PORT`, `MINIO_*`.
+Se lee desde `infinipaper-backend/.env` (mismo archivo que usa Compose). Claves habituales: `POSTGRES_*`, `S3_*`, `MINIO_IMAGE_TAG` (usa `latest-arm64` en equipos ARM), `MAX_UPLOAD_SIZE_MB`, `WHISPER_MODEL`, `ASR_*`, `AVISO_FILENAME`, `AGENT_*`, `MODEL_*`, `AWS_*`, `OPENCODE_*`. Los puertos de host se pueden cambiar con `BACKEND_PORT`, `FRONTEND_PORT`, `AGENT_PORT`, `POSTGRES_PORT`, `MINIO_*`.
 
 **Comandos útiles**
 
@@ -92,6 +94,8 @@ docker compose down -v                # detener y borrar datos (DB, MinIO, Whisp
 - **Sin acceso a Docker Hub:** no se podrán descargar las imágenes; usa el modo dev sólo si ya tienes las imágenes locales.
 - **Whisper lento al inicio:** está descargando el modelo; espera a que el contenedor quede *healthy*.
 - **El backend no ve MinIO:** dentro de Compose el endpoint debe ser `S3_ENDPOINT=http://minio:9000`.
+- **La estructuración IA falla:** revisa `AGENT_SERVICE_URL`, `AGENT_SERVICE_TOKEN` y que `agents` esté healthy. La app sigue funcionando sin el servicio; solo falla esa función.
+- **Bedrock en Docker:** ejecuta `aws configure --profile infinipaper` en el host; Compose monta `${HOME}/.aws:/root/.aws:ro`. Define `BEDROCK_MODEL_ID` en `.env` antes de arrancar `agents`.
 
 ### Guía de desarrollo
 
@@ -100,6 +104,7 @@ Entorno local para desarrollar; la infraestructura puede ir en Docker (ver sigui
 **Requisitos**
 
 - Node.js 22+ y npm 10+ (el proyecto se desarrolla con Node 26).
+- Python 3.12+ y `uv` para `infinipaper-agents`.
 - Docker (solo para `db`, `minio` y `whisper`).
 
 **Estructura**
@@ -110,10 +115,14 @@ infinipaper-proy/
 ├── infinipaper-backend/   # NestJS + Prisma 7 (API)
 │   ├── prisma/            # schema y migraciones
 │   └── src/modules/       # auth, users, projects, folders, resources, ...
-└── infinipaper-frontend/  # Next.js 16 (App Router)
-    ├── app/               # rutas
-    ├── components/        # UI (shadcn/Base UI) + dominio
-    └── lib/               # cliente API, hooks, tipos
+├── infinipaper-frontend/  # Next.js 16 (App Router)
+│   ├── app/               # rutas
+│   ├── components/        # UI (shadcn/Base UI) + dominio
+│   └── lib/               # cliente API, hooks, tipos
+└── infinipaper-agents/    # FastAPI + LangGraph (agentes IA)
+    ├── api/               # endpoints internos
+    ├── graph/             # grafo y nodos LangGraph
+    └── tools/             # fetch presignado y validación Markdown
 ```
 
 **Instalación**
@@ -121,6 +130,7 @@ infinipaper-proy/
 ```bash
 cd infinipaper-backend   && npm install
 cd ../infinipaper-frontend && npm install
+cd ../infinipaper-agents  && uv sync --all-groups
 ```
 
 **Variables de entorno**
@@ -128,10 +138,12 @@ cd ../infinipaper-frontend && npm install
 ```bash
 cd infinipaper-backend   && cp .env.example .env
 cd ../infinipaper-frontend && cp .env.example .env
+cd ../infinipaper-agents  && cp .env.example .env
 ```
 
-- Backend: `DATABASE_URL`, `S3_*`, `ASR_URL`, `PORT`.
+- Backend: `DATABASE_URL`, `S3_*`, `ASR_URL`, `PORT`, `AGENT_*`.
 - Frontend: `API_URL` (destino de los rewrites de `/api/*`).
+- Agents: `AGENT_SERVICE_TOKEN`, `MODEL_*`, `AGENT_*`.
 
 **Scripts del backend** (`infinipaper-backend/`)
 
@@ -159,6 +171,15 @@ npm run start   # servir el build
 npm run lint    # eslint
 ```
 
+**Scripts de agentes** (`infinipaper-agents/`)
+
+```bash
+uv run uvicorn infinipaper_agents.main:app --reload --port 8100
+uv run ruff check src tests
+uv run pytest
+uv run pyright
+```
+
 **Convenciones**
 
 - API con prefijo `/api/v1`; errores uniformes `{ statusCode, code, message, details }`.
@@ -171,11 +192,12 @@ npm run lint    # eslint
 ```bash
 cd infinipaper-backend    && npm run lint && npm test && npm run build
 cd ../infinipaper-frontend && npm run lint && npm run build
+cd ../infinipaper-agents  && uv run ruff check src tests && uv run pytest
 ```
 
 ### Backend y frontend en modo dev (hot reload)
 
-Objetivo: correr `db`, `minio` y `whisper` en Docker (infraestructura) y **el backend + frontend directamente en el host**, con recarga en caliente y sin reconstruir imágenes.
+Objetivo: correr `db`, `minio` y `whisper` en Docker (infraestructura) y **el backend + frontend + agents directamente en el host**, con recarga en caliente y sin reconstruir imágenes.
 
 **1. Levanta solo la infraestructura**
 
@@ -200,6 +222,8 @@ PORT=3001
 DATABASE_URL=postgresql://infinipaper:infinipaper@localhost:5433/infinipaper?schema=public
 S3_ENDPOINT=http://localhost:9000
 ASR_URL=http://localhost:8000
+AGENT_SERVICE_URL=http://localhost:8100
+AGENT_SERVICE_TOKEN=dev-agent-token
 ```
 
 ```bash
@@ -210,7 +234,18 @@ npm run start:dev
 
 Comprueba: `curl http://localhost:3001/api/v1/health`.
 
-**3. Frontend en el host (`:3000`)**
+**3. Agents en el host (`:8100`)**
+
+```bash
+cd infinipaper-agents
+cp .env.example .env
+uv sync --all-groups
+uv run uvicorn infinipaper_agents.main:app --reload --port 8100
+```
+
+Configura `MODEL_PROVIDER` (`openai-compatible`, `bedrock` u `opencode-go`), `MODEL_NAME`/`BEDROCK_MODEL_ID`/`OPENCODE_MODEL`, `MODEL_BASE_URL`, `MODEL_API_KEY`/`OPENCODE_API_KEY`, `AWS_REGION` y `AGENT_SERVICE_TOKEN`. Comprueba `curl http://localhost:8100/health`.
+
+**4. Frontend en el host (`:3000`)**
 
 ```bash
 cd infinipaper-frontend
@@ -234,7 +269,8 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 - **No hace falta CORS:** gracias a los rewrites todo es *same-origin*.
 - MinIO debe estar arriba y accesible en `S3_ENDPOINT=http://localhost:9000` para subir/ver archivos.
 - Las transcripciones usan `ASR_URL=http://localhost:8000` (contenedor Whisper).
-- Si 3000/3001 están ocupados, cambia `PORT` y arranca Next en otro puerto (`npm run dev -- -p 3002`), actualizando `API_URL` en consecuencia.
+- La estructuración IA usa `AGENT_SERVICE_URL=http://localhost:8100`; si el servicio no está arriba, el botón falla de forma controlada.
+- Si 3000/3001/8100 están ocupados, cambia `PORT`, el puerto de Next o `--port` de agents y actualiza `API_URL`/`AGENT_SERVICE_URL` en consecuencia.
 - Inspección de la BD: `npx prisma studio` o `psql postgresql://infinipaper:infinipaper@localhost:5433/infinipaper`.
 
 
@@ -254,6 +290,7 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 | `009` | [Apuntes Markdown con editor WYSIWYG y autoguardado](./sdd/specs/009-apuntes/spec.md) | Implementada con brechas |
 | `010` | [Transcripción de audio](./sdd/specs/010-transcripcion/spec.md) | Implementada con brechas |
 | `011` | [Dashboard personal](./sdd/specs/011-dashboard/spec.md) | Implementada con brechas |
+| `012` | [Estructuración de apuntes con IA](./sdd/specs/012-estructuracion-apuntes-ia/spec.md) | Implementada con brechas |
 
 ## Referencia transversal
 
@@ -269,16 +306,18 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 | [`sdd/referencia/api.md`](./sdd/referencia/api.md) | Convenciones de API, errores y paginación |
 | [`sdd/diagramas/README.md`](./sdd/diagramas/README.md) | Casos de uso, clases, paquetes, C4 y secuencias por spec |
 | [`sdd/ea/README.md`](./sdd/ea/README.md) | Modelo formal y script de importación para Enterprise Architect |
+| [`../infinipaper-agents/README.md`](../infinipaper-agents/README.md) | Servicio FastAPI + LangGraph: configuración, contrato y pruebas |
 
 ## Estado del proyecto
 
-Las 11 specs están implementadas y el proyecto compila y pasa lint. Cada spec registra sus brechas funcionales en `G-*`; la deuda transversal principal es la ausencia de tests automatizados específicos, que se irá cerrando con nuevas tareas.
+Las 12 specs están implementadas y el proyecto compila y pasa lint. La spec 012 (estructuración con IA) está implementada con un servicio FastAPI + LangGraph y validada con un agente mockeado. Cada spec registra sus brechas funcionales en `G-*`; la deuda transversal principal es la ausencia de tests automatizados específicos, que se irá cerrando con nuevas tareas.
 
 **Verificado en este entorno:**
 
 - Backend: `npm run build`, `npm run lint` y `npm test`.
 - Frontend: `npm run build` y `npm run lint`.
-- Flujo end-to-end a través del proxy same-origin: registro/login con cookie `httpOnly` first-party, sesión, proyectos, carpetas, participantes, permisos y dashboard.
+- Agentes: `uv run ruff check`, `uv run pytest` y `uv run pyright`.
+- Flujo end-to-end a través del proxy same-origin: registro/login con cookie `httpOnly` first-party, sesión, proyectos, carpetas, participantes, permisos, dashboard y estructuración IA con agente mockeado.
 
 **Limitaciones conocidas:**
 

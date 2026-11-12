@@ -13,6 +13,7 @@ import { apiFetch, ApiError, fileContentUrl } from "@/lib/api";
 import type { Resource, TranscriptionJob } from "@/lib/types";
 import { MarkdownView } from "@/components/project/markdown-view";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { StructureNoteButton } from "@/components/markdown/structure-note-dialog";
 import { AutosaveStatusIndicator } from "@/components/markdown/autosave-status";
 import { useWorkspace } from "@/components/project/workspace-context";
 import { useAutosave } from "@/lib/use-autosave";
@@ -166,7 +167,12 @@ function MarkdownViewer({
   return (
     <div className="flex flex-col gap-3">
       {canEdit ? (
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          <StructureNoteButton
+            resource={resource}
+            originalContent={loadedContent}
+            canEdit={canEdit}
+          />
           {editing ? (
             <Button
               variant="outline"

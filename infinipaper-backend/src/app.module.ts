@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { FoldersModule } from './modules/folders/folders.module.js';
 import { MembersModule } from './modules/members/members.module.js';
+import { NoteStructureModule } from './modules/note-structure/note-structure.module.js';
 import { ProjectsModule } from './modules/projects/projects.module.js';
 import { ResourcesModule } from './modules/resources/resources.module.js';
 import { SystemModule } from './modules/system/system.module.js';
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module.js';
     FoldersModule,
     ResourcesModule,
     MembersModule,
+    NoteStructureModule,
     TranscriptionsModule,
     SystemModule,
   ],

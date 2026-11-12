@@ -43,17 +43,20 @@ Infinipaper SDD
 ├── 03 · Arquitectura C4
 │   ├── C4 · Contexto
 │   ├── C4 · Contenedores
-│   └── C4 · Componentes del backend
+│   ├── C4 · Componentes del backend
+│   └── C4 · Componentes de agentes
 ├── 04 · Secuencias
-│   ├── 001 · Usuarios … 011 · Dashboard
-│   └── 11 diagramas de secuencia
+│   ├── 001 · Usuarios … 012 · Estructuración IA
+│   └── 12 diagramas de secuencia
 └── 05 · Clases
-    ├── User, Session, Project, ProjectMember, Folder, Resource, TranscriptionJob
-    ├── UserStatus, ProjectVisibility, ProjectRole, ResourceKind, TranscriptionStatus
+    ├── User, Session, Project, ProjectMember, Folder, Resource
+    ├── TranscriptionJob, NoteStructureJob
+    ├── UserStatus, ProjectVisibility, ProjectRole, ResourceKind
+    ├── TranscriptionStatus, AgentJobStatus
     └── Diagrama "Clases · Modelo de dominio"
 ```
 
-En total: **5 ramas, 17 diagramas** (1 casos de uso, 1 paquetes, 3 C4, 1 clases y 11 secuencias).
+En total: **5 ramas, 19 diagramas** (1 casos de uso, 1 paquetes, 4 C4, 1 clases y 12 secuencias).
 
 ### Idempotencia
 
@@ -88,7 +91,7 @@ El generador valida:
 - **Actores:** `Visitante`, `Usuario`, `Owner`, `Editor`, `Viewer`, `Whisper ASR` y `MinIO`.
 - **Paquetes:** `infinipaper-frontend`, `infinipaper-backend` e `Infraestructura`.
 - **C4:** los elementos usan estereotipos `person`, `system`, `external_system`, `container`, `container_db` y `component`.
-- **Clases:** `User`, `Session`, `Project`, `ProjectMember`, `Folder`, `Resource` y `TranscriptionJob`, con atributos, enums y relaciones de composición, asociación y dependencia.
+- **Clases:** `User`, `Session`, `Project`, `ProjectMember`, `Folder`, `Resource`, `TranscriptionJob` y `NoteStructureJob`, con atributos, enums y relaciones de composición, asociación y dependencia.
 - **Secuencias:** cada diagrama usa lifelines con prefijo `NNN · ` para evitar colisiones entre specs.
 - **Mensajes:** los conectores son de tipo `Sequence`; las respuestas se etiquetan en el nombre o en las notas.
 

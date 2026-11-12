@@ -62,3 +62,4 @@
 | [009 Apuntes](../specs/009-apuntes/spec.md) | `/folders/:id/notes`, `/files/:id/text`, `/files/:id/content` |
 | [010 Transcripción](../specs/010-transcripcion/spec.md) | `/files/:id/transcriptions`, `/transcriptions/:id` |
 | [011 Dashboard](../specs/011-dashboard/spec.md) | `/dashboard` |
+| [012 Estructuración IA](../specs/012-estructuracion-apuntes-ia/spec.md) | `/files/:id/structure`, `/structure-jobs/:jobId`, `/structure-jobs/:jobId/apply` |

@@ -21,5 +21,13 @@
 | Colaboración en tiempo real | Fuera de alcance en v1 | — |
 | Transcripción | Whisper autoalojado; job en background; notificación por polling | [010](../specs/010-transcripcion/spec.md) |
 | Dashboard | Es la vista inicial en `/`; `/projects` es el listado completo con filtro `scope` | [011](../specs/011-dashboard/spec.md) |
+| Agentes IA | LangGraph orquesta el grafo; router determinista por tipo de fuente; v1 solo Markdown | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| Servicio de agentes | FastAPI stateless; no accede a la base ni a S3; usa URLs presignadas | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| Jobs de IA | NestJS + pg-boss conservan el estado; sin checkpointer en v1 | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| Resultado IA | Se crea un apunte nuevo; el original no se modifica | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| Observabilidad IA | Logs estructurados + OTel opcional; sin SaaS obligatorio | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| Modelo LLM | Proveedor OpenAI-compatible configurable por entorno y por nodo | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| Proveedor LLM | Soporta AWS Bedrock (`langchain-aws`) y endpoints OpenAI-compatible | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| OpenCode Go | Proveedor OpenAI-compatible con `x-opencode-session`; modelo configurable | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
 | Peticiones del navegador | Same-origin mediante rewrites de Next (`/api/*` → `API_URL`); cookie *first-party* | [referencia/api.md](./api.md) |
 | API | Prefijo `/api/v1`, errores uniformes, paginación por cursor | [referencia/api.md](./api.md) |

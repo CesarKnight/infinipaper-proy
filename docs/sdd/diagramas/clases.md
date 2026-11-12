@@ -96,6 +96,28 @@ classDiagram
     +DateTime updatedAt
   }
 
+  class NoteStructureJob {
+    <<entity>>
+    +String id
+    +String resourceId
+    +String requestedById
+    +AgentJobStatus status
+    +String language
+    +String instructions
+    +String sourceChecksum
+    +String resultMarkdown
+    +String resultResourceId
+    +Json outline
+    +Json warnings
+    +String error
+    +String model
+    +String promptVersion
+    +Int inputTokens
+    +Int outputTokens
+    +DateTime createdAt
+    +DateTime updatedAt
+  }
+
   class UserStatus {
     <<enumeration>>
     ACTIVE
@@ -131,11 +153,20 @@ classDiagram
     FAILED
   }
 
+  class AgentJobStatus {
+    <<enumeration>>
+    QUEUED
+    PROCESSING
+    DONE
+    FAILED
+  }
+
   User "1" --> "0..*" Session : sessions
   User "1" --> "0..*" Project : owner
   User "1" --> "0..*" ProjectMember : memberships
   User "1" --> "0..*" Resource : author
   User "1" --> "0..*" TranscriptionJob : requestedBy
+  User "1" --> "0..*" NoteStructureJob : requestedBy
 
   Project "1" *-- "0..*" ProjectMember : members
   Project "1" *-- "0..*" Folder : folders
@@ -144,18 +175,22 @@ classDiagram
   Folder "1" *-- "0..*" Resource : resources
 
   Resource "1" *-- "0..*" TranscriptionJob : transcriptions
+  Resource "1" --> "0..*" NoteStructureJob : structureJobs
+  NoteStructureJob "0..1" --> "0..1" Resource : resultResource
 
   User --> UserStatus
   Project --> ProjectVisibility
   ProjectMember --> ProjectRole
   Resource --> ResourceKind
   TranscriptionJob --> TranscriptionStatus
+  NoteStructureJob --> AgentJobStatus
 
   note for User "avatarUrl y bio son opcionales"
   note for Project "description es opcional"
   note for Folder "parentId es opcional; la raíz tiene isRoot=true"
   note for Resource "checksum es opcional; s3Key es único"
   note for TranscriptionJob "text y error son opcionales"
+  note for NoteStructureJob "resultMarkdown, outline, warnings, error y usage son opcionales"
 ```
 
 ### Reglas del modelo
@@ -354,6 +389,82 @@ classDiagram
   StorageService --> PrismaService
 ```
 
+## 2.5 Clases del servicio de agentes
+
+```mermaid
+classDiagram
+  direction LR
+
+  class NoteStructureController {
+    +create()
+    +get()
+    +apply()
+  }
+  class NoteStructureService {
+    +createJob()
+    +getJob()
+    +apply()
+    +process()
+  }
+  class AgentClientService {
+    +isEnabled()
+    +structure()
+  }
+  class NoteStructureQueueService {
+    +enqueue()
+    +registerWorker()
+  }
+  class NoteStructureWorker {
+    +onModuleInit()
+  }
+  class GraphState {
+    +job_id
+    +sources
+    +extracted
+    +outline
+    +draft_markdown
+    +validation
+    +warnings
+    +usage
+    +retry_count
+  }
+  class SourceRef {
+    +resource_id
+    +kind
+    +name
+    +mime_type
+    +checksum
+    +url
+  }
+  class ExtractedDocument {
+    +source_id
+    +kind
+    +text
+    +metadata
+    +provenance
+  }
+  class ValidationReport {
+    +valid
+    +coverage
+    +issues
+  }
+  class NoteStructurerGraph {
+    +build_graph()
+    +ainvoke()
+  }
+
+  NoteStructureController --> NoteStructureService
+  NoteStructureWorker --> NoteStructureQueueService
+  NoteStructureWorker --> NoteStructureService
+  NoteStructureService --> AgentClientService
+  NoteStructureService --> NoteStructureQueueService
+  AgentClientService ..> NoteStructurerGraph : HTTP interno
+  NoteStructurerGraph --> GraphState
+  GraphState --> SourceRef
+  GraphState --> ExtractedDocument
+  GraphState --> ValidationReport
+```
+
 ## 3. Notas de implementación
 
 - Los controladores solo orquestan HTTP y delegación; la lógica vive en los servicios.
@@ -371,6 +482,8 @@ classDiagram
 | `Resource` | 004, 005, 006, 009 |
 | `ProjectMember` | 007, 008 |
 | `TranscriptionJob` | 010 |
+| `NoteStructureJob` | 012 |
+| `NoteStructureService`, `AgentClientService` | 012 |
 | `DashboardService` | 011 |
 
 > El diagrama formal equivalente se crea en Enterprise Architect desde [`docs/sdd/ea/modelo.json`](../ea/modelo.json).

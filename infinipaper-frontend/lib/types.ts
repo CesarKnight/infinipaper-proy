@@ -3,6 +3,7 @@ export type ProjectVisibility = "PUBLIC" | "PRIVATE";
 export type ProjectRole = "EDITOR" | "VIEWER";
 export type ResourceKind = "DOCUMENT" | "IMAGE" | "AUDIO" | "VIDEO" | "MARKDOWN";
 export type TranscriptionStatus = "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
+export type AgentJobStatus = "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
 
 export interface User {
   id: string;
@@ -105,6 +106,32 @@ export interface TranscriptionJob {
   updatedAt: string;
 }
 
+export interface StructureOutlineSection {
+  heading: string;
+  level: number;
+}
+
+export interface NoteStructureJob {
+  id: string;
+  resourceId: string;
+  requestedById: string;
+  status: AgentJobStatus;
+  language: string;
+  instructions: string | null;
+  sourceChecksum: string | null;
+  resultMarkdown: string | null;
+  resultResourceId: string | null;
+  outline: StructureOutlineSection[] | null;
+  warnings: string[] | null;
+  error: string | null;
+  model: string | null;
+  promptVersion: string | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Paged<T> {
   items: T[];
   nextCursor: string | null;
@@ -113,4 +140,5 @@ export interface Paged<T> {
 export interface AppConfig {
   maxUploadSizeMb: number;
   avisoFilename: string;
+  agentStructuringEnabled: boolean;
 }

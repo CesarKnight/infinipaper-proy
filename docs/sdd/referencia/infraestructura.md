@@ -9,8 +9,9 @@
 | `frontend` | build Next.js | 3000 | App web |
 | `minio` | `firstfinger/minio` | 9000 / 9001 / 9002 | Almacenamiento S3 + consola + Admin Console |
 | `whisper` | `fedirz/faster-whisper-server` | 8000 | Servicio ASR (API compatible OpenAI) |
+| `agents` | build FastAPI + LangGraph | 8100 | Servicio de agentes IA (estructuración de apuntes) |
 
-Dependencias: `backend` espera a `db` y `minio`; `frontend` espera a `backend`.
+Dependencias: `backend` espera a `db` y `minio`; `frontend` espera a `backend`. El `backend` llama a `agents` por HTTP interno; si `agents` no está disponible, la app sigue funcionando y solo falla la estructuración.
 
 > **MinIO:** se usa la imagen [`firstfinger/minio`](https://hub.docker.com/r/firstfinger/minio) (servidor + Admin Console + `mc`), seleccionando `latest-amd64` o `latest-arm64` con `MINIO_IMAGE_TAG`. El bucket lo crea automáticamente el backend (`StorageService.ensureBucket`) al arrancar, por lo que no se necesita un contenedor `mc` aparte.
 
@@ -95,6 +96,68 @@ ASR_MAX_DURATION_MINUTES=120
 
 # Reglas de negocio
 AVISO_FILENAME=aviso.md
+
+# --- Estructuración de apuntes con IA --------------------------
+AGENT_SERVICE_URL=http://localhost:8100
+AGENT_SERVICE_TOKEN=dev-agent-token
+AGENT_TIMEOUT_MS=120000
+AGENT_STRUCTURING_ENABLED=true
+AGENT_MAX_INPUT_CHARS=120000
+S3_PRESIGN_TTL_SECONDS=900
+
+# --- Servicio de agentes (interpolación de Compose) ------------
+AGENT_PORT=8100
+MODEL_PROVIDER=openai-compatible
+MODEL_NAME=gpt-4o-mini
+MODEL_BASE_URL=
+MODEL_API_KEY=
+MODEL_STRUCTURER=
+# El ID debe existir en la región; p. ej. us-east-2: openai.gpt-oss-120b-1:0
+BEDROCK_MODEL_ID=
+AWS_REGION=us-east-1
+AWS_PROFILE=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_SESSION_TOKEN=
+OPENCODE_API_KEY=
+OPENCODE_BASE_URL=https://opencode.ai/inference/go/openai/v1
+OPENCODE_MODEL=deepseek-v4.1-flash
+AGENT_OPENCODE_SESSION_ID=infinipaper-agents
+```
+
+### Servicio de agentes (`infinipaper-agents/.env.example`)
+
+```dotenv
+AGENT_SERVICE_TOKEN=dev-agent-token
+
+MODEL_NAME=gpt-4o-mini
+MODEL_PROVIDER=openai-compatible
+MODEL_BASE_URL=
+MODEL_API_KEY=
+MODEL_STRUCTURER=
+MODEL_EXTRACTOR=
+MODEL_VISION=
+MODEL_TEMPERATURE=0.1
+BEDROCK_MODEL_ID=
+AWS_REGION=us-east-1
+AWS_PROFILE=infinipaper
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_SESSION_TOKEN=
+
+OPENCODE_API_KEY=
+OPENCODE_BASE_URL=https://opencode.ai/inference/go/openai/v1
+OPENCODE_MODEL=deepseek-v4.1-flash
+AGENT_OPENCODE_SESSION_ID=infinipaper-agents
+
+AGENT_MAX_INPUT_CHARS=120000
+AGENT_MAX_OUTPUT_TOKENS=8000
+AGENT_TIMEOUT_SECONDS=120
+AGENT_MAX_RETRIES=1
+AGENT_PROMPT_VERSION=note-structurer/v1
+
+OTEL_ENABLED=false
+LOG_LEVEL=INFO
 ```
 
 ### Frontend (`infinipaper-frontend/.env.example`)
@@ -128,6 +191,7 @@ Una **única variable** gobierna el límite: `MAX_UPLOAD_SIZE_MB`.
 - La URL nunca se persiste: se sirve a través del backend (`/files/:id/content`).
 - Al borrar un `Resource` (o en cascada), se elimina también el objeto en S3.
 - El bucket (`S3_BUCKET`) se crea automáticamente al arrancar el backend (`StorageService.ensureBucket`); si MinIO no está disponible, solo se registra una advertencia y la app sigue levantando.
+- Para el servicio de agentes, el backend genera una URL presignada de solo lectura (`S3_PRESIGN_TTL_SECONDS`); el servicio no recibe credenciales S3.
 
 ## 6. Cola de trabajos (transcripción)
 
@@ -136,6 +200,7 @@ Una **única variable** gobierna el límite: `MAX_UPLOAD_SIZE_MB`.
 - Flujo ASR: descargar audio desde S3 → `POST {ASR_URL}/v1/audio/transcriptions` (multipart) → guardar `text`.
 - El frontend consulta el estado por **polling** (`GET /api/v1/transcriptions/:id`).
 - Errores transitorios con reintentos configurables (p. ej. 3 intentos con backoff).
+- La cola `note-structure` usa el mismo `pg-boss` para los jobs de estructuración IA (spec 012).
 
 ## 7. Auth y sesiones
 
@@ -144,10 +209,12 @@ Una **única variable** gobierna el límite: `MAX_UPLOAD_SIZE_MB`.
 - Guard global `AuthGuard`: lee la cookie, valida vigencia y adjunta `request.user`.
 - Guard `ProjectAccessGuard`: resuelve el rol efectivo (Owner/Editor/Viewer) y el modo público anónimo.
 - Decorador `@RequireProjectRole('editor' | 'viewer')` para declarar requisitos por endpoint.
+- El servicio de agentes exige `Authorization: Bearer <AGENT_SERVICE_TOKEN>` y no se expone al navegador.
 
 ## 8. Health
 
 - `GET /api/v1/health` verifica DB, MinIO y cola. Reemplaza el `GET /` del scaffold para el healthcheck de compose.
+- `GET /health` del servicio de agentes verifica que FastAPI está operativo; no llama al proveedor LLM.
 
 ## 9. Migraciones y seed
 

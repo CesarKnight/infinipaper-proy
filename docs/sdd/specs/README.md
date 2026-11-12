@@ -15,10 +15,11 @@
 | `009` | [Apuntes Markdown con editor WYSIWYG y autoguardado](./009-apuntes/spec.md) | Implementada con brechas | 001, 003, 005, 008 |
 | `010` | [Transcripción de audio](./010-transcripcion/spec.md) | Implementada con brechas | 001, 003, 005, 006, 008, 009 |
 | `011` | [Dashboard personal](./011-dashboard/spec.md) | Implementada con brechas | 001, 002, 007, 008 |
+| `012` | [Estructuración de apuntes con IA](./012-estructuracion-apuntes-ia/spec.md) | Implementada con brechas | 001, 003, 005, 008, 009 |
 
 ## Deuda transversal
 
-Ninguna spec cuenta todavía con cobertura automatizada específica. La verificación actual se apoya en `npm run build`, `npm run lint` y flujos manuales. Cada spec registra sus brechas funcionales en `G-*`; las tareas de pruebas automatizadas se añaden cuando se aborde la deuda de calidad.
+La cobertura automatizada es parcial: la spec 012 incluye tests del grafo LangGraph, validadores y servicio NestJS. El resto de specs se apoya en `npm run build`, `npm run lint` y flujos manuales. Cada spec registra sus brechas funcionales en `G-*`; las tareas de pruebas automatizadas se añaden a medida que se abordan.
 
 ## Cómo añadir una spec
 

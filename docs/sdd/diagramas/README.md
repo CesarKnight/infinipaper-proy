@@ -4,11 +4,11 @@ Diagramas de referencia del sistema, escritos en **Mermaid** para que se renderi
 
 | Diagrama | Archivo | Propósito |
 |---|---|---|
-| Casos de uso | [`casos-de-uso.md`](./casos-de-uso.md) | Actores y las 11 historias de usuario como casos de uso |
-| Clases | [`clases.md`](./clases.md) | Modelo de dominio (Prisma) y clases de implementación del backend |
-| Paquetes | [`paquetes.md`](./paquetes.md) | Paquetes del frontend, backend e infraestructura |
-| Arquitectura C4 | [`arquitectura-c4.md`](./arquitectura-c4.md) | Contexto, contenedores y componentes |
-| Secuencias | [`secuencia/`](./secuencia/) | Un diagrama por spec (001–011) |
+| Casos de uso | [`casos-de-uso.md`](./casos-de-uso.md) | Actores y las 12 historias de usuario como casos de uso |
+| Clases | [`clases.md`](./clases.md) | Modelo de dominio, implementación del backend y clases de agentes |
+| Paquetes | [`paquetes.md`](./paquetes.md) | Paquetes del frontend, backend, agentes e infraestructura |
+| Arquitectura C4 | [`arquitectura-c4.md`](./arquitectura-c4.md) | Contexto, contenedores y componentes de backend y agentes |
+| Secuencias | [`secuencia/`](./secuencia/) | Un diagrama por spec (001–012) |
 
 ## Convenciones
 

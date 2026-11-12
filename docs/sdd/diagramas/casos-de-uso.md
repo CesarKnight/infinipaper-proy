@@ -17,6 +17,7 @@ flowchart LR
     Viewer((Viewer)):::actor
     Whisper[Sistema ASR<br/>Whisper]:::external
     MinIO[(MinIO<br/>S3)]:::external
+    LLM[Proveedor LLM]:::external
   end
 
   subgraph Sistema["Infinipaper"]
@@ -31,6 +32,7 @@ flowchart LR
     UC09([UC-09<br/>Gestión de apuntes]):::usecase
     UC10([UC-10<br/>Transcripción de audio]):::usecase
     UC11([UC-11<br/>Dashboard personal]):::usecase
+    UC12([UC-12<br/>Estructuración de apuntes con IA]):::usecase
   end
 
   Visitante --> UC01
@@ -53,6 +55,7 @@ flowchart LR
   Owner --> UC09
   Owner --> UC10
   Owner --> UC11
+  Owner --> UC12
 
   Editor --> UC03
   Editor --> UC04
@@ -61,6 +64,7 @@ flowchart LR
   Editor --> UC09
   Editor --> UC10
   Editor --> UC11
+  Editor --> UC12
 
   Viewer --> UC02
   Viewer --> UC03
@@ -75,6 +79,7 @@ flowchart LR
   MinIO --> UC05
   MinIO --> UC06
   MinIO --> UC09
+  LLM --> UC12
 ```
 
 ## Trazabilidad
@@ -92,5 +97,6 @@ flowchart LR
 | UC-09 Gestión de apuntes | [009](../specs/009-apuntes/spec.md) | Owner, Editor, Viewer, MinIO |
 | UC-10 Transcripción de audio | [010](../specs/010-transcripcion/spec.md) | Usuario, Editor, Owner, Whisper |
 | UC-11 Dashboard personal | [011](../specs/011-dashboard/spec.md) | Usuario, Owner, Editor, Viewer |
+| UC-12 Estructuración de apuntes con IA | [012](../specs/012-estructuracion-apuntes-ia/spec.md) | Owner, Editor, LLM |
 
 > `Visitante` solo accede a proyectos públicos en modo lectura y a las pantallas de registro/login. Las acciones de escritura requieren un rol de proyecto.

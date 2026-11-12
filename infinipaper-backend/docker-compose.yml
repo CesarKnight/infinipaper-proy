@@ -79,6 +79,49 @@ services:
       - infinipaper
 
   # ------------------------------------------------------------
+  # Agentes IA - FastAPI + LangGraph
+  # ------------------------------------------------------------
+  agents:
+    build:
+      context: ../infinipaper-agents
+      dockerfile: Dockerfile
+    container_name: infinipaper-agents
+    restart: unless-stopped
+    ports:
+      - "${AGENT_PORT:-8100}:8000"
+    environment:
+      AGENT_SERVICE_TOKEN: ${AGENT_SERVICE_TOKEN:-dev-agent-token}
+      MODEL_NAME: ${MODEL_NAME:-gpt-4o-mini}
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-openai-compatible}
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      MODEL_STRUCTURER: ${MODEL_STRUCTURER:-}
+      MODEL_EXTRACTOR: ${MODEL_EXTRACTOR:-}
+      MODEL_VISION: ${MODEL_VISION:-}
+      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:-}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_PROFILE: ${AWS_PROFILE:-infinipaper}
+      # Credenciales por perfil montado en /root/.aws.
+      # Para claves explícitas, añade AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+      # y AWS_SESSION_TOKEN en este bloque.
+      OPENCODE_API_KEY: ${OPENCODE_API_KEY:-}
+      OPENCODE_BASE_URL: ${OPENCODE_BASE_URL:-https://opencode.ai/inference/go/openai/v1}
+      OPENCODE_MODEL: ${OPENCODE_MODEL:-deepseek-v4.1-flash}
+      AGENT_OPENCODE_SESSION_ID: ${AGENT_OPENCODE_SESSION_ID:-infinipaper-agents}
+      AGENT_MAX_INPUT_CHARS: ${AGENT_MAX_INPUT_CHARS:-120000}
+      AGENT_MAX_OUTPUT_TOKENS: ${AGENT_MAX_OUTPUT_TOKENS:-8000}
+      AGENT_TIMEOUT_SECONDS: ${AGENT_TIMEOUT_SECONDS:-120}
+      AGENT_MAX_RETRIES: ${AGENT_MAX_RETRIES:-1}
+      AGENT_PROMPT_VERSION: ${AGENT_PROMPT_VERSION:-note-structurer/v1}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      # Perfil AWS local: aws configure --profile infinipaper
+      - "${HOME}/.aws:/root/.aws:ro"
+    networks:
+      - infinipaper
+
+  # ------------------------------------------------------------
   # NestJS backend API
   # ------------------------------------------------------------
   backend:
@@ -114,6 +157,12 @@ services:
       ASR_DEFAULT_LANGUAGE: ${ASR_DEFAULT_LANGUAGE:-es}
       ASR_MAX_DURATION_MINUTES: ${ASR_MAX_DURATION_MINUTES:-120}
       AVISO_FILENAME: ${AVISO_FILENAME:-aviso.md}
+      AGENT_SERVICE_URL: http://agents:8000
+      AGENT_SERVICE_TOKEN: ${AGENT_SERVICE_TOKEN:-dev-agent-token}
+      AGENT_TIMEOUT_MS: ${AGENT_TIMEOUT_MS:-120000}
+      AGENT_STRUCTURING_ENABLED: ${AGENT_STRUCTURING_ENABLED:-true}
+      AGENT_MAX_INPUT_CHARS: ${AGENT_MAX_INPUT_CHARS:-120000}
+      S3_PRESIGN_TTL_SECONDS: ${S3_PRESIGN_TTL_SECONDS:-900}
     depends_on:
       db:
         condition: service_healthy

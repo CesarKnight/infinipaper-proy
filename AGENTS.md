@@ -30,6 +30,7 @@ Antes de implementar un cambio de producto:
 
 - `infinipaper-backend/`: NestJS 12 ESM, Prisma 7, PostgreSQL 17, MinIO, `pg-boss`.
 - `infinipaper-frontend/`: Next.js 16 App Router, React 19, shadcn/Base UI, Tailwind v4.
+- `infinipaper-agents/`: FastAPI + LangGraph; servicio stateless de agentes IA.
 - `docs/`: especificaciones SDD. La fuente vigente es `docs/sdd/specs/`; la documentación transversal vive en `docs/sdd/referencia/`.
 - La raíz no contiene el código: cada app tiene su propio `package.json` y `AGENTS.md` cuando aplica.
 
@@ -46,6 +47,12 @@ npm run build
 cd infinipaper-frontend
 npm run lint
 npm run build
+
+# Agentes IA
+cd infinipaper-agents
+uv run ruff check src tests
+uv run pytest
+uv run pyright
 ```
 
 Si un cambio toca base de datos:
@@ -90,6 +97,7 @@ npx prisma generate
 | Convenciones de API | [`docs/sdd/referencia/api.md`](./docs/sdd/referencia/api.md) |
 | Diagramas | [`docs/sdd/diagramas/README.md`](./docs/sdd/diagramas/README.md) |
 | Modelo EA | [`docs/sdd/ea/README.md`](./docs/sdd/ea/README.md) |
+| Agentes IA | [`infinipaper-agents/README.md`](./infinipaper-agents/README.md) |
 | Guías de ejecución | [`docs/README.md`](./docs/README.md) |
 
 ## Frontend

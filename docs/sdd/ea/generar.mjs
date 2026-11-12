@@ -259,7 +259,7 @@ function createPackageModel(root) {
 
 function createC4Model(root) {
   var base = ensurePackage(root, MODEL.diagramPackages.c4, "Arquitectura C4 de Infinipaper.");
-  var keys = ["context", "containers", "components"];
+  var keys = ["context", "containers", "components", "agents"];
   for (var k = 0; k < keys.length; k++) {
     var cfg = MODEL.c4[keys[k]];
     var elements = {};
@@ -281,7 +281,7 @@ function createC4Model(root) {
     diagram.Update();
     Repository.ReloadDiagram(diagram.DiagramID);
   }
-  out("C4: contexto, contenedores y componentes.");
+  out("C4: contexto, contenedores, componentes y agentes.");
 }
 
 function createClassModel(root) {

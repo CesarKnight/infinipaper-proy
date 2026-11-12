@@ -47,6 +47,13 @@ enum TranscriptionStatus {
   FAILED
 }
 
+enum AgentJobStatus {
+  QUEUED
+  PROCESSING
+  DONE
+  FAILED
+}
+
 // ---------------------------------------------------------------
 // Usuarios y sesiones
 // ---------------------------------------------------------------
@@ -68,6 +75,7 @@ model User {
   memberships    ProjectMember[]
   uploads        Resource[]
   transcriptions TranscriptionJob[]
+  structureJobs  NoteStructureJob[]
 
   @@index([status])
 }
@@ -134,9 +142,9 @@ model Folder {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  parent    Folder?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Folder[] @relation("FolderChildren")
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent    Folder?    @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[]   @relation("FolderChildren")
   resources Resource[]
 
   @@unique([projectId, parentId, name])
@@ -157,9 +165,11 @@ model Resource {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  folder         Folder             @relation(fields: [folderId], references: [id], onDelete: Cascade)
-  author         User               @relation(fields: [authorId], references: [id])
-  transcriptions TranscriptionJob[]
+  folder            Folder             @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  author            User               @relation(fields: [authorId], references: [id])
+  transcriptions    TranscriptionJob[]
+  structureJobs     NoteStructureJob[] @relation("StructureJobs")
+  structuredResults NoteStructureJob[] @relation("StructuredResult")
 
   @@unique([folderId, name])
   @@index([folderId])
@@ -187,6 +197,34 @@ model TranscriptionJob {
   @@index([resourceId])
   @@index([status])
 }
+
+model NoteStructureJob {
+  id               String         @id @default(cuid())
+  resourceId       String
+  requestedById    String
+  status           AgentJobStatus @default(QUEUED)
+  language         String         @default("es")
+  instructions     String?
+  sourceChecksum   String?
+  resultMarkdown   String?
+  resultResourceId String?        @unique
+  outline          Json?
+  warnings         Json?
+  error            String?
+  model            String?
+  promptVersion    String?
+  inputTokens      Int?
+  outputTokens     Int?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  resource       Resource  @relation("StructureJobs", fields: [resourceId], references: [id], onDelete: Cascade)
+  requestedBy    User      @relation(fields: [requestedById], references: [id])
+  resultResource Resource? @relation("StructuredResult", fields: [resultResourceId], references: [id], onDelete: SetNull)
+
+  @@index([resourceId])
+  @@index([status])
+}
 ```
 
 ## Notas de diseño
@@ -200,3 +238,4 @@ model TranscriptionJob {
 - **`Session.tokenHash`** almacena el SHA-256 del token; nunca el token en claro.
 - **`Resource.size`** es un entero en bytes; el límite de subida no vive en el esquema y se controla con `MAX_UPLOAD_SIZE_MB`.
 - **Transcripciones:** `TranscriptionJob` referencia al `Resource` de audio; el listado por proyecto se resuelve mediante `resource.folder.projectId`.
+- **Estructuración IA:** `NoteStructureJob` guarda el estado del job, el resultado, warnings, usage y el `resultResourceId` del apunte creado. `resultResourceId` es único y opcional.
