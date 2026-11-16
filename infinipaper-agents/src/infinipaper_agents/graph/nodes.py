@@ -83,6 +83,16 @@ async def _invoke_json(
     response = await model.ainvoke(
         [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=prompt)]
     )
+    finish_reason = (getattr(response, "response_metadata", None) or {}).get(
+        "finish_reason"
+    )
+    if finish_reason == "length":
+        raise AgentError(
+            "AGENT_OUTPUT_TRUNCATED",
+            "El modelo alcanzó el límite de salida antes de terminar el JSON. "
+            "Reduce el tamaño del apunte o aumenta AGENT_MAX_OUTPUT_TOKENS.",
+            502,
+        )
     text = strip_json_fences(_text_from_content(response.content))
     try:
         data = json.loads(text)

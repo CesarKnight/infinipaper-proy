@@ -13,7 +13,7 @@ spec.md  →  plan.md  →  tasks.md  →  implementación  →  verificación  
 - **Constitución:** principios no negociables y puertas de calidad → [`sdd/constitucion.md`](./sdd/constitucion.md).
 - **Proceso:** flujo, estados, nomenclatura y checklists → [`sdd/README.md`](./sdd/README.md).
 - **Plantillas:** `spec.md`, `plan.md` y `tasks.md` → [`sdd/plantillas/`](./sdd/plantillas/).
-- **Specs vigentes:** 12 specs que cubren todo el producto → [`sdd/specs/README.md`](./sdd/specs/README.md).
+- **Specs vigentes:** 14 specs; la `013` (sistema de diseño) y la `014` (tema de marca) están implementadas con brechas → [`sdd/specs/README.md`](./sdd/specs/README.md).
 - **Referencia transversal:** infraestructura, librerías, modelo de datos, decisiones y API → [`sdd/referencia/README.md`](./sdd/referencia/README.md).
 - **Diagramas:** casos de uso, clases, paquetes, C4 y una secuencia por spec → [`sdd/diagramas/README.md`](./sdd/diagramas/README.md).
 - **Scaffold:** `./docs/sdd/nueva-spec.sh <slug>` crea una spec nueva con las tres plantillas.
@@ -112,6 +112,8 @@ Entorno local para desarrollar; la infraestructura puede ir en Docker (ver sigui
 ```
 infinipaper-proy/
 ├── docs/                  # especificaciones y guías
+├── infinipaper-design/    # mockups de referencia del brand board v2
+├── infinipaper-design-system/ # tokens, assets y guías de marca
 ├── infinipaper-backend/   # NestJS + Prisma 7 (API)
 │   ├── prisma/            # schema y migraciones
 │   └── src/modules/       # auth, users, projects, folders, resources, ...
@@ -142,7 +144,7 @@ cd ../infinipaper-agents  && cp .env.example .env
 ```
 
 - Backend: `DATABASE_URL`, `S3_*`, `ASR_URL`, `PORT`, `AGENT_*`.
-- Frontend: `API_URL` (destino de los rewrites de `/api/*`).
+- Frontend: `API_URL` (destino de los rewrites de `/api/*`) y `NEXT_PUBLIC_SITE_URL` (opcional, para metadatos sociales; fallback `http://localhost:3000`).
 - Agents: `AGENT_SERVICE_TOKEN`, `MODEL_*`, `AGENT_*`.
 
 **Scripts del backend** (`infinipaper-backend/`)
@@ -291,6 +293,8 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 | `010` | [Transcripción de audio](./sdd/specs/010-transcripcion/spec.md) | Implementada con brechas |
 | `011` | [Dashboard personal](./sdd/specs/011-dashboard/spec.md) | Implementada con brechas |
 | `012` | [Estructuración de apuntes con IA](./sdd/specs/012-estructuracion-apuntes-ia/spec.md) | Implementada con brechas |
+| `013` | [Sistema de diseño](./sdd/specs/013-sistema-diseno/spec.md) | Implementada con brechas |
+| `014` | [Tema de marca en el frontend](./sdd/specs/014-tema-marca-frontend/spec.md) | Implementada con brechas |
 
 ## Referencia transversal
 
@@ -306,11 +310,12 @@ Abre http://localhost:3000 y regístrate (no hay seed). El navegador pide `/api/
 | [`sdd/referencia/api.md`](./sdd/referencia/api.md) | Convenciones de API, errores y paginación |
 | [`sdd/diagramas/README.md`](./sdd/diagramas/README.md) | Casos de uso, clases, paquetes, C4 y secuencias por spec |
 | [`sdd/ea/README.md`](./sdd/ea/README.md) | Modelo formal y script de importación para Enterprise Architect |
+| [`../infinipaper-design-system/README.md`](../infinipaper-design-system/README.md) | Sistema de diseño: tokens, colores, tipografía, logos e iconos |
 | [`../infinipaper-agents/README.md`](../infinipaper-agents/README.md) | Servicio FastAPI + LangGraph: configuración, contrato y pruebas |
 
 ## Estado del proyecto
 
-Las 12 specs están implementadas y el proyecto compila y pasa lint. La spec 012 (estructuración con IA) está implementada con un servicio FastAPI + LangGraph y validada con un agente mockeado. Cada spec registra sus brechas funcionales en `G-*`; la deuda transversal principal es la ausencia de tests automatizados específicos, que se irá cerrando con nuevas tareas.
+Las 14 specs están implementadas; varias registran brechas en `G-*`, incluidas la `013` (sistema de diseño) y la `014` (tema de marca en el frontend). El proyecto compila y pasa lint. La spec 012 (estructuración con IA) está implementada con un servicio FastAPI + LangGraph y validada con un agente mockeado. La deuda transversal principal es la ausencia de tests automatizados específicos, que se irá cerrando con nuevas tareas.
 
 **Verificado en este entorno:**
 

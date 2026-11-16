@@ -44,8 +44,8 @@ class Settings(BaseSettings):
     )
 
     max_input_chars: int = Field(120_000, alias="AGENT_MAX_INPUT_CHARS")
-    max_output_tokens: int = Field(8_000, alias="AGENT_MAX_OUTPUT_TOKENS")
-    request_timeout_seconds: int = Field(120, alias="AGENT_TIMEOUT_SECONDS")
+    max_output_tokens: int = Field(24_000, alias="AGENT_MAX_OUTPUT_TOKENS")
+    request_timeout_seconds: int = Field(300, alias="AGENT_TIMEOUT_SECONDS")
     max_retries: int = Field(1, alias="AGENT_MAX_RETRIES")
     prompt_version: str = Field("note-structurer/v1", alias="AGENT_PROMPT_VERSION")
 

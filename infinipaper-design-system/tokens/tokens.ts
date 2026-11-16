@@ -1,0 +1,217 @@
+/**
+ * Infinipaper Design System · tokens tipados
+ * Mantén este archivo sincronizado con design-tokens.json y tokens.css.
+ */
+
+export const primitives = {
+  paper: "#FAF6EE",
+  paperRaised: "#FFFFFF",
+  paperSunken: "#F3ECDD",
+  ink: "#1B1633",
+  muted: "#5B5575",
+  border: "#E6DECF",
+  indigo: "#4B2EA3",
+  indigoSoft: "#E9E2FA",
+  coral: "#FF6B57",
+  fadeIndigo: "#4B2EA3",
+  fadeMagenta: "#A1349F",
+  fadeCoral: "#F0504F",
+  iconTop: "#FDFAF3",
+  iconBottom: "#F3ECDD",
+  night: "#0C052C",
+  surface: "#291054",
+  surface2: "#3B2A6E",
+  white: "#FFFFFF",
+  secondaryText: "#C9B6E6",
+  violet: "#A98BFF",
+  amber: "#FFB84D",
+  night1: "#4A3470",
+  night2: "#291054",
+  night3: "#1E0B46",
+  night4: "#0F0630",
+  iosTintedBg: "#2C2C2E",
+  iosTintedFg: "#E5E5EA",
+  success: "#1F7A4D",
+  warning: "#B45309",
+  danger: "#B3261E",
+} as const;
+
+export const colors = {
+  light: {
+    background: "#FAF6EE",
+    foreground: "#1B1633",
+    card: "#FFFFFF",
+    cardForeground: "#1B1633",
+    popover: "#FFFFFF",
+    popoverForeground: "#1B1633",
+    primary: "#4B2EA3",
+    primaryForeground: "#FFFFFF",
+    secondary: "#E9E2FA",
+    secondaryForeground: "#4B2EA3",
+    muted: "#F3ECDD",
+    mutedForeground: "#5B5575",
+    accent: "#FF6B57",
+    accentForeground: "#1B1633",
+    destructive: "#B3261E",
+    destructiveForeground: "#FFFFFF",
+    success: "#1F7A4D",
+    successForeground: "#FFFFFF",
+    warning: "#B45309",
+    warningForeground: "#FFFFFF",
+    border: "#E6DECF",
+    input: "#E6DECF",
+    ring: "#4B2EA3",
+    chart: ["#4B2EA3", "#A1349F", "#F0504F", "#B45309", "#5B5575"],
+    sidebar: "#F3ECDD",
+    sidebarForeground: "#1B1633",
+    sidebarPrimary: "#4B2EA3",
+    sidebarPrimaryForeground: "#FFFFFF",
+    sidebarAccent: "#E9E2FA",
+    sidebarAccentForeground: "#4B2EA3",
+    sidebarBorder: "#E6DECF",
+    sidebarRing: "#4B2EA3",
+  },
+  dark: {
+    background: "#0C052C",
+    foreground: "#FFFFFF",
+    card: "#291054",
+    cardForeground: "#FFFFFF",
+    popover: "#291054",
+    popoverForeground: "#FFFFFF",
+    primary: "#A98BFF",
+    primaryForeground: "#0C052C",
+    secondary: "#3B2A6E",
+    secondaryForeground: "#FFFFFF",
+    muted: "#1E0B46",
+    mutedForeground: "#C9B6E6",
+    accent: "#FFB84D",
+    accentForeground: "#0C052C",
+    destructive: "#FF8A80",
+    destructiveForeground: "#0C052C",
+    success: "#6EE7B7",
+    successForeground: "#0C052C",
+    warning: "#FFB84D",
+    warningForeground: "#0C052C",
+    border: "#3B2A6E",
+    input: "#3B2A6E",
+    ring: "#A98BFF",
+    chart: ["#A98BFF", "#C9B6E6", "#FFB84D", "#FF8A80", "#FFFFFF"],
+    sidebar: "#0C052C",
+    sidebarForeground: "#FFFFFF",
+    sidebarPrimary: "#A98BFF",
+    sidebarPrimaryForeground: "#0C052C",
+    sidebarAccent: "#291054",
+    sidebarAccentForeground: "#FFFFFF",
+    sidebarBorder: "#3B2A6E",
+    sidebarRing: "#A98BFF",
+  },
+} as const;
+
+export const typography = {
+  families: {
+    sans: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+    heading: 'Fraunces, ui-serif, Georgia, Cambria, "Times New Roman", serif',
+    mono: 'Geist Mono, ui-monospace, SFMono-Regular, Menlo, monospace',
+  },
+  scale: {
+    display: { size: "64px", lineHeight: 1.1, weight: 600, tracking: "-0.01em" },
+    heading: { size: "30px", lineHeight: 1.2, weight: 600 },
+    subheading: { size: "20px", lineHeight: 1.3, weight: 600 },
+    body: { size: "16px", lineHeight: 1.5, weight: 400 },
+    label: {
+      size: "12px",
+      lineHeight: 1.4,
+      weight: 600,
+      tracking: "0.08em",
+      transform: "uppercase",
+    },
+    ui: { size: "15px", lineHeight: 1.4, weight: 600 },
+    small: { size: "14px", lineHeight: 1.5, weight: 400 },
+  },
+} as const;
+
+export const spacing = {
+  base: "4px",
+  scale: {
+    1: "4px",
+    2: "8px",
+    3: "12px",
+    4: "16px",
+    5: "20px",
+    6: "24px",
+    8: "32px",
+    10: "40px",
+    12: "48px",
+    16: "64px",
+    20: "80px",
+    24: "96px",
+  },
+  layout: {
+    pagePadding: "64px",
+    sectionGap: "48px",
+    cardGap: "32px",
+    controlGap: "12px",
+    touchTarget: "44px",
+  },
+} as const;
+
+export const radius = {
+  sm: "8px",
+  md: "12px",
+  lg: "16px",
+  xl: "20px",
+  "2xl": "22px",
+  pill: "9999px",
+} as const;
+
+export const shadows = {
+  sm: "0 1px 2px rgba(27, 22, 51, 0.06)",
+  md: "0 2px 8px rgba(27, 22, 51, 0.08)",
+  lg: "0 12px 32px rgba(27, 22, 51, 0.12)",
+  darkSm: "0 1px 2px rgba(0, 0, 0, 0.35)",
+  darkMd: "0 2px 10px rgba(0, 0, 0, 0.45)",
+  darkLg: "0 16px 40px rgba(0, 0, 0, 0.55)",
+} as const;
+
+export const motion = {
+  duration: {
+    fast: "150ms",
+    base: "200ms",
+    slow: "250ms",
+    slower: "400ms",
+  },
+  easing: {
+    standard: "cubic-bezier(0.2, 0, 0, 1)",
+    emphasized: "cubic-bezier(0.2, 0, 0, 1.2)",
+  },
+} as const;
+
+export const contrast = {
+  light: {
+    foregroundBackground: 16.11,
+    mutedForegroundBackground: 6.49,
+    primaryBackground: 8.78,
+    primaryForegroundPrimary: 9.46,
+    secondaryForegroundSecondary: 7.54,
+    mutedForegroundMuted: 5.95,
+    accentForegroundAccent: 6.2,
+    destructiveForegroundDestructive: 6.54,
+    successForegroundSuccess: 5.32,
+    warningForegroundWarning: 5.02,
+  },
+  dark: {
+    foregroundBackground: 19.56,
+    mutedForegroundBackground: 10.54,
+    primaryBackground: 7.29,
+    primaryForegroundPrimary: 7.29,
+    secondaryForegroundSecondary: 12.05,
+    mutedForegroundMuted: 9.5,
+    accentForegroundAccent: 11.38,
+    destructiveForegroundDestructive: 8.57,
+    successForegroundSuccess: 12.83,
+    warningForegroundWarning: 11.38,
+  },
+} as const;
+
+export type ThemeName = keyof typeof colors;
+export type ThemeColors = (typeof colors)[ThemeName];

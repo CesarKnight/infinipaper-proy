@@ -1,0 +1,211 @@
+/* ==========================================================================
+ * Infinipaper Design System · tokens
+ * Fuente: brand board v2 (Paper & Ink / Midnight Study)
+ * Uso: importa este archivo antes de tailwind.css.
+ * ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Primitivos de marca */
+  --ds-paper: #faf6ee;
+  --ds-paper-raised: #ffffff;
+  --ds-paper-sunken: #f3ecdd;
+  --ds-ink: #1b1633;
+  --ds-muted: #5b5575;
+  --ds-border: #e6decf;
+  --ds-indigo: #4b2ea3;
+  --ds-indigo-soft: #e9e2fa;
+  --ds-coral: #ff6b57;
+  --ds-fade-indigo: #4b2ea3;
+  --ds-fade-magenta: #a1349f;
+  --ds-fade-coral: #f0504f;
+  --ds-icon-top: #fdfaf3;
+  --ds-icon-bottom: #f3ecdd;
+
+  --ds-night: #0c052c;
+  --ds-surface: #291054;
+  --ds-surface-2: #3b2a6e;
+  --ds-white: #ffffff;
+  --ds-secondary-text: #c9b6e6;
+  --ds-violet: #a98bff;
+  --ds-amber: #ffb84d;
+  --ds-night-1: #4a3470;
+  --ds-night-2: #291054;
+  --ds-night-3: #1e0b46;
+  --ds-night-4: #0f0630;
+  --ds-ios-tinted-bg: #2c2c2e;
+  --ds-ios-tinted-fg: #e5e5ea;
+
+  /* Estados derivados (el board no los define; ver G-03) */
+  --ds-success: #1f7a4d;
+  --ds-warning: #b45309;
+  --ds-danger: #b3261e;
+
+  /* Tipografía */
+  --ds-font-sans: "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --ds-font-heading: "Fraunces", ui-serif, Georgia, Cambria,
+    "Times New Roman", serif;
+  --ds-font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  --ds-text-display: 4rem;      /* 64px */
+  --ds-text-heading: 1.875rem;  /* 30px */
+  --ds-text-subheading: 1.25rem; /* 20px */
+  --ds-text-body: 1rem;         /* 16px */
+  --ds-text-ui: 0.9375rem;      /* 15px */
+  --ds-text-small: 0.875rem;    /* 14px */
+  --ds-text-label: 0.75rem;     /* 12px */
+  --ds-leading-display: 1.1;
+  --ds-leading-heading: 1.2;
+  --ds-leading-subheading: 1.3;
+  --ds-leading-body: 1.5;
+  --ds-leading-label: 1.4;
+  --ds-tracking-tight: -0.01em;
+  --ds-tracking-label: 0.08em;
+
+  /* Espaciado y layout */
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-5: 1.25rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+  --ds-space-10: 2.5rem;
+  --ds-space-12: 3rem;
+  --ds-space-16: 4rem;
+  --ds-space-20: 5rem;
+  --ds-space-24: 6rem;
+  --ds-page-padding: 4rem;
+  --ds-section-gap: 3rem;
+  --ds-card-gap: 2rem;
+  --ds-control-gap: 0.75rem;
+  --ds-touch-target: 2.75rem; /* 44px */
+
+  /* Radios */
+  --ds-radius-sm: 0.5rem;   /* 8px */
+  --ds-radius-md: 0.75rem;  /* 12px */
+  --ds-radius-lg: 1rem;     /* 16px */
+  --ds-radius-xl: 1.25rem;  /* 20px */
+  --ds-radius-2xl: 1.375rem; /* 22px */
+  --ds-radius-pill: 9999px;
+
+  /* Sombras (derivadas; el board no las especifica) */
+  --ds-shadow-sm: 0 1px 2px rgb(27 22 51 / 0.06);
+  --ds-shadow-md: 0 2px 8px rgb(27 22 51 / 0.08);
+  --ds-shadow-lg: 0 12px 32px rgb(27 22 51 / 0.12);
+
+  /* Movimiento (derivado) */
+  --ds-duration-fast: 150ms;
+  --ds-duration-base: 200ms;
+  --ds-duration-slow: 250ms;
+  --ds-duration-slower: 400ms;
+  --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ds-ease-emphasized: cubic-bezier(0.2, 0, 0, 1.2);
+
+  /* Foco */
+  --ds-focus-width: 2px;
+  --ds-focus-offset: 2px;
+
+  /* Semánticos shadcn/Base UI · Paper & Ink */
+  --background: #faf6ee;
+  --foreground: #1b1633;
+  --card: #ffffff;
+  --card-foreground: #1b1633;
+  --popover: #ffffff;
+  --popover-foreground: #1b1633;
+  --primary: #4b2ea3;
+  --primary-foreground: #ffffff;
+  --secondary: #e9e2fa;
+  --secondary-foreground: #4b2ea3;
+  --muted: #f3ecdd;
+  --muted-foreground: #5b5575;
+  --accent: #ff6b57;
+  --accent-foreground: #1b1633;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --success: #1f7a4d;
+  --success-foreground: #ffffff;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --border: #e6decf;
+  --input: #e6decf;
+  --ring: #4b2ea3;
+
+  --chart-1: #4b2ea3;
+  --chart-2: #a1349f;
+  --chart-3: #f0504f;
+  --chart-4: #b45309;
+  --chart-5: #5b5575;
+
+  --sidebar: #f3ecdd;
+  --sidebar-foreground: #1b1633;
+  --sidebar-primary: #4b2ea3;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e9e2fa;
+  --sidebar-accent-foreground: #4b2ea3;
+  --sidebar-border: #e6decf;
+  --sidebar-ring: #4b2ea3;
+
+  --radius: 0.75rem;
+}
+
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Semánticos shadcn/Base UI · Midnight Study */
+  --background: #0c052c;
+  --foreground: #ffffff;
+  --card: #291054;
+  --card-foreground: #ffffff;
+  --popover: #291054;
+  --popover-foreground: #ffffff;
+  --primary: #a98bff;
+  --primary-foreground: #0c052c;
+  --secondary: #3b2a6e;
+  --secondary-foreground: #ffffff;
+  --muted: #1e0b46;
+  --muted-foreground: #c9b6e6;
+  --accent: #ffb84d;
+  --accent-foreground: #0c052c;
+  --destructive: #ff8a80;
+  --destructive-foreground: #0c052c;
+  --success: #6ee7b7;
+  --success-foreground: #0c052c;
+  --warning: #ffb84d;
+  --warning-foreground: #0c052c;
+  --border: #3b2a6e;
+  --input: #3b2a6e;
+  --ring: #a98bff;
+
+  --chart-1: #a98bff;
+  --chart-2: #c9b6e6;
+  --chart-3: #ffb84d;
+  --chart-4: #ff8a80;
+  --chart-5: #ffffff;
+
+  --sidebar: #0c052c;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #a98bff;
+  --sidebar-primary-foreground: #0c052c;
+  --sidebar-accent: #291054;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3b2a6e;
+  --sidebar-ring: #a98bff;
+
+  --ds-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
+  --ds-shadow-md: 0 2px 10px rgb(0 0 0 / 0.45);
+  --ds-shadow-lg: 0 16px 40px rgb(0 0 0 / 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-duration-fast: 0ms;
+    --ds-duration-base: 0ms;
+    --ds-duration-slow: 0ms;
+    --ds-duration-slower: 0ms;
+  }
+}

@@ -328,6 +328,7 @@ Relaciones inversas en `User` y `Resource`.
 | Nombre duplicado | Rechazar | `FILE_NAME_TAKEN` · 409 |
 | Timeout del agente | Job `FAILED` | `AGENT_TIMEOUT` |
 | Límite del proveedor | Job `FAILED` | `AGENT_RATE_LIMITED` · 429 |
+| Salida truncada por límite de tokens | Job `FAILED` | `AGENT_OUTPUT_TRUNCATED` · 502 |
 | Error del proveedor | Job `FAILED` | `AGENT_PROVIDER_ERROR` |
 | Salida inválida | Job `FAILED` o warnings | `AGENT_INVALID_OUTPUT` |
 | Checksum distinto | Job `FAILED` | `SOURCE_CHANGED` |
@@ -354,7 +355,7 @@ Relaciones inversas en `User` y `Resource`.
 | G-01 | v1 solo soporta Markdown. | PDF, imágenes, audio, video y web quedan para fases posteriores. | `T-070` |
 | G-02 | Sin checkpointer persistente. | Un reinicio del servicio pierde el estado interno del grafo; NestJS reintenta el job. | `T-071` |
 | G-03 | Sin búsqueda de imágenes relacionadas. | El contexto se limita a las fuentes entregadas. | `T-072` |
-| G-04 | Bedrock devuelve `ThrottlingException` porque la cuota diaria de tokens es `0`; la clave local de OpenCode Go está expirada. | La estructuración real no puede completarse hasta aprovisionar cuota o una clave válida. | `T-057` |
+| G-04 | Bedrock devuelve `ThrottlingException` porque la cuota diaria de tokens es `0`. OpenCode Go funciona con una clave válida. | Bedrock no es usable en esta cuenta; OpenCode Go es la alternativa operativa. | `T-057` |
 
 ## 14. Evidencia de validación
 
@@ -370,4 +371,5 @@ Relaciones inversas en `User` y `Resource`.
 | CA-12 | E2E con `AGENT_STRUCTURING_ENABLED=false`: `/config` devuelve `false` y `POST /files/:id/structure` responde 503 `AGENT_STRUCTURING_DISABLED`. | 2026-11-12 |
 | CA-13 | Timeout cubierto por test unitario: `AGENT_TIMEOUT` con HTTP 504. | 2026-11-12 |
 | CA-13 / RNF-05 | E2E real con Bedrock: job `FAILED` con `AGENT_RATE_LIMITED`, original intacto y sin recurso resultado. | 2026-11-12 |
+| CA-13 / OpenCode Go | E2E con apunte de 21.7 KB: job `DONE`, resultado de 19 871 caracteres, 16 182 tokens de salida, original intacto y `Cosa-estructurado.md` creado al aplicar. | 2026-11-14 |
 | RNF-04 | Factory de proveedor validada con tests para OpenAI-compatible, AWS Bedrock y OpenCode Go. | 2026-11-12 |

@@ -2,9 +2,12 @@ import json
 
 import pytest
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
+from langchain_core.messages import AIMessage
 
 from infinipaper_agents.config import Settings
+from infinipaper_agents.errors import AgentError
 from infinipaper_agents.graph.builder import build_graph
+from infinipaper_agents.graph.nodes import _invoke_json
 from infinipaper_agents.schemas import (
     Context,
     ExtractedDocument,
@@ -102,6 +105,21 @@ async def test_graph_structures_markdown() -> None:
     usage = final.get("usage")
     assert usage is not None
     assert usage.input_tokens >= 0
+
+
+class TruncatedModel:
+    async def ainvoke(self, _messages: object) -> AIMessage:
+        return AIMessage(
+            content='{"sections": [',
+            response_metadata={"finish_reason": "length"},
+        )
+
+
+@pytest.mark.asyncio
+async def test_invoke_json_rejects_truncated_output() -> None:
+    with pytest.raises(AgentError) as exc:
+        await _invoke_json(TruncatedModel(), "prompt", _settings())  # type: ignore[arg-type]
+    assert exc.value.code == "AGENT_OUTPUT_TRUNCATED"
 
 
 @pytest.mark.asyncio

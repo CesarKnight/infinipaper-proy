@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -34,9 +35,22 @@ export function AppHeader() {
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4">
         <Link href="/" className="flex items-center gap-2 font-heading font-semibold">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            I
-          </span>
+          <Image
+            src="/brand/mark.svg"
+            alt=""
+            width={34}
+            height={32}
+            unoptimized
+            className="h-8 w-auto dark:hidden"
+          />
+          <Image
+            src="/brand/mark-dark.svg"
+            alt=""
+            width={34}
+            height={32}
+            unoptimized
+            className="hidden h-8 w-auto dark:block"
+          />
           Infinipaper
         </Link>
 

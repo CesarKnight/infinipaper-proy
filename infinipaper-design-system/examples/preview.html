@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infinipaper · Sistema de diseño</title>
+<link rel="icon" href="../assets/web/favicon.svg" type="image/svg+xml">
+<style>
+  @import url("../tokens/tokens.css");
+
+  @font-face {
+    font-family: "Inter";
+    src: url("../assets/fonts/Inter-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Inter";
+    src: url("../assets/fonts/Inter-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Inter";
+    src: url("../assets/fonts/Inter-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Fraunces";
+    src: url("../assets/fonts/Fraunces-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-display: swap;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font: 400 16px/1.5 var(--ds-font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--ds-font-heading); font-weight: 600; margin: 0; }
+  h1 { font-size: 40px; line-height: 1.1; letter-spacing: -0.01em; }
+  h2 { font-size: 30px; line-height: 1.2; margin-top: 8px; }
+  h3 { font-size: 20px; line-height: 1.3; }
+  p { margin: 8px 0 0; }
+  code, pre { font-family: var(--ds-font-mono); }
+  code { background: var(--muted); border-radius: 4px; padding: 1px 4px; font-size: 0.85em; }
+  pre {
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--ds-radius-lg);
+    padding: 16px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 48px 24px 80px; }
+  .hero {
+    display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+    padding-bottom: 32px; border-bottom: 1px solid var(--border);
+  }
+  .hero img { width: min(420px, 80vw); height: auto; }
+  .hero .meta { color: var(--muted-foreground); font-size: 14px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  section { margin-top: 56px; }
+  .section-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .section-head p { color: var(--muted-foreground); font-size: 14px; }
+  .grid { display: grid; gap: 20px; margin-top: 20px; }
+  .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (max-width: 860px) {
+    .cols-2, .cols-3, .cols-4 { grid-template-columns: 1fr; }
+  }
+  .panel {
+    border-radius: var(--ds-radius-xl);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--foreground);
+    padding: 24px;
+  }
+  .panel.dark { border-color: var(--border); }
+  .panel h3 { margin-bottom: 4px; }
+  .panel .sub { color: var(--muted-foreground); font-size: 14px; }
+  .swatches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+  @media (max-width: 720px) { .swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .swatch { min-width: 0; }
+  .swatch .chip {
+    height: 64px; border-radius: var(--ds-radius-md); border: 1px solid var(--border);
+  }
+  .swatch b { display: block; font-size: 12px; margin-top: 8px; }
+  .swatch span { display: block; font-size: 11px; color: var(--muted-foreground); font-family: var(--ds-font-mono); }
+  .sample {
+    background: var(--card); color: var(--card-foreground);
+    border: 1px solid var(--border); border-radius: var(--ds-radius-lg);
+    padding: 20px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .sample .title { font: 600 22px/1.2 var(--ds-font-heading); }
+  .sample .meta { color: var(--muted-foreground); font-size: 14px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 10px;
+    background: var(--secondary); color: var(--secondary-foreground);
+  }
+  .badge.accent { background: var(--accent); color: var(--accent-foreground); }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    min-height: 44px; padding: 0 20px; border-radius: var(--ds-radius-md);
+    font: 600 15px/1 var(--ds-font-sans); border: 0; cursor: pointer;
+    background: var(--primary); color: var(--primary-foreground);
+  }
+  .btn.secondary {
+    background: transparent; color: var(--primary); border: 1.5px solid var(--primary);
+  }
+  .btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  .type-row { display: flex; align-items: baseline; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .type-row:last-child { border-bottom: 0; }
+  .type-row .name { width: 120px; color: var(--muted-foreground); font-size: 12px; font-family: var(--ds-font-mono); }
+  .display { font: 600 64px/1.1 var(--ds-font-heading); letter-spacing: -0.01em; }
+  .heading { font: 600 30px/1.2 var(--ds-font-heading); }
+  .subheading { font: 600 20px/1.3 var(--ds-font-heading); }
+  .body { font: 400 16px/1.5 var(--ds-font-sans); }
+  .label { font: 600 12px/1.4 var(--ds-font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+  .logos { display: grid; gap: 20px; }
+  .logo-box {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 160px; border-radius: var(--ds-radius-xl); padding: 24px;
+    background: var(--ds-paper); border: 1px solid var(--ds-border);
+  }
+  .logo-box.dark { background: var(--ds-night); border-color: var(--ds-surface-2); }
+  .logo-box img { max-width: 100%; height: auto; }
+  .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; margin-top: 20px; }
+  .icon-card {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 18px 12px; border: 1px solid var(--border); border-radius: var(--ds-radius-lg);
+    background: var(--card);
+  }
+  .icon-card .label { color: var(--muted-foreground); font-size: 11px; text-align: center; }
+  .icon-card img { display: block; }
+  .android {
+    position: relative; width: 108px; height: 108px; overflow: hidden;
+    border-radius: 24px; background: var(--ds-paper-sunken);
+  }
+  .android img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .android.round { border-radius: 50%; }
+  .android.circle-mask { border-radius: 36%; }
+  .android.square-mask { border-radius: 22%; }
+  .dark-zone { background: var(--ds-night); border-color: var(--ds-surface-2); }
+  .dark-zone .label, .dark-zone .sub { color: var(--ds-secondary-text); }
+  .rule { height: 1px; background: var(--border); margin: 24px 0; }
+  .token-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .token-table th, .token-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .token-table th { color: var(--muted-foreground); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .token-table td code { background: transparent; padding: 0; }
+  .note { font-size: 13px; color: var(--muted-foreground); }
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <img src="../assets/logos/lockup-horizontal-light.svg" alt="infinipaper">
+    <div>
+      <div class="eyebrow">Brand board v2 · Sistema de diseño</div>
+      <h1>Paper &amp; Ink / Midnight Study</h1>
+      <p class="meta">Tokens, tipografía, logos e iconos listos para web, Android e iOS.</p>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <h2>Color</h2>
+      <p>Los valores y contrastes viven en <code>docs/02-color.md</code>.</p>
+    </div>
+    <div class="grid cols-2">
+      <div class="panel">
+        <div class="eyebrow">Light mode</div>
+        <h3>Paper &amp; Ink</h3>
+        <p class="sub">Papel cálido, tinta profunda, índigo y coral.</p>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#FAF6EE"></div><b>Paper</b><span>#FAF6EE</span></div>
+          <div class="swatch"><div class="chip" style="background:#FFFFFF"></div><b>Raised</b><span>#FFFFFF</span></div>
+          <div class="swatch"><div class="chip" style="background:#F3ECDD"></div><b>Sunken</b><span>#F3ECDD</span></div>
+          <div class="swatch"><div class="chip" style="background:#1B1633"></div><b>Ink</b><span>#1B1633</span></div>
+          <div class="swatch"><div class="chip" style="background:#5B5575"></div><b>Muted</b><span>#5B5575</span></div>
+          <div class="swatch"><div class="chip" style="background:#4B2EA3"></div><b>Indigo</b><span>#4B2EA3</span></div>
+          <div class="swatch"><div class="chip" style="background:#E9E2FA"></div><b>Indigo soft</b><span>#E9E2FA</span></div>
+          <div class="swatch"><div class="chip" style="background:#FF6B57"></div><b>Coral</b><span>#FF6B57</span></div>
+          <div class="swatch"><div class="chip" style="background:linear-gradient(135deg,#4B2EA3,#A1349F 55%,#F0504F)"></div><b>Fade</b><span>#4B2EA3 → #F0504F</span></div>
+          <div class="swatch"><div class="chip" style="background:#E6DECF"></div><b>Border</b><span>#E6DECF</span></div>
+        </div>
+      </div>
+      <div class="panel dark">
+        <div class="eyebrow">Dark mode</div>
+        <h3>Midnight Study</h3>
+        <p class="sub">Noche profunda, superficies violeta, violeta y ámbar.</p>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#0C052C"></div><b>Night</b><span>#0C052C</span></div>
+          <div class="swatch"><div class="chip" style="background:#291054"></div><b>Surface</b><span>#291054</span></div>
+          <div class="swatch"><div class="chip" style="background:#3B2A6E"></div><b>Surface 2</b><span>#3B2A6E</span></div>
+          <div class="swatch"><div class="chip" style="background:#FFFFFF"></div><b>White</b><span>#FFFFFF</span></div>
+          <div class="swatch"><div class="chip" style="background:#C9B6E6"></div><b>Secondary</b><span>#C9B6E6</span></div>
+          <div class="swatch"><div class="chip" style="background:#A98BFF"></div><b>Violet</b><span>#A98BFF</span></div>
+          <div class="swatch"><div class="chip" style="background:#FFB84D"></div><b>Amber</b><span>#FFB84D</span></div>
+          <div class="swatch"><div class="chip" style="background:linear-gradient(180deg,#4A3470,#291054 14%,#1E0B46 55%,#0F0630)"></div><b>Icon fade</b><span>#4A3470 → #0F0630</span></div>
+          <div class="swatch"><div class="chip" style="background:#FF8A80"></div><b>Danger</b><span>#FF8A80</span></div>
+          <div class="swatch"><div class="chip" style="background:#6EE7B7"></div><b>Success</b><span>#6EE7B7</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Tipografía</h2>
+      <p>Fraunces 600 para títulos; Inter 400/500/600 para interfaz.</p>
+    </div>
+    <div class="panel" style="margin-top:20px">
+      <div class="type-row"><span class="name">display</span><span class="display">Cell Biology, Unit 3</span></div>
+      <div class="type-row"><span class="name">heading</span><span class="heading">Cell Biology, Unit 3</span></div>
+      <div class="type-row"><span class="name">subheading</span><span class="subheading">Cell Biology, Unit 3</span></div>
+      <div class="type-row"><span class="name">body</span><span class="body">Collect sources once, then let agents compact them.</span></div>
+      <div class="type-row"><span class="name">label</span><span class="label">Flashcards · 14 sources</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Controles</h2>
+      <p>El coral es relleno, nunca texto de cuerpo.</p>
+    </div>
+    <div class="grid cols-2">
+      <div class="panel">
+        <div class="sample">
+          <div class="title">Cell Biology, Unit 3</div>
+          <div class="meta">14 sources · 3 contributors</div>
+          <div class="badges"><span class="badge">Notes</span><span class="badge accent">Flashcards</span></div>
+          <div class="actions">
+            <button class="btn">Generate flashcards</button>
+            <button class="btn secondary">Invite</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel dark">
+        <div class="sample">
+          <div class="title">Cell Biology, Unit 3</div>
+          <div class="meta">14 sources · 3 contributors</div>
+          <div class="badges"><span class="badge">Notes</span><span class="badge accent">Flashcards</span></div>
+          <div class="actions">
+            <button class="btn">Generate flashcards</button>
+            <button class="btn secondary">Invite</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Logos</h2>
+      <p>Lockups horizontal y vertical, claro y oscuro.</p>
+    </div>
+    <div class="grid cols-2">
+      <div class="logo-box"><img src="../assets/logos/lockup-horizontal-light.svg" alt="Lockup horizontal claro"></div>
+      <div class="logo-box dark"><img src="../assets/logos/lockup-horizontal-dark.svg" alt="Lockup horizontal oscuro"></div>
+      <div class="logo-box"><img src="../assets/logos/lockup-stacked-light.svg" alt="Lockup vertical claro" style="max-height:220px"></div>
+      <div class="logo-box dark"><img src="../assets/logos/lockup-stacked-dark.svg" alt="Lockup vertical oscuro" style="max-height:220px"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Iconos de app</h2>
+      <p>Android adaptive, iOS 1024 y web. Los PNG se generan desde SVG.</p>
+    </div>
+    <div class="icon-grid">
+      <div class="icon-card"><img src="../assets/app-icons/ios/AppIcon-1024-light.png" alt="iOS claro" width="108" height="108" style="border-radius:24px"><span class="label">iOS claro</span></div>
+      <div class="icon-card"><img src="../assets/app-icons/ios/AppIcon-1024-dark.png" alt="iOS oscuro" width="108" height="108" style="border-radius:24px"><span class="label">iOS oscuro</span></div>
+      <div class="icon-card"><img src="../assets/app-icons/ios/AppIcon-1024-tinted.png" alt="iOS tintado" width="108" height="108" style="border-radius:24px"><span class="label">iOS tintado</span></div>
+      <div class="icon-card">
+        <div class="android"><img src="../assets/app-icons/android/res/drawable-mdpi/ic_launcher_background.png" alt=""><img src="../assets/app-icons/android/res/drawable-mdpi/ic_launcher_foreground.png" alt=""></div>
+        <span class="label">Android adaptive</span>
+      </div>
+      <div class="icon-card"><img src="../assets/app-icons/android/res/mipmap-xxxhdpi/ic_launcher.png" alt="Android legacy" width="108" height="108" style="border-radius:24px"><span class="label">Android legacy</span></div>
+      <div class="icon-card"><img src="../assets/app-icons/android/res/mipmap-xxxhdpi/ic_launcher_round.png" alt="Android redondo" width="108" height="108"><span class="label">Android redondo</span></div>
+      <div class="icon-card"><img src="../assets/web/favicon-256.png" alt="Favicon" width="96" height="96" style="border-radius:22px"><span class="label">Favicon (mini)</span></div>
+      <div class="icon-card"><img src="../assets/web/apple-touch-icon-180.png" alt="Apple Touch" width="96" height="96" style="border-radius:22px"><span class="label">Apple Touch</span></div>
+      <div class="icon-card"><img src="../assets/web/icon-192.png" alt="PWA" width="96" height="96" style="border-radius:22px"><span class="label">PWA 192</span></div>
+      <div class="icon-card"><img src="../assets/web/maskable-512.png" alt="Maskable" width="96" height="96" style="border-radius:22px"><span class="label">Maskable</span></div>
+      <div class="icon-card dark-zone"><img src="../assets/notifications/status-bar-24dp-96.png" alt="Barra de estado" width="48" height="48"><span class="label">Barra de estado</span></div>
+      <div class="icon-card dark-zone"><img src="../assets/notifications/badge-96.png" alt="Badge" width="48" height="48"><span class="label">Badge push</span></div>
+    </div>
+    <p class="note">Los iconos iOS se muestran con máscara solo en la previsualización. Los archivos reales son cuadrados y opacos.</p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Escala y tokens</h2>
+      <p>Resumen; la tabla completa está en <code>docs/04-espaciado-radios-sombras.md</code>.</p>
+    </div>
+    <div class="grid cols-2">
+      <div class="panel">
+        <table class="token-table">
+          <thead><tr><th>Token</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td><code>--ds-radius-md</code></td><td>12 px</td></tr>
+            <tr><td><code>--ds-radius-lg</code></td><td>16 px</td></tr>
+            <tr><td><code>--ds-radius-xl</code></td><td>20 px</td></tr>
+            <tr><td><code>--ds-radius-2xl</code></td><td>22 px</td></tr>
+            <tr><td><code>--ds-space-6</code></td><td>24 px</td></tr>
+            <tr><td><code>--ds-space-16</code></td><td>64 px</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <table class="token-table">
+          <thead><tr><th>Token</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td><code>--ds-text-display</code></td><td>64 px</td></tr>
+            <tr><td><code>--ds-text-heading</code></td><td>30 px</td></tr>
+            <tr><td><code>--ds-text-body</code></td><td>16 px</td></tr>
+            <tr><td><code>--ds-text-ui</code></td><td>15 px</td></tr>
+            <tr><td><code>--ds-text-label</code></td><td>12 px</td></tr>
+            <tr><td><code>--ds-touch-target</code></td><td>44 px</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <pre><code>@import "../tokens/tokens.css";
+
+.card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--ds-radius-xl);
+  padding: var(--ds-space-6);
+}</code></pre>
+  </section>
+
+  <footer>
+    Infinipaper Design System v2 · Fuente: brand board v2 · Generado para el repositorio.
+  </footer>
+</div>
+</body>
+</html>

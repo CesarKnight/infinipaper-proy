@@ -103,6 +103,8 @@ El cliente envía automáticamente:
 
 Crea la API key en <https://opencode.ai/console/account#api-keys>. Si la clave está expirada, el endpoint responde `api_key_expired`; genera una nueva.
 
+Para apuntes largos, el modelo puede agotar el límite de salida antes de cerrar el JSON. Los valores recomendados son `AGENT_MAX_OUTPUT_TOKENS=24000` y `AGENT_TIMEOUT_SECONDS=300`. Si aun así se trunca, el job falla con `AGENT_OUTPUT_TRUNCATED`; reduce el tamaño del apunte o aumenta el límite.
+
 ### AWS Bedrock
 
 ```dotenv
@@ -171,8 +173,8 @@ aws bedrock list-foundation-models --region us-east-2 \
 | `AWS_PROFILE` | Perfil de credenciales local |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` | Credenciales explícitas opcionales |
 | `AGENT_MAX_INPUT_CHARS` | Límite de entrada v1 |
-| `AGENT_MAX_OUTPUT_TOKENS` | Límite de salida |
-| `AGENT_TIMEOUT_SECONDS` | Timeout del proveedor |
+| `AGENT_MAX_OUTPUT_TOKENS` | Límite de salida (por defecto `24000`) |
+| `AGENT_TIMEOUT_SECONDS` | Timeout del proveedor (por defecto `300`) |
 | `AGENT_MAX_RETRIES` | Reintentos del nodo `repair` |
 | `AGENT_PROMPT_VERSION` | Versión de prompt registrada en el job |
 | `OTEL_ENABLED` | Reservado para instrumentación OTel |

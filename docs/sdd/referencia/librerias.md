@@ -67,6 +67,13 @@ Usa Next.js 16, React 19, shadcn/ui sobre Base UI, Tailwind v4, `lucide-react`, 
 
 `button`, `input`, `textarea`, `label`, `select`, `checkbox`, `switch`, `dialog`, `alert-dialog`, `sheet`, `dropdown-menu`, `command`, `tabs`, `breadcrumb`, `table`, `avatar`, `badge`, `card`, `alert`, `progress`, `skeleton`, `empty`, `tooltip`, `sonner`, `separator`, `accordion`, `input-group`, `carousel`.
 
+### Tipografía y sistema de diseño
+
+- **Inter** 400/500/600 para interfaz y cuerpo, y **Fraunces** 600 para títulos; ambas con `next/font/google`.
+- **Geist Mono** se mantiene para código porque el board no define una mono oficial.
+- Los tokens de color, tipografía, radios, sombras y assets viven en [`infinipaper-design-system/`](../../../infinipaper-design-system/README.md). La app aplica esos valores en `app/globals.css` (spec 014).
+- Los iconos de app, favicon, Apple Touch, PWA y Open Graph se generan desde ese sistema; no se editan a mano.
+
 ## Servicio de agentes (`infinipaper-agents`)
 
 Python 3.12+ con `uv`.

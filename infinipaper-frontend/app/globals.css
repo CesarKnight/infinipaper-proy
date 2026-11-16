@@ -5,111 +5,140 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #faf8f6;
-  --foreground: #1c1412;
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-fraunces);
+  /* Primitivos de marca (Paper & Ink) */
+  --paper: #faf6ee;
+  --paper-raised: #ffffff;
+  --paper-sunken: #f3ecdd;
+  --ink: #1b1633;
+  --muted-brand: #5b5575;
+  --border-brand: #e6decf;
+  --indigo: #4b2ea3;
+  --indigo-soft: #e9e2fa;
+  --coral: #ff6b57;
+
+  /* Primitivos de marca (Midnight Study) */
+  --night: #0c052c;
+  --surface: #291054;
+  --surface-2: #3b2a6e;
+  --secondary-text: #c9b6e6;
+  --violet: #a98bff;
+  --amber: #ffb84d;
+
+  /* Estados derivados (el board no los define; ver G-03) */
+  --success: #1f7a4d;
+  --success-foreground: #ffffff;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+
+  /* Semánticos shadcn/Base UI · Paper & Ink */
+  --background: #faf6ee;
+  --foreground: #1b1633;
   --card: #ffffff;
-  --card-foreground: #1c1412;
+  --card-foreground: #1b1633;
   --popover: #ffffff;
-  --popover-foreground: #1c1412;
-  --primary: #92400e;
+  --popover-foreground: #1b1633;
+  --primary: #4b2ea3;
   --primary-foreground: #ffffff;
-  --secondary: #fdf4ef;
-  --secondary-foreground: #6b3a1f;
-  --muted: #f2eee9;
-  --muted-foreground: #7a706a;
-  --accent: #f5dcc8;
-  --accent-foreground: #6b3a1f;
-  --destructive: #c52525;
+  --secondary: #e9e2fa;
+  --secondary-foreground: #4b2ea3;
+  --muted: #f3ecdd;
+  --muted-foreground: #5b5575;
+  --accent: #ff6b57;
+  --accent-foreground: #1b1633;
+  --destructive: #b3261e;
   --destructive-foreground: #ffffff;
-  --border: #e3dbd4;
-  --input: #e3dbd4;
-  --ring: #92400e;
-  --chart-1: #92400e;
-  --chart-2: #b45309;
-  --chart-3: #c2410c;
-  --chart-4: #a16207;
-  --chart-5: #854d0e;
-  --sidebar: #f0ece7;
-  --sidebar-foreground: #1c1412;
-  --sidebar-primary: #92400e;
+  --border: #e6decf;
+  --input: #e6decf;
+  --ring: #4b2ea3;
+
+  --chart-1: #4b2ea3;
+  --chart-2: #a1349f;
+  --chart-3: #f0504f;
+  --chart-4: #b45309;
+  --chart-5: #5b5575;
+
+  --sidebar: #f3ecdd;
+  --sidebar-foreground: #1b1633;
+  --sidebar-primary: #4b2ea3;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e8ddd1;
-  --sidebar-accent-foreground: #6b3a1f;
-  --sidebar-border: #e3dbd4;
-  --sidebar-ring: #92400e;
-  --radius: 0.5rem;
+  --sidebar-accent: #e9e2fa;
+  --sidebar-accent-foreground: #4b2ea3;
+  --sidebar-border: #e6decf;
+  --sidebar-ring: #4b2ea3;
+
+  --radius: 0.75rem;
   --shadow-x: 0;
   --shadow-y: 1px;
   --shadow-blur: 3px;
   --shadow-spread: 0px;
   --shadow-opacity: 0.06;
-  --shadow-color: #241005;
-  --shadow-2xs: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.03);
-  --shadow-xs: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.03);
-  --shadow-sm: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.06), 0 1px 2px -1px hsl(21.2903 75.6098% 8.0392% / 0.06);
-  --shadow: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.06), 0 1px 2px -1px hsl(21.2903 75.6098% 8.0392% / 0.06);
-  --shadow-md: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.06), 0 2px 4px -1px hsl(21.2903 75.6098% 8.0392% / 0.06);
-  --shadow-lg: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.06), 0 4px 6px -1px hsl(21.2903 75.6098% 8.0392% / 0.06);
-  --shadow-xl: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.06), 0 8px 10px -1px hsl(21.2903 75.6098% 8.0392% / 0.06);
-  --shadow-2xl: 0 1px 3px 0px hsl(21.2903 75.6098% 8.0392% / 0.15);
+  --shadow-color: #1b1633;
+  --shadow-2xs: 0 1px 2px 0 rgb(27 22 51 / 0.04);
+  --shadow-xs: 0 1px 2px 0 rgb(27 22 51 / 0.06);
+  --shadow-sm: 0 1px 3px 0 rgb(27 22 51 / 0.06), 0 1px 2px -1px rgb(27 22 51 / 0.06);
+  --shadow: 0 1px 3px 0 rgb(27 22 51 / 0.06), 0 1px 2px -1px rgb(27 22 51 / 0.06);
+  --shadow-md: 0 2px 8px 0 rgb(27 22 51 / 0.08), 0 2px 4px -1px rgb(27 22 51 / 0.06);
+  --shadow-lg: 0 12px 32px 0 rgb(27 22 51 / 0.12), 0 4px 6px -1px rgb(27 22 51 / 0.06);
+  --shadow-xl: 0 16px 40px 0 rgb(27 22 51 / 0.14), 0 8px 10px -1px rgb(27 22 51 / 0.08);
+  --shadow-2xl: 0 24px 64px 0 rgb(27 22 51 / 0.18);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
 
 .dark {
-  --background: #0c0908;
-  --foreground: #e3dad4;
-  --card: #141110;
-  --card-foreground: #e3dad4;
-  --popover: #100d0c;
-  --popover-foreground: #e3dad4;
-  --primary: #c2956a;
-  --primary-foreground: #1a0e04;
-  --secondary: #1c1614;
-  --secondary-foreground: #a39890;
-  --muted: #1e1816;
-  --muted-foreground: #7a706a;
-  --accent: #2a1e14;
-  --accent-foreground: #d4a574;
-  --destructive: #ef4444;
-  --destructive-foreground: #fef2f2;
-  --border: #28211c;
-  --input: #2a231d;
-  --ring: #c2956a;
-  --chart-1: #c2956a;
-  --chart-2: #d97706;
-  --chart-3: #e07a5f;
-  --chart-4: #dda15e;
-  --chart-5: #bc6c25;
-  --sidebar: #0a0807;
-  --sidebar-foreground: #d6ccc5;
-  --sidebar-primary: #c2956a;
-  --sidebar-primary-foreground: #1a0e04;
-  --sidebar-accent: #221a12;
-  --sidebar-accent-foreground: #d4a574;
-  --sidebar-border: #221c18;
-  --sidebar-ring: #c2956a;
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-fraunces);
-  --radius: 0.5rem;
+  --background: #0c052c;
+  --foreground: #ffffff;
+  --card: #291054;
+  --card-foreground: #ffffff;
+  --popover: #291054;
+  --popover-foreground: #ffffff;
+  --primary: #a98bff;
+  --primary-foreground: #0c052c;
+  --secondary: #3b2a6e;
+  --secondary-foreground: #ffffff;
+  --muted: #1e0b46;
+  --muted-foreground: #c9b6e6;
+  --accent: #ffb84d;
+  --accent-foreground: #0c052c;
+  --destructive: #ff8a80;
+  --destructive-foreground: #0c052c;
+  --success: #6ee7b7;
+  --success-foreground: #0c052c;
+  --warning: #ffb84d;
+  --warning-foreground: #0c052c;
+  --border: #3b2a6e;
+  --input: #3b2a6e;
+  --ring: #a98bff;
+
+  --chart-1: #a98bff;
+  --chart-2: #c9b6e6;
+  --chart-3: #ffb84d;
+  --chart-4: #ff8a80;
+  --chart-5: #ffffff;
+
+  --sidebar: #0c052c;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #a98bff;
+  --sidebar-primary-foreground: #0c052c;
+  --sidebar-accent: #291054;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3b2a6e;
+  --sidebar-ring: #a98bff;
+
   --shadow-x: 0;
   --shadow-y: 1px;
   --shadow-blur: 4px;
   --shadow-spread: 0px;
   --shadow-opacity: 0.4;
-  --shadow-color: #010000;
-  --shadow-2xs: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 0.20);
-  --shadow-xs: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 0.20);
-  --shadow-sm: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 0.40), 0 1px 2px -1px hsl(0 100.0000% 0.1961% / 0.40);
-  --shadow: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 0.40), 0 1px 2px -1px hsl(0 100.0000% 0.1961% / 0.40);
-  --shadow-md: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 0.40), 0 2px 4px -1px hsl(0 100.0000% 0.1961% / 0.40);
-  --shadow-lg: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 0.40), 0 4px 6px -1px hsl(0 100.0000% 0.1961% / 0.40);
-  --shadow-xl: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 0.40), 0 8px 10px -1px hsl(0 100.0000% 0.1961% / 0.40);
-  --shadow-2xl: 0 1px 4px 0px hsl(0 100.0000% 0.1961% / 1.00);
+  --shadow-color: #000000;
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.20);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.30);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.35), 0 1px 2px -1px rgb(0 0 0 / 0.35);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.35), 0 1px 2px -1px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 2px 10px 0 rgb(0 0 0 / 0.45), 0 2px 4px -1px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 16px 40px 0 rgb(0 0 0 / 0.55), 0 4px 6px -1px rgb(0 0 0 / 0.35);
+  --shadow-xl: 0 20px 48px 0 rgb(0 0 0 / 0.60), 0 8px 10px -1px rgb(0 0 0 / 0.40);
+  --shadow-2xl: 0 28px 72px 0 rgb(0 0 0 / 0.70);
 }
 
 @theme inline {
@@ -129,6 +158,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -146,14 +179,49 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-fraunces);
+  /* Primitivos de marca expuestos como utilidades */
+  --color-paper: #faf6ee;
+  --color-paper-raised: #ffffff;
+  --color-paper-sunken: #f3ecdd;
+  --color-ink: #1b1633;
+  --color-indigo: #4b2ea3;
+  --color-indigo-soft: #e9e2fa;
+  --color-coral: #ff6b57;
+  --color-night: #0c052c;
+  --color-surface: #291054;
+  --color-surface-2: #3b2a6e;
+  --color-violet: #a98bff;
+  --color-amber: #ffb84d;
+  --color-mist: #c9b6e6;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-fraunces);
+  --font-mono: var(--font-geist-mono);
+
+  --text-display: 4rem;
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.01em;
+  --text-heading: 1.875rem;
+  --text-heading--line-height: 1.2;
+  --text-subheading: 1.25rem;
+  --text-subheading--line-height: 1.3;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.4;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.08em;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.375rem;
+  --radius-3xl: 1.5rem;
+  --radius-pill: 9999px;
 
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
@@ -199,7 +267,7 @@
   --accentSolidHover: var(--primary);
   --accentText: var(--accent-foreground);
   --accentTextContrast: var(--accent-foreground);
-  --font-body: var(--font-geist-sans);
+  --font-body: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --radius-base: var(--radius);
   --radius-medium: var(--radius);
@@ -223,7 +291,7 @@
 .mdx-content h1,
 .mdx-content h2,
 .mdx-content h3 {
-  font-family: var(--font-fraunces), var(--font-geist-sans);
+  font-family: var(--font-fraunces), var(--font-inter);
   font-weight: 600;
   margin: 1rem 0 0.5rem;
   line-height: 1.2;

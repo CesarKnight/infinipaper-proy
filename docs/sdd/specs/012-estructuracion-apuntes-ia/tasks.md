@@ -60,6 +60,7 @@
 - [x] `T-054` Verificar permisos, token y tipo no soportado. <CA-09, CA-10, CA-11>
 - [x] `T-055` Probar timeout del agente y feature flag desactivada. <CA-12, CA-13>
 - [x] `T-056` Mapear throttling de Bedrock/OpenAI a `AGENT_RATE_LIMITED` y verificar E2E. <CA-13, RNF-05>
+- [x] `T-058` Ajustar salida/timeout para apuntes largos y detectar `AGENT_OUTPUT_TRUNCATED`; E2E OpenCode Go con 21.7 KB. <CA-13, RNF-04>
 
 ## Futuro
 
