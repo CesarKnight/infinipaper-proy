@@ -16,7 +16,11 @@ const PUBLIC_USER_SELECT = {
   displayName: true,
   avatarUrl: true,
   bio: true,
+  role: true,
   createdAt: true,
+  teacherProfile: {
+    select: { status: true, institution: true, area: true },
+  },
 } as const;
 
 @Injectable()

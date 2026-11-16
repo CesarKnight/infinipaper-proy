@@ -10,8 +10,9 @@
 | `minio` | `firstfinger/minio` | 9000 / 9001 / 9002 | Almacenamiento S3 + consola + Admin Console |
 | `whisper` | `fedirz/faster-whisper-server` | 8000 | Servicio ASR (API compatible OpenAI) |
 | `agents` | build FastAPI + LangGraph | 8100 | Servicio de agentes IA (estructuración de apuntes) |
+| `mailpit` | `axllent/mailpit` | 1025 / 8025 | SMTP y bandeja de correo de desarrollo |
 
-Dependencias: `backend` espera a `db` y `minio`; `frontend` espera a `backend`. El `backend` llama a `agents` por HTTP interno; si `agents` no está disponible, la app sigue funcionando y solo falla la estructuración.
+Dependencias: `backend` espera a `db` y `minio`; `frontend` espera a `backend`. El `backend` llama a `agents` por HTTP interno; si `agents` no está disponible, la app sigue funcionando y solo falla la estructuración. `mailpit` recibe los correos de confirmación y verificación docente en desarrollo.
 
 > **MinIO:** se usa la imagen [`firstfinger/minio`](https://hub.docker.com/r/firstfinger/minio) (servidor + Admin Console + `mc`), seleccionando `latest-amd64` o `latest-arm64` con `MINIO_IMAGE_TAG`. El bucket lo crea automáticamente el backend (`StorageService.ensureBucket`) al arrancar, por lo que no se necesita un contenedor `mc` aparte.
 
@@ -71,6 +72,21 @@ COOKIE_SECURE=false                   # true en producción (HTTPS)
 
 # CORS / origen
 FRONTEND_URL=http://localhost:3000
+APP_PUBLIC_URL=http://localhost:3000
+
+# Correo (Mailpit en desarrollo; SMTP real en producción)
+SMTP_HOST=localhost
+SMTP_PORT=1025
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=Infinipaper <no-reply@infinipaper.local>
+
+# Roles y verificación docente
+ADMIN_EMAILS=
+TEACHER_INSTITUTION_DOMAINS=
+PROJECT_ARCHIVE_ACCESS_DAYS=30
+PROJECT_PURGE_CRON=0 * * * *
 
 # Almacenamiento S3 / MinIO
 S3_ENDPOINT=http://localhost:9000
@@ -104,6 +120,10 @@ AGENT_TIMEOUT_MS=600000
 AGENT_STRUCTURING_ENABLED=true
 AGENT_MAX_INPUT_CHARS=120000
 S3_PRESIGN_TTL_SECONDS=900
+
+# --- Mailpit (interpolación de Compose) ------------------------
+MAILPIT_SMTP_PORT=1025
+MAILPIT_UI_PORT=8025
 
 # --- Servicio de agentes (interpolación de Compose) ------------
 AGENT_PORT=8100

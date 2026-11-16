@@ -7,7 +7,8 @@ import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { StorageService } from '../../common/storage/storage.service.js';
 import type { UploadedFileData } from '../../common/types/uploaded-file.js';
 import type { PaginationDto } from '../../common/dto/pagination.dto.js';
-import type { Resource } from '../../generated/prisma/client.js';
+import type { Prisma, Resource } from '../../generated/prisma/client.js';
+import { PermissionsService } from '../../common/permissions/permissions.service.js';
 import { isMarkdown, resolveKind } from './resource-kind.util.js';
 import type { CreateNoteDto } from './dto/create-note.dto.js';
 import type { RenameResourceDto } from './dto/rename-resource.dto.js';
@@ -24,6 +25,7 @@ export class ResourcesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly permissions: PermissionsService,
     config: ConfigService,
   ) {
     const maxMb = config.get<number>('MAX_UPLOAD_SIZE_MB') ?? 50;
@@ -31,11 +33,37 @@ export class ResourcesService {
     this.avisoFilename = config.get<string>('AVISO_FILENAME') ?? 'aviso.md';
   }
 
-  async listByFolder(folderId: string, dto: PaginationDto) {
+  async listByFolder(folderId: string, dto: PaginationDto, userId?: string) {
     const limit = dto.limit ?? 50;
+    const folder = await this.getFolderOrFail(folderId);
+    const project = await this.prisma.project.findUniqueOrThrow({
+      where: { id: folder.projectId },
+    });
+    const role = await this.permissions.resolveRole(userId ?? null, project);
+
+    const where: Prisma.ResourceWhereInput = { folderId };
+    if (role !== 'owner' && role !== 'editor') {
+      where.OR = [
+        { kind: { not: 'QUIZ' } },
+        {
+          quiz: {
+            assignments: {
+              some: {
+                status: { in: ['PUBLISHED', 'CLOSED'] },
+                students: { some: { studentId: userId ?? '__none__' } },
+              },
+            },
+          },
+        },
+      ];
+    }
+
     const resources = await this.prisma.resource.findMany({
-      where: { folderId },
-      include: { author: AUTHOR_SELECT },
+      where,
+      include: {
+        author: AUTHOR_SELECT,
+        quiz: { select: { id: true, status: true, title: true } },
+      },
       orderBy: [{ kind: 'asc' }, { name: 'asc' }],
       take: limit + 1,
       ...(dto.cursor ? { cursor: { id: dto.cursor }, skip: 1 } : {}),
@@ -49,7 +77,10 @@ export class ResourcesService {
   async getById(id: string) {
     const resource = await this.prisma.resource.findUnique({
       where: { id },
-      include: { author: AUTHOR_SELECT },
+      include: {
+        author: AUTHOR_SELECT,
+        quiz: { select: { id: true, status: true, title: true } },
+      },
     });
     if (!resource) {
       throw this.notFound();
@@ -142,13 +173,31 @@ export class ResourcesService {
   async getContent(
     id: string,
     range?: string,
+    userId?: string,
   ): Promise<{ object: Awaited<ReturnType<StorageService['get']>> }> {
     const resource = await this.prisma.resource.findUnique({
       where: { id },
-      select: { s3Key: true },
+      select: {
+        s3Key: true,
+        kind: true,
+        folder: { select: { project: true } },
+      },
     });
     if (!resource) {
       throw this.notFound();
+    }
+    if (resource.kind === 'QUIZ') {
+      const role = await this.permissions.resolveRole(
+        userId ?? null,
+        resource.folder.project,
+      );
+      if (role !== 'owner' && role !== 'editor') {
+        throw new AppException(
+          'QUIZ_CONTENT_FORBIDDEN',
+          'El contenido del cuestionario no está disponible como archivo',
+          HttpStatus.FORBIDDEN,
+        );
+      }
     }
     return { object: await this.storage.get(resource.s3Key, range) };
   }
@@ -177,6 +226,18 @@ export class ResourcesService {
 
   async remove(id: string): Promise<void> {
     const resource = await this.getOrFail(id);
+    if (resource.kind === 'QUIZ') {
+      const attempts = await this.prisma.quizAttempt.count({
+        where: { assignment: { quiz: { resourceId: id } } },
+      });
+      if (attempts > 0) {
+        throw new AppException(
+          'QUIZ_HAS_ATTEMPTS',
+          'El cuestionario tiene intentos y no se puede eliminar',
+          HttpStatus.CONFLICT,
+        );
+      }
+    }
     await this.prisma.resource.delete({ where: { id } });
     await this.storage.delete(resource.s3Key);
   }

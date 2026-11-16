@@ -79,6 +79,17 @@ export class PermissionsService {
         HttpStatus.FORBIDDEN,
       );
     }
+    if (
+      project.status === 'ARCHIVED' &&
+      role !== 'owner' &&
+      required !== 'viewer'
+    ) {
+      throw new AppException(
+        'PROJECT_ARCHIVED',
+        'El proyecto está archivado y solo permite lectura',
+        HttpStatus.LOCKED,
+      );
+    }
     return role;
   }
 

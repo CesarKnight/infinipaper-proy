@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `016` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -197,13 +197,18 @@ Para que funcionen cuestionarios, tareas, paneles y MCP necesitamos:
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
-| G-01 | Sin matrícula automática desde SIS. | La inscripción es manual o por invitación. | `T-060` |
-| G-02 | Sin múltiples docentes propietarios. | Los editores no pueden archivar ni eliminar el curso. | `T-061` |
+| G-01 | Sin edición de metadatos académicos después de crear. | El Owner debe recrear el curso para cambiarlos. | `T-060` |
+| G-02 | La UI de extensión usa 30 días fijos. | El backend admite 1–365 días, pero falta el selector. | `T-061` |
+| G-03 | Sin tests automatizados de purga/guards. | La cobertura es E2E manual. | `T-062` |
+| G-04 | Sin matrícula automática desde SIS ni múltiples docentes propietarios. | La inscripción es manual y solo hay un Teacher Owner. | `T-063` |
 
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-04 | Curso creado por docente verificado; estudiante y editor añadidos. | 2026-11-15 |
+| CA-05–CA-07 | Archivado, bloqueo `423 PROJECT_ARCHIVED`, extensión y restauración. | 2026-11-15 |
+| CA-08 | Purga manual de proyecto vencido: recurso S3/DB eliminado y proyecto `404`. | 2026-11-15 |
+| CA-09–CA-10 | Privacidad y no acceso implícito de admin revisados en código. | 2026-11-15 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).

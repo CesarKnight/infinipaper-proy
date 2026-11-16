@@ -56,9 +56,30 @@ export default function ProfilePage() {
                 <h1 className="font-heading text-2xl font-semibold">
                   {data.displayName}
                 </h1>
-                <span className="text-sm text-muted-foreground">
-                  @{data.username}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    @{data.username}
+                  </span>
+                  {data.role ? (
+                    <Badge variant="outline">
+                      {data.role === "TEACHER"
+                        ? "Docente"
+                        : data.role === "ADMIN"
+                          ? "Admin"
+                          : "Estudiante"}
+                    </Badge>
+                  ) : null}
+                  {data.teacherProfile?.status === "VERIFIED" ? (
+                    <Badge variant="secondary">
+                      Docente verificado
+                    </Badge>
+                  ) : null}
+                </div>
+                {data.teacherProfile?.institution ? (
+                  <span className="text-xs text-muted-foreground">
+                    {data.teacherProfile.institution}
+                  </span>
+                ) : null}
                 {data.bio ? (
                   <p className="mt-1 text-sm text-muted-foreground">
                     {data.bio}

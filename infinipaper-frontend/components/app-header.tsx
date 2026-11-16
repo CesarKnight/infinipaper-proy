@@ -17,7 +17,14 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLogout, useSession } from "@/lib/session";
 import { userAvatarUrl } from "@/lib/api";
-import { FolderIcon, LogOutIcon, SearchIcon, UserIcon } from "lucide-react";
+import {
+  ClipboardListIcon,
+  FolderIcon,
+  LogOutIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+  UserIcon,
+} from "lucide-react";
 
 export function AppHeader() {
   const { user, isLoading } = useSession();
@@ -64,6 +71,14 @@ export function AppHeader() {
             Proyectos
           </Button>
           <Button
+            variant={pathname.startsWith("/assignments") ? "secondary" : "ghost"}
+            size="sm"
+            render={<Link href="/assignments" />}
+          >
+            <ClipboardListIcon data-icon="inline-start" />
+            Tareas
+          </Button>
+          <Button
             variant={pathname.startsWith("/users") ? "secondary" : "ghost"}
             size="sm"
             render={<Link href="/users" />}
@@ -71,6 +86,18 @@ export function AppHeader() {
             <SearchIcon data-icon="inline-start" />
             Usuarios
           </Button>
+          {user?.role === "ADMIN" ? (
+            <Button
+              variant={
+                pathname.startsWith("/admin") ? "secondary" : "ghost"
+              }
+              size="sm"
+              render={<Link href="/admin/teacher-verifications" />}
+            >
+              <ShieldCheckIcon data-icon="inline-start" />
+              Admin
+            </Button>
+          ) : null}
         </nav>
 
         <div className="ml-auto flex items-center gap-2">

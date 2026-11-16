@@ -144,17 +144,27 @@ function ProjectWorkspaceLayoutInner({
             })}
           </BreadcrumbList>
         </Breadcrumb>
-          {project?.role === "owner" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="shrink-0"
-              render={<Link href={`/projects/${projectId}/settings`} />}
-            >
-              <SettingsIcon data-icon="inline-start" />
-              Configuración
-            </Button>
-          ) : null}
+          <div className="flex shrink-0 items-center gap-2">
+            {project?.role === "owner" || project?.role === "editor" ? (
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href={`/projects/${projectId}/assignments`} />}
+              >
+                Tareas
+              </Button>
+            ) : null}
+            {project?.role === "owner" ? (
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href={`/projects/${projectId}/settings`} />}
+              >
+                <SettingsIcon data-icon="inline-start" />
+                Configuración
+              </Button>
+            ) : null}
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)_260px]">

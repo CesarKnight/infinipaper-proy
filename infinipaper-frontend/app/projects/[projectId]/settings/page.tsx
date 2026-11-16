@@ -117,6 +117,42 @@ function ProjectSettingsForm({ project }: { project: Project }) {
       toast.error(error instanceof ApiError ? error.message : "Error"),
   });
 
+  const archive = useMutation({
+    mutationFn: () =>
+      apiFetch(`/projects/${project.id}/archive`, { method: "POST" }),
+    onSuccess: () => {
+      toast.success("Proyecto archivado");
+      queryClient.invalidateQueries({ queryKey: ["project", project.id] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
+  const extend = useMutation({
+    mutationFn: () =>
+      apiFetch(`/projects/${project.id}/archive/extend`, {
+        method: "POST",
+        body: { days: 30 },
+      }),
+    onSuccess: () => {
+      toast.success("Acceso extendido 30 días");
+      queryClient.invalidateQueries({ queryKey: ["project", project.id] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
+  const restore = useMutation({
+    mutationFn: () =>
+      apiFetch(`/projects/${project.id}/restore`, { method: "POST" }),
+    onSuccess: () => {
+      toast.success("Proyecto restaurado");
+      queryClient.invalidateQueries({ queryKey: ["project", project.id] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
   const remove = useMutation({
     mutationFn: () =>
       apiFetch(`/projects/${project.id}`, { method: "DELETE" }),
@@ -180,6 +216,57 @@ function ProjectSettingsForm({ project }: { project: Project }) {
             <Button onClick={() => save.mutate()} disabled={save.isPending}>
               Guardar cambios
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Archivado y acceso</CardTitle>
+          <CardDescription>
+            Un proyecto archivado queda en solo lectura para los participantes.
+            Al vencer el plazo se eliminan todos sus archivos.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Estado:</span>
+            <span className="font-medium">
+              {project.status === "ARCHIVED" ? "Archivado" : "Activo"}
+            </span>
+            {project.archiveAccessUntil ? (
+              <span className="text-muted-foreground">
+                · Acceso hasta{" "}
+                {new Date(project.archiveAccessUntil).toLocaleDateString("es")}
+              </span>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {project.status === "ACTIVE" ? (
+              <Button
+                variant="outline"
+                onClick={() => archive.mutate()}
+                disabled={archive.isPending}
+              >
+                Archivar 30 días
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => extend.mutate()}
+                  disabled={extend.isPending}
+                >
+                  Extender 30 días
+                </Button>
+                <Button
+                  onClick={() => restore.mutate()}
+                  disabled={restore.isPending}
+                >
+                  Restaurar
+                </Button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

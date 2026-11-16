@@ -19,6 +19,7 @@ const ROLE_LABEL: Partial<Record<NonNullable<Project["role"]>, string>> = {
   owner: "Propietario",
   editor: "Editor",
   viewer: "Lector",
+  student: "Estudiante",
 };
 
 function initials(name: string): string {
@@ -41,14 +42,22 @@ export function ProjectCard({ project }: { project: Project }) {
             <CardTitle className="truncate text-base">
               {project.name}
             </CardTitle>
-            <Badge variant="outline" className="shrink-0">
-              {project.visibility === "PUBLIC" ? (
-                <GlobeIcon data-icon="inline-start" />
-              ) : (
-                <LockIcon data-icon="inline-start" />
-              )}
-              {project.visibility === "PUBLIC" ? "Público" : "Privado"}
-            </Badge>
+            <div className="flex shrink-0 flex-wrap justify-end gap-1">
+              {project.type === "COURSE" ? (
+                <Badge variant="secondary">Curso</Badge>
+              ) : null}
+              {project.status === "ARCHIVED" ? (
+                <Badge variant="outline">Archivado</Badge>
+              ) : null}
+              <Badge variant="outline">
+                {project.visibility === "PUBLIC" ? (
+                  <GlobeIcon data-icon="inline-start" />
+                ) : (
+                  <LockIcon data-icon="inline-start" />
+                )}
+                {project.visibility === "PUBLIC" ? "Público" : "Privado"}
+              </Badge>
+            </div>
           </div>
           <CardDescription className="line-clamp-2">
             {project.description ?? "Sin descripción"}

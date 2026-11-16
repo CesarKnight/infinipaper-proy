@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { envValidationSchema } from './common/config/env.validation.js';
+import { EmailModule } from './common/email/email.module.js';
 import { AuthGuard } from './common/guards/auth.guard.js';
 import { ProjectAccessGuard } from './common/guards/project-access.guard.js';
 import { PermissionsModule } from './common/permissions/permissions.module.js';
@@ -13,8 +14,11 @@ import { FoldersModule } from './modules/folders/folders.module.js';
 import { MembersModule } from './modules/members/members.module.js';
 import { NoteStructureModule } from './modules/note-structure/note-structure.module.js';
 import { ProjectsModule } from './modules/projects/projects.module.js';
+import { QuizAssignmentsModule } from './modules/quiz-assignments/quiz-assignments.module.js';
+import { QuizzesModule } from './modules/quizzes/quizzes.module.js';
 import { ResourcesModule } from './modules/resources/resources.module.js';
 import { SystemModule } from './modules/system/system.module.js';
+import { TeacherModule } from './modules/teacher/teacher.module.js';
 import { TranscriptionsModule } from './modules/transcriptions/transcriptions.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 
@@ -27,6 +31,7 @@ import { UsersModule } from './modules/users/users.module.js';
     PrismaModule,
     StorageModule,
     PermissionsModule,
+    EmailModule,
     AuthModule,
     UsersModule,
     DashboardModule,
@@ -35,6 +40,9 @@ import { UsersModule } from './modules/users/users.module.js';
     ResourcesModule,
     MembersModule,
     NoteStructureModule,
+    QuizzesModule,
+    QuizAssignmentsModule,
+    TeacherModule,
     TranscriptionsModule,
     SystemModule,
   ],

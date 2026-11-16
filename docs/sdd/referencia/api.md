@@ -63,3 +63,7 @@
 | [010 Transcripción](../specs/010-transcripcion/spec.md) | `/files/:id/transcriptions`, `/transcriptions/:id` |
 | [011 Dashboard](../specs/011-dashboard/spec.md) | `/dashboard` |
 | [012 Estructuración IA](../specs/012-estructuracion-apuntes-ia/spec.md) | `/files/:id/structure`, `/structure-jobs/:jobId`, `/structure-jobs/:jobId/apply` |
+| [015 Perfil docente](../specs/015-perfil-docente/spec.md) | `/auth/email/verify/*`, `/teacher/verification`, `/admin/teacher-verifications/*`, `/admin/users/:id/revoke-teacher` |
+| [016 Proyectos académicos](../specs/016-proyectos-academicos/spec.md) | `/projects/:id/archive`, `/projects/:id/archive/extend`, `/projects/:id/restore`, `/admin/projects/purge-expired` |
+| [017 Cuestionarios](../specs/017-cuestionarios/spec.md) | `/folders/:id/quizzes`, `/quizzes/:id`, `/quizzes/:id/questions`, `/quizzes/:id/publish` |
+| [018 Tareas e intentos](../specs/018-tareas-intentos/spec.md) | `/quizzes/:id/assignments`, `/assignments/*`, `/attempts/*` |

@@ -1,6 +1,6 @@
 # Constitución del proyecto Infinipaper
 
-> **Versión:** 1.0 · **Fecha:** 2026-11-11
+> **Versión:** 1.1 · **Fecha:** 2026-11-15
 >
 > Este documento define los principios no negociables que rigen cualquier cambio en Infinipaper. El `plan.md` y las `tasks.md` de cada spec deben respetarlo. Si un cambio necesita contradecirlo, primero se modifica la constitución con una decisión explícita y registrada.
 
@@ -66,9 +66,9 @@ Infinipaper es una aplicación de estudio colaborativo: proyectos con carpetas, 
 |---|---|
 | Frontend | Next.js 16 (App Router), React 19, shadcn/Base UI, Tailwind v4 |
 | Backend | NestJS 12 ESM, Prisma 7 (`prisma-client` + `@prisma/adapter-pg`), PostgreSQL 17 |
-| Autenticación | Cookie `httpOnly` + tabla `Session`; login por email o username |
+| Autenticación | Cookie `httpOnly` + tabla `Session`; login por email o username; confirmación de email; Mailpit en desarrollo |
 | Peticiones | Same-origin mediante rewrites de Next (`/api/*` → `API_URL`); sin CORS |
-| Roles | Owner implícito en `Project.ownerId`; Editor y Viewer en `ProjectMember` |
+| Roles | Globales `ADMIN`, `TEACHER`, `STUDENT`; Owner implícito en `Project.ownerId`; Editor, Viewer y Student en `ProjectMember` |
 | Archivos | MinIO (S3); subida proxeada por el backend |
 | Límite de subida | 50 MB por archivo, configurable con `MAX_UPLOAD_SIZE_MB` |
 | Markdown | Editor MDXEditor; lectura sanitizada con `react-markdown` + `rehype-sanitize` |

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiFetch, ApiError, userAvatarUrl } from "@/lib/api";
 import type { Paged, Resource, ResourceKind } from "@/lib/types";
 import {
+  ClipboardListIcon,
   FileIcon,
   FileTextIcon,
   ImageIcon,
@@ -45,6 +47,8 @@ function kindIcon(kind: ResourceKind) {
       return <VideoIcon className="size-4 text-muted-foreground" />;
     case "MARKDOWN":
       return <FileTextIcon className="size-4 text-muted-foreground" />;
+    case "QUIZ":
+      return <ClipboardListIcon className="size-4 text-muted-foreground" />;
     default:
       return <FileIcon className="size-4 text-muted-foreground" />;
   }
@@ -72,11 +76,15 @@ interface ResourceListProps {
 }
 
 export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [noteOpen, setNoteOpen] = React.useState(false);
   const [noteName, setNoteName] = React.useState("");
   const [noteContent, setNoteContent] = React.useState("");
+  const [quizOpen, setQuizOpen] = React.useState(false);
+  const [quizTitle, setQuizTitle] = React.useState("");
+  const [quizInstructions, setQuizInstructions] = React.useState("");
   const [sort, setSort] = React.useState<"name" | "date" | "type">("name");
 
   const { data, isLoading } = useQuery({
@@ -144,6 +152,29 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
       toast.error(error instanceof ApiError ? error.message : "Error"),
   });
 
+  const createQuiz = useMutation({
+    mutationFn: () =>
+      apiFetch<{ resource: Resource }>(`/folders/${folderId}/quizzes`, {
+        method: "POST",
+        body: {
+          title: quizTitle,
+          instructions: quizInstructions || undefined,
+        },
+      }),
+    onSuccess: ({ resource }) => {
+      toast.success("Cuestionario creado");
+      setQuizOpen(false);
+      setQuizTitle("");
+      setQuizInstructions("");
+      invalidate();
+      router.push(
+        `/projects/${projectId}/files/${resource.id}?folder=${folderId}`,
+      );
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
   const remove = useMutation({
     mutationFn: (id: string) => apiFetch(`/files/${id}`, { method: "DELETE" }),
     onSuccess: () => {
@@ -198,6 +229,14 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
               >
                 <NotebookPenIcon data-icon="inline-start" />
                 Nuevo apunte
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setQuizOpen(true)}
+              >
+                <ClipboardListIcon data-icon="inline-start" />
+                Nuevo cuestionario
               </Button>
               <Button
                 size="sm"
@@ -270,6 +309,34 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
           No hay archivos en esta carpeta.
         </p>
       )}
+
+      <Dialog open={quizOpen} onOpenChange={setQuizOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nuevo cuestionario</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Input
+              placeholder="Título del cuestionario"
+              value={quizTitle}
+              onChange={(event) => setQuizTitle(event.target.value)}
+            />
+            <Input
+              placeholder="Instrucciones (opcional)"
+              value={quizInstructions}
+              onChange={(event) => setQuizInstructions(event.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              disabled={!quizTitle.trim() || createQuiz.isPending}
+              onClick={() => createQuiz.mutate()}
+            >
+              Crear
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
         <DialogContent>

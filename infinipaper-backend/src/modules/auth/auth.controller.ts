@@ -15,6 +15,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { User } from '../../generated/prisma/client.js';
 import type { AuthenticatedRequest } from '../../common/types/authenticated-request.js';
 import { AuthService } from './auth.service.js';
+import { ConfirmEmailDto } from './dto/confirm-email.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 
@@ -60,6 +61,19 @@ export class AuthController {
   @Get('me')
   async me(@CurrentUser() user: User) {
     return this.auth.me(user.id);
+  }
+
+  @Post('email/verify/request')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async requestEmailVerification(@CurrentUser() user: User): Promise<void> {
+    await this.auth.requestEmailVerification(user.id);
+  }
+
+  @Public()
+  @Post('email/verify/confirm')
+  @HttpCode(HttpStatus.OK)
+  confirmEmail(@Body() dto: ConfirmEmailDto) {
+    return this.auth.confirmEmail(dto.token);
   }
 
   private setSessionCookie(res: Response, token: string): void {

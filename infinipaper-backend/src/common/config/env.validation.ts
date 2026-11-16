@@ -13,6 +13,21 @@ export const envValidationSchema = Joi.object({
   COOKIE_SECURE: Joi.boolean().default(false),
 
   FRONTEND_URL: Joi.string().default('http://localhost:3000'),
+  APP_PUBLIC_URL: Joi.string().default('http://localhost:3000'),
+
+  SMTP_HOST: Joi.string().default('localhost'),
+  SMTP_PORT: Joi.number().default(1025),
+  SMTP_SECURE: Joi.boolean().default(false),
+  SMTP_USER: Joi.string().allow('').default(''),
+  SMTP_PASS: Joi.string().allow('').default(''),
+  SMTP_FROM: Joi.string().default(
+    'Infinipaper <no-reply@infinipaper.local>',
+  ),
+
+  ADMIN_EMAILS: Joi.string().allow('').default(''),
+  TEACHER_INSTITUTION_DOMAINS: Joi.string().allow('').default(''),
+  PROJECT_ARCHIVE_ACCESS_DAYS: Joi.number().min(1).default(30),
+  PROJECT_PURGE_CRON: Joi.string().default('0 * * * *'),
 
   S3_ENDPOINT: Joi.string().default('http://localhost:9000'),
   S3_REGION: Joi.string().default('us-east-1'),

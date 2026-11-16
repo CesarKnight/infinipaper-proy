@@ -29,5 +29,11 @@
 | Modelo LLM | Proveedor OpenAI-compatible configurable por entorno y por nodo | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
 | Proveedor LLM | Soporta AWS Bedrock (`langchain-aws`) y endpoints OpenAI-compatible | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
 | OpenCode Go | Proveedor OpenAI-compatible con `x-opencode-session`; modelo configurable | [012](../specs/012-estructuracion-apuntes-ia/spec.md) |
+| Roles globales | `ADMIN`, `TEACHER`, `STUDENT`; la verificación docente es un estado del perfil | [015](../specs/015-perfil-docente/spec.md) |
+| Correo | Mailpit en desarrollo y SMTP configurable en producción; tokens de 24 h y un solo uso | [015](../specs/015-perfil-docente/spec.md) |
+| Proyectos académicos | `Project` extendido con `PERSONAL/COURSE` y estudiantes en `ProjectMember` | [016](../specs/016-proyectos-academicos/spec.md) |
+| Archivado | 30 días por defecto, ampliable; al vencer se purgan archivos y proyecto | [016](../specs/016-proyectos-academicos/spec.md) |
+| Cuestionarios | `Resource(kind=QUIZ)` con preguntas relacionales y snapshot JSON | [017](../specs/017-cuestionarios/spec.md) |
+| Tareas | `QuizAssignment` + `QuizAttempt` + `QuizAnswer`; autocorrección y revisión manual | [018](../specs/018-tareas-intentos/spec.md) |
 | Peticiones del navegador | Same-origin mediante rewrites de Next (`/api/*` → `API_URL`); cookie *first-party* | [referencia/api.md](./api.md) |
 | API | Prefijo `/api/v1`, errores uniformes, paginación por cursor | [referencia/api.md](./api.md) |

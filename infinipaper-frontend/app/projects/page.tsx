@@ -37,7 +37,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProjectCard } from "@/components/project/project-card";
 import { apiFetch, ApiError } from "@/lib/api";
-import type { Paged, Project, ProjectVisibility } from "@/lib/types";
+import type {
+  Paged,
+  Project,
+  ProjectType,
+  ProjectVisibility,
+} from "@/lib/types";
 import { PlusIcon } from "lucide-react";
 
 const SCOPES = [
@@ -55,12 +60,25 @@ function CreateProjectDialog() {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [visibility, setVisibility] = React.useState<ProjectVisibility>("PRIVATE");
+  const [type, setType] = React.useState<ProjectType>("PERSONAL");
+  const [institution, setInstitution] = React.useState("");
+  const [period, setPeriod] = React.useState("");
+  const [subject, setSubject] = React.useState("");
+  const [code, setCode] = React.useState("");
 
   const create = useMutation({
     mutationFn: () =>
       apiFetch<Project>("/projects", {
         method: "POST",
-        body: { name, description: description || undefined, visibility },
+        body: {
+          name,
+          description: description || undefined,
+          visibility,
+          type,
+          ...(type === "COURSE"
+            ? { institution, period, subject: subject || undefined, code: code || undefined }
+            : {}),
+        },
       }),
     onSuccess: () => {
       toast.success("Proyecto creado");
@@ -68,6 +86,11 @@ function CreateProjectDialog() {
       setName("");
       setDescription("");
       setVisibility("PRIVATE");
+      setType("PERSONAL");
+      setInstitution("");
+      setPeriod("");
+      setSubject("");
+      setCode("");
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
@@ -106,6 +129,62 @@ function CreateProjectDialog() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
+            <Label>Tipo</Label>
+            <Select
+              value={type}
+              onValueChange={(value) => setType(value as ProjectType)}
+              items={[
+                { label: "Personal", value: "PERSONAL" },
+                { label: "Curso", value: "COURSE" },
+              ]}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PERSONAL">Personal</SelectItem>
+                <SelectItem value="COURSE">Curso</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {type === "COURSE" ? (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="institution">Institución</Label>
+                <Input
+                  id="institution"
+                  value={institution}
+                  onChange={(event) => setInstitution(event.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="period">Periodo</Label>
+                <Input
+                  id="period"
+                  value={period}
+                  onChange={(event) => setPeriod(event.target.value)}
+                  placeholder="2026-1"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="subject">Asignatura</Label>
+                <Input
+                  id="subject"
+                  value={subject}
+                  onChange={(event) => setSubject(event.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="code">Código</Label>
+                <Input
+                  id="code"
+                  value={code}
+                  onChange={(event) => setCode(event.target.value)}
+                />
+              </div>
+            </>
+          ) : null}
+          <div className="flex flex-col gap-1.5">
             <Label>Visibilidad</Label>
             <Select
               value={visibility}
@@ -128,7 +207,11 @@ function CreateProjectDialog() {
         <DialogFooter>
           <Button
             onClick={() => create.mutate()}
-            disabled={!name.trim() || create.isPending}
+            disabled={
+              !name.trim() ||
+              (type === "COURSE" && (!institution.trim() || !period.trim())) ||
+              create.isPending
+            }
           >
             Crear
           </Button>

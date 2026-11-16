@@ -20,6 +20,9 @@ interface RouteParams {
   fileId?: string;
   transcriptionId?: string;
   jobId?: string;
+  quizId?: string;
+  assignmentId?: string;
+  attemptId?: string;
 }
 
 @Injectable()
@@ -96,6 +99,29 @@ export class ProjectAccessGuard implements CanActivate {
         },
       });
       return job?.resource.folder.projectId ?? null;
+    }
+    if (params.quizId) {
+      const quiz = await this.prisma.quiz.findUnique({
+        where: { id: params.quizId },
+        select: {
+          resource: { select: { folder: { select: { projectId: true } } } },
+        },
+      });
+      return quiz?.resource.folder.projectId ?? null;
+    }
+    if (params.assignmentId) {
+      const assignment = await this.prisma.quizAssignment.findUnique({
+        where: { id: params.assignmentId },
+        select: { projectId: true },
+      });
+      return assignment?.projectId ?? null;
+    }
+    if (params.attemptId) {
+      const attempt = await this.prisma.quizAttempt.findUnique({
+        where: { id: params.attemptId },
+        select: { assignment: { select: { projectId: true } } },
+      });
+      return attempt?.assignment.projectId ?? null;
     }
     return null;
   }

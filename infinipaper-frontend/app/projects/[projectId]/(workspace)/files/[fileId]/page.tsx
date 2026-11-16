@@ -13,6 +13,7 @@ import { apiFetch, ApiError, fileContentUrl } from "@/lib/api";
 import type { Resource, TranscriptionJob } from "@/lib/types";
 import { MarkdownView } from "@/components/project/markdown-view";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { QuizPanel } from "@/components/quiz/quiz-panel";
 import { StructureNoteButton } from "@/components/markdown/structure-note-dialog";
 import { AutosaveStatusIndicator } from "@/components/markdown/autosave-status";
 import { useWorkspace } from "@/components/project/workspace-context";
@@ -55,20 +56,26 @@ export default function FileViewerPage() {
             {resource?.name ?? "…"}
           </h1>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          render={<a href={fileContentUrl(fileId)} download />}
-        >
-          <DownloadIcon data-icon="inline-start" />
-          Descargar
-        </Button>
+        {resource?.kind !== "QUIZ" ? (
+          <Button
+            variant="outline"
+            size="sm"
+            render={<a href={fileContentUrl(fileId)} download />}
+          >
+            <DownloadIcon data-icon="inline-start" />
+            Descargar
+          </Button>
+        ) : null}
       </div>
 
       {resourceQuery.isLoading || !resource ? (
         <Skeleton className="h-64 w-full" />
       ) : (
-        <ResourceContent resource={resource} canEdit={Boolean(canEdit)} />
+        <ResourceContent
+          resource={resource}
+          canEdit={Boolean(canEdit)}
+          projectId={projectId}
+        />
       )}
     </div>
   );
@@ -77,9 +84,11 @@ export default function FileViewerPage() {
 function ResourceContent({
   resource,
   canEdit,
+  projectId,
 }: {
   resource: Resource;
   canEdit: boolean;
+  projectId: string;
 }) {
   if (resource.kind === "IMAGE") {
     return (
@@ -108,6 +117,23 @@ function ResourceContent({
 
   if (resource.kind === "MARKDOWN") {
     return <MarkdownViewer resource={resource} canEdit={canEdit} />;
+  }
+
+  if (resource.kind === "QUIZ") {
+    if (!resource.quiz) {
+      return (
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          El cuestionario no está disponible.
+        </p>
+      );
+    }
+    return (
+      <QuizPanel
+        quizId={resource.quiz.id}
+        projectId={projectId}
+        canEdit={canEdit}
+      />
+    );
   }
 
   if (resource.mimeType === "application/pdf") {

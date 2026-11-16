@@ -7,6 +7,8 @@
 #   db          → PostgreSQL database  (localhost:5433)
 #   minio       → S3-compatible store  (http://localhost:9000, consola :9001)
 #   whisper     → ASR service          (http://localhost:8000)
+#   agents      → FastAPI/LangGraph    (http://localhost:8100)
+#   mailpit     → SMTP dev inbox       (http://localhost:8025)
 #
 # Run from this directory:
 #   docker compose build
@@ -58,6 +60,20 @@ services:
       - "${MINIO_ADMIN_CONSOLE_PORT:-9002}:9002"
     volumes:
       - miniodata:/data
+    networks:
+      - infinipaper
+
+  # ------------------------------------------------------------
+  # Mailpit - bandeja SMTP de desarrollo
+  # Web UI: http://localhost:8025
+  # ------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: infinipaper-mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
     networks:
       - infinipaper
 
@@ -157,6 +173,17 @@ services:
       ASR_DEFAULT_LANGUAGE: ${ASR_DEFAULT_LANGUAGE:-es}
       ASR_MAX_DURATION_MINUTES: ${ASR_MAX_DURATION_MINUTES:-120}
       AVISO_FILENAME: ${AVISO_FILENAME:-aviso.md}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-Infinipaper <no-reply@infinipaper.local>}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      TEACHER_INSTITUTION_DOMAINS: ${TEACHER_INSTITUTION_DOMAINS:-}
+      PROJECT_ARCHIVE_ACCESS_DAYS: ${PROJECT_ARCHIVE_ACCESS_DAYS:-30}
+      PROJECT_PURGE_CRON: ${PROJECT_PURGE_CRON:-0 * * * *}
       AGENT_SERVICE_URL: http://agents:8000
       AGENT_SERVICE_TOKEN: ${AGENT_SERVICE_TOKEN:-dev-agent-token}
       AGENT_TIMEOUT_MS: ${AGENT_TIMEOUT_MS:-600000}

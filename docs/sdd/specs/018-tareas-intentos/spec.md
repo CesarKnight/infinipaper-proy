@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `018` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -192,13 +192,18 @@ Sin este ciclo, el docente no puede evaluar y el estudiante no puede completar u
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
-| G-01 | Sin grupos ni secciones. | La asignación es individual. | `T-060` |
-| G-02 | Sin entrega tardía con penalización. | El cierre bloquea nuevos intentos. | `T-061` |
+| G-01 | La UI asigna a todos los estudiantes del proyecto. | El backend soporta selección individual, pero falta el selector. | `T-060` |
+| G-02 | Sin reapertura de tareas ni gestión avanzada de intentos. | Una tarea cerrada no se reabre desde la UI. | `T-061` |
+| G-03 | Sin tests automatizados de scoring/permisos. | La cobertura es E2E manual. | `T-062` |
+| G-04 | Sin grupos, secciones ni entrega tardía con penalización. | La asignación es individual y el cierre bloquea. | `T-063` |
 
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-06 | Tarea publicada, intento iniciado, respuestas guardadas y envío bloqueado tras submit. | 2026-11-15 |
+| CA-07–CA-08 | Autocorrección 2/3 y calificación manual de respuesta corta a 3/3. | 2026-11-15 |
+| CA-09 | Estudiante ve solo su intento y recibe los resultados publicados. | 2026-11-15 |
+| CA-10 | Cierre de tarea implementado; falta E2E dedicado. | 2026-11-15 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).

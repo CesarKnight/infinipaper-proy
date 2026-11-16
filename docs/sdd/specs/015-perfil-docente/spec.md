@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `015` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -64,7 +64,7 @@ Para habilitar cuestionarios, tareas, paneles docentes y MCP se necesita una bas
 | RF-10 | Al rechazar, el usuario sigue como `STUDENT` y puede corregir y reenviar la solicitud. | Must |
 | RF-11 | Al revocar, `User.role = STUDENT`, `TeacherProfile.status = REVOKED` y sus proyectos tipo curso se archivan. | Must |
 | RF-12 | El perfil público muestra nombre, rol, institución y estado de verificación; nunca muestra el email ni la evidencia. | Must |
-| RF-13 | El administrador se crea mediante un comando de bootstrap, nunca mediante registro público. | Must |
+| RF-13 | El administrador se promueve mediante `ADMIN_EMAILS` al registrarse o iniciar sesión; nunca mediante registro público como admin. | Must |
 | RF-14 | En desarrollo, los correos se envían a Mailpit; en producción se usa SMTP configurable. | Must |
 
 ## 5. Requisitos no funcionales
@@ -193,6 +193,7 @@ Para habilitar cuestionarios, tareas, paneles docentes y MCP se necesita una bas
 | D-01 | Verificación híbrida: dominio institucional confirmado + revisión manual para el resto. | Cerrada |
 | D-02 | Roles globales `ADMIN`, `TEACHER`, `STUDENT`; los usuarios nuevos son `STUDENT`. | Cerrada |
 | D-03 | El administrador revisa solicitudes y audita decisiones; no accede automáticamente a proyectos privados. | Cerrada |
+| D-06 | El primer admin se promueve con `ADMIN_EMAILS` al autenticarse. | Cerrada |
 | D-04 | Mailpit en desarrollo y SMTP configurable en producción. | Cerrada |
 | D-05 | El token de email dura 24 horas y es de un solo uso. | Cerrada |
 | Q-01 | ¿Qué proveedor SMTP se usará en producción? | Abierta |
@@ -202,13 +203,18 @@ Para habilitar cuestionarios, tareas, paneles docentes y MCP se necesita una bas
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
-| G-01 | Sin SSO institucional. | La verificación depende de email y revisión manual. | `T-060` |
-| G-02 | Sin validación documental de títulos. | La confianza es declarativa más revisión administrativa. | `T-061` |
+| G-01 | Sin UI para revocar docentes; el endpoint existe. | La revocación requiere API o admin técnico. | `T-060` |
+| G-02 | Sin cola de reintentos/outbox de correo. | Un fallo SMTP requiere reenvío manual. | `T-061` |
+| G-03 | Sin tests automatizados de Auth/Teacher. | La cobertura es E2E manual. | `T-062` |
+| G-04 | Sin SSO institucional ni validación documental. | La verificación depende de email y revisión manual. | `T-063` |
 
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-03 | Registro, correo en Mailpit y confirmación vía `/auth/email/verify/confirm`. | 2026-11-15 |
+| CA-04–CA-06 | Solicitud docente `PENDING`, aprobación admin y cambio de rol a `TEACHER`. | 2026-11-15 |
+| CA-07–CA-08 | Rechazo con motivo y `ADMIN_REQUIRED` para no administradores. | 2026-11-15 |
+| CA-09 | Revocación implementada; UI pendiente. | 2026-11-15 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).

@@ -67,8 +67,9 @@ npx prisma generate
 
 - API con prefijo `/api/v1`, errores uniformes y paginación por cursor.
 - Autenticación por cookie `httpOnly` + tabla `Session`; no usar `Authorization: Bearer`.
+- Confirmación de email y verificación docente mediante SMTP; Mailpit en desarrollo.
 - Peticiones same-origin mediante rewrites de Next (`/api/*` → `API_URL`); no introducir CORS.
-- Roles de proyecto: Owner (implícito en `Project.ownerId`), Editor y Viewer.
+- Roles globales: `ADMIN`, `TEACHER` y `STUDENT`. Roles de proyecto: Owner (implícito en `Project.ownerId`), Editor, Viewer y Student.
 - Permisos y autorización **siempre** en el servidor; la UI solo los refleja.
 - Markdown sanitizado al renderizar (`rehype-sanitize`).
 - Archivos en MinIO; subida proxeada por el backend; límite de 50 MB configurable por `MAX_UPLOAD_SIZE_MB`.

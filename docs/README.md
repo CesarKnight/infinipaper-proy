@@ -62,6 +62,7 @@ docker compose ps
 | http://localhost:9002 | MinIO Admin Console |
 | http://localhost:8000 | Whisper (ASR) |
 | http://localhost:8100 | Agents (FastAPI + LangGraph) |
+| http://localhost:8025 | Mailpit (bandeja de correo de desarrollo) |
 
 **Qué ocurre al arrancar**
 
@@ -73,7 +74,7 @@ docker compose ps
 
 **Configuración**
 
-Se lee desde `infinipaper-backend/.env` (mismo archivo que usa Compose). Claves habituales: `POSTGRES_*`, `S3_*`, `MINIO_IMAGE_TAG` (usa `latest-arm64` en equipos ARM), `MAX_UPLOAD_SIZE_MB`, `WHISPER_MODEL`, `ASR_*`, `AVISO_FILENAME`, `AGENT_*`, `MODEL_*`, `AWS_*`, `OPENCODE_*`. Los puertos de host se pueden cambiar con `BACKEND_PORT`, `FRONTEND_PORT`, `AGENT_PORT`, `POSTGRES_PORT`, `MINIO_*`.
+Se lee desde `infinipaper-backend/.env` (mismo archivo que usa Compose). Claves habituales: `POSTGRES_*`, `S3_*`, `MINIO_IMAGE_TAG` (usa `latest-arm64` en equipos ARM), `MAX_UPLOAD_SIZE_MB`, `WHISPER_MODEL`, `ASR_*`, `AVISO_FILENAME`, `AGENT_*`, `MODEL_*`, `AWS_*`, `OPENCODE_*`, `SMTP_*`, `ADMIN_EMAILS`, `TEACHER_INSTITUTION_DOMAINS`, `PROJECT_ARCHIVE_ACCESS_DAYS`. Los puertos de host se pueden cambiar con `BACKEND_PORT`, `FRONTEND_PORT`, `AGENT_PORT`, `POSTGRES_PORT`, `MINIO_*`.
 
 **Comandos útiles**
 
@@ -96,6 +97,8 @@ docker compose down -v                # detener y borrar datos (DB, MinIO, Whisp
 - **El backend no ve MinIO:** dentro de Compose el endpoint debe ser `S3_ENDPOINT=http://minio:9000`.
 - **La estructuración IA falla:** revisa `AGENT_SERVICE_URL`, `AGENT_SERVICE_TOKEN` y que `agents` esté healthy. La app sigue funcionando sin el servicio; solo falla esa función.
 - **Bedrock en Docker:** ejecuta `aws configure --profile infinipaper` en el host; Compose monta `${HOME}/.aws:/root/.aws:ro`. Define `BEDROCK_MODEL_ID` en `.env` antes de arrancar `agents`.
+- **Correos de verificación:** abre http://localhost:8025 para ver los mensajes de Mailpit. Si no llegan, revisa `SMTP_HOST=mailpit` dentro de Compose.
+- **Primer administrador:** define tu email en `ADMIN_EMAILS` y vuelve a iniciar sesión; el rol se promueve a `ADMIN`.
 
 ### Guía de desarrollo
 
@@ -206,7 +209,7 @@ Objetivo: correr `db`, `minio` y `whisper` en Docker (infraestructura) y **el ba
 ```bash
 cd infinipaper-backend
 cp .env.example .env        # si aún no existe
-docker compose up -d db minio whisper
+docker compose up -d db minio whisper mailpit
 docker compose ps
 ```
 

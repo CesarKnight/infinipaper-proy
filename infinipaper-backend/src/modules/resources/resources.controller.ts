@@ -42,8 +42,12 @@ export class ResourcesController {
 
   @Get('folders/:folderId/files')
   @RequireProjectRole('viewer')
-  list(@Param('folderId') folderId: string, @Query() dto: PaginationDto) {
-    return this.resources.listByFolder(folderId, dto);
+  list(
+    @Param('folderId') folderId: string,
+    @Query() dto: PaginationDto,
+    @CurrentUser() user?: User,
+  ) {
+    return this.resources.listByFolder(folderId, dto, user?.id);
   }
 
   @Post('folders/:folderId/files')
@@ -103,9 +107,10 @@ export class ResourcesController {
   async content(
     @Param('fileId') fileId: string,
     @Res() res: Response,
+    @CurrentUser() user?: User,
     @Headers('range') range?: string,
   ): Promise<void> {
-    const { object } = await this.resources.getContent(fileId, range);
+    const { object } = await this.resources.getContent(fileId, range, user?.id);
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader(
       'Content-Type',

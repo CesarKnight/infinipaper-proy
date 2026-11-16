@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/app-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,7 +32,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch, ApiError, userAvatarUrl } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import type { User } from "@/lib/types";
+import type { TeacherProfile, User } from "@/lib/types";
 
 export default function MyProfilePage() {
   const { user, isLoading } = useSession();
@@ -44,7 +45,10 @@ export default function MyProfilePage() {
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : user ? (
-          <ProfileForm user={user} />
+          <>
+            <ProfileForm user={user} />
+            <TeacherVerificationCard user={user} />
+          </>
         ) : null}
       </main>
     </>
@@ -228,6 +232,8 @@ function ProfileForm({ user }: { user: User }) {
         </CardContent>
       </Card>
 
+      <EmailVerificationCard user={user} />
+
       <Card className="border-destructive/40">
         <CardHeader>
           <CardTitle>Archivar cuenta</CardTitle>
@@ -263,5 +269,164 @@ function ProfileForm({ user }: { user: User }) {
         </CardContent>
       </Card>
     </>
+  );
+}
+
+function EmailVerificationCard({ user }: { user: User }) {
+  const queryClient = useQueryClient();
+  const resend = useMutation({
+    mutationFn: () =>
+      apiFetch("/auth/email/verify/request", { method: "POST" }),
+    onSuccess: () => {
+      toast.success("Correo de confirmación enviado");
+      queryClient.invalidateQueries({ queryKey: ["session"] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Correo electrónico</CardTitle>
+        <CardDescription>
+          {user.emailVerifiedAt
+            ? "Tu correo está confirmado."
+            : "Confirma tu correo para poder solicitar la verificación docente."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex items-center justify-between gap-3">
+        <span className="text-sm">{user.email}</span>
+        {user.emailVerifiedAt ? (
+          <Badge variant="secondary">Verificado</Badge>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => resend.mutate()}
+            disabled={resend.isPending}
+          >
+            Reenviar correo
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TeacherVerificationCard({ user }: { user: User }) {
+  const queryClient = useQueryClient();
+  const [institution, setInstitution] = React.useState("");
+  const [area, setArea] = React.useState("");
+  const [position, setPosition] = React.useState("");
+  const [evidenceUrl, setEvidenceUrl] = React.useState("");
+
+  const profileQuery = useQuery({
+    queryKey: ["teacher-verification"],
+    queryFn: () => apiFetch<TeacherProfile | null>("/teacher/verification"),
+    enabled: user.role !== "ADMIN",
+  });
+
+  const request = useMutation({
+    mutationFn: () =>
+      apiFetch<TeacherProfile>("/teacher/verification", {
+        method: "POST",
+        body: {
+          institution,
+          area: area || undefined,
+          position: position || undefined,
+          evidenceUrl: evidenceUrl || undefined,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Solicitud enviada");
+      queryClient.invalidateQueries({ queryKey: ["teacher-verification"] });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
+  if (user.role === "ADMIN") {
+    return null;
+  }
+
+  const profile = profileQuery.data;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Perfil docente</CardTitle>
+        <CardDescription>
+          La verificación es híbrida: dominio institucional confirmado o revisión
+          administrativa.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {profile ? (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Estado:</span>
+            <Badge
+              variant={profile.status === "VERIFIED" ? "default" : "outline"}
+            >
+              {profile.status}
+            </Badge>
+            {profile.rejectionReason ? (
+              <span className="text-destructive">{profile.rejectionReason}</span>
+            ) : null}
+          </div>
+        ) : null}
+
+        {profile?.status === "VERIFIED" ? (
+          <p className="text-sm text-muted-foreground">
+            Ya puedes crear proyectos de curso.
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="institution">Institución</Label>
+              <Input
+                id="institution"
+                value={institution}
+                onChange={(event) => setInstitution(event.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="teacherArea">Área</Label>
+              <Input
+                id="teacherArea"
+                value={area}
+                onChange={(event) => setArea(event.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="teacherPosition">Cargo</Label>
+              <Input
+                id="teacherPosition"
+                value={position}
+                onChange={(event) => setPosition(event.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="evidenceUrl">Evidencia (URL)</Label>
+              <Input
+                id="evidenceUrl"
+                value={evidenceUrl}
+                onChange={(event) => setEvidenceUrl(event.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button
+                onClick={() => request.mutate()}
+                disabled={!institution.trim() || request.isPending}
+              >
+                Solicitar verificación
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

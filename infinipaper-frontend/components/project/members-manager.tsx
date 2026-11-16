@@ -20,6 +20,7 @@ import { Trash2Icon, UserPlusIcon } from "lucide-react";
 export function MembersManager({ projectId }: { projectId: string }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = React.useState("");
+  const [addRole, setAddRole] = React.useState<ProjectRole>("VIEWER");
 
   const membersQuery = useQuery({
     queryKey: ["members", projectId],
@@ -42,7 +43,7 @@ export function MembersManager({ projectId }: { projectId: string }) {
     mutationFn: (userId: string) =>
       apiFetch(`/projects/${projectId}/members`, {
         method: "POST",
-        body: { userId, role: "VIEWER" },
+        body: { userId, role: addRole },
       }),
     onSuccess: () => {
       toast.success("Participante añadido");
@@ -91,6 +92,24 @@ export function MembersManager({ projectId }: { projectId: string }) {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
+          <Select
+            value={addRole}
+            onValueChange={(value) => setAddRole(value as ProjectRole)}
+            items={[
+              { label: "Lector", value: "VIEWER" },
+              { label: "Editor", value: "EDITOR" },
+              { label: "Estudiante", value: "STUDENT" },
+            ]}
+          >
+            <SelectTrigger className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="VIEWER">Lector</SelectItem>
+              <SelectItem value="EDITOR">Editor</SelectItem>
+              <SelectItem value="STUDENT">Estudiante</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         {search.trim().length >= 2 && searchQuery.data ? (
           <ul className="divide-y rounded-lg border">
@@ -162,6 +181,7 @@ export function MembersManager({ projectId }: { projectId: string }) {
               items={[
                 { label: "Puede editar", value: "EDITOR" },
                 { label: "Solo ver", value: "VIEWER" },
+                { label: "Estudiante", value: "STUDENT" },
               ]}
             >
               <SelectTrigger className="w-36">
@@ -170,6 +190,7 @@ export function MembersManager({ projectId }: { projectId: string }) {
               <SelectContent>
                 <SelectItem value="EDITOR">Puede editar</SelectItem>
                 <SelectItem value="VIEWER">Solo ver</SelectItem>
+                <SelectItem value="STUDENT">Estudiante</SelectItem>
               </SelectContent>
             </Select>
             <Button

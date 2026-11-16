@@ -25,8 +25,11 @@ El proyecto usa ESM (`"type": "module"`), NestJS 12, Vitest, oxlint y Prettier.
 | `pg-boss` | Cola de trabajos respaldada por PostgreSQL (spec 010) |
 | `@nestjs/swagger` | Documentación OpenAPI |
 | `mime-types` | Inferencia y validación de tipo por extensión (spec 005) |
+| `nodemailer` | Envío SMTP de correos de confirmación y verificación docente (spec 015) |
 
 > El cliente HTTP hacia el servicio ASR usa `fetch` nativo de Node, sin dependencias extra.
+>
+> **Correo (spec 015):** `nodemailer` apunta a Mailpit en desarrollo (`mailpit:1025`) y a un SMTP real en producción. La UI de Mailpit queda en `http://localhost:8025`.
 
 ### Dependencias de desarrollo
 
@@ -58,6 +61,7 @@ Usa Next.js 16, React 19, shadcn/ui sobre Base UI, Tailwind v4, `lucide-react`, 
 | `react-dropzone` | Disponible para arrastrar y soltar (spec 005); v1 usa `<input type="file">` |
 | `date-fns` | Formato de fechas |
 | `diff` | Diff de líneas para el preview de estructuración IA (spec 012) |
+| Componentes de quiz | Editor y visor construidos con shadcn/Base UI existentes (spec 017) |
 
 > **PDF (spec 006):** se usa el visor nativo del navegador mediante `<iframe src="/api/v1/files/:id/content">`, que evita configurar un worker de PDF.js y mantiene el proxy same-origin.
 

@@ -20,6 +20,7 @@ import { PaginationDto } from '../../common/dto/pagination.dto.js';
 import { ListProjectsDto } from './dto/list-projects.dto.js';
 import type { User } from '../../generated/prisma/client.js';
 import { CreateProjectDto } from './dto/create-project.dto.js';
+import { ExtendArchiveDto } from './dto/extend-archive.dto.js';
 import { UpdateProjectDto } from './dto/update-project.dto.js';
 import { ProjectsService } from './projects.service.js';
 
@@ -62,6 +63,31 @@ export class ProjectsController {
     @Body() dto: UpdateProjectDto,
   ) {
     return this.projects.update(projectId, dto);
+  }
+
+  @Post(':projectId/archive')
+  @RequireProjectRole('owner')
+  archive(
+    @Param('projectId') projectId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.projects.archive(projectId, user.id);
+  }
+
+  @Post(':projectId/archive/extend')
+  @RequireProjectRole('owner')
+  extendArchive(
+    @Param('projectId') projectId: string,
+    @CurrentUser() user: User,
+    @Body() dto: ExtendArchiveDto,
+  ) {
+    return this.projects.extendArchive(projectId, user.id, dto);
+  }
+
+  @Post(':projectId/restore')
+  @RequireProjectRole('owner')
+  restore(@Param('projectId') projectId: string, @CurrentUser() user: User) {
+    return this.projects.restore(projectId, user.id);
   }
 
   @Delete(':projectId')

@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `017` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -175,13 +175,17 @@ Además, un cuestionario no es solo un archivo: tiene preguntas, opciones, punta
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
-| G-01 | Sin banco de preguntas compartido. | Cada cuestionario se edita por separado. | `T-060` |
-| G-02 | Sin importación QTI/Moodle. | La creación es manual o por IA (spec 022). | `T-061` |
+| G-01 | Sin UI para duplicar/archivar quizzes. | El backend lo soporta, pero falta acción visual. | `T-060` |
+| G-02 | La edición de preguntas es por reemplazo completo. | No se edita una pregunta individual de forma aislada. | `T-061` |
+| G-03 | Sin tests automatizados de quiz/snapshot. | La cobertura es E2E manual. | `T-062` |
+| G-04 | Sin banco de preguntas compartido ni importación QTI/Moodle. | Cada cuestionario se edita por separado. | `T-063` |
 
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-04 | Quiz creado como `Resource(kind=QUIZ)`, preguntas guardadas y publicación. | 2026-11-15 |
+| CA-05 | Estudiante asignado recibe el quiz sin `isCorrect`/`correctText`; no asignado queda fuera del listado. | 2026-11-15 |
+| CA-06–CA-08 | Snapshot JSON generado; archivo con intentos bloqueado. | 2026-11-15 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).

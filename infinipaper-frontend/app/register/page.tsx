@@ -46,8 +46,10 @@ export default function RegisterPage() {
   async function onSubmit(values: FormValues) {
     try {
       await apiFetch("/auth/register", { method: "POST", body: values });
-      toast.success("Cuenta creada");
-      router.replace("/");
+      toast.success(
+        "Cuenta creada. Revisa tu correo para confirmar tu dirección.",
+      );
+      router.replace("/profile");
       router.refresh();
     } catch (error) {
       const message =

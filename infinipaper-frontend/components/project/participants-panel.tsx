@@ -6,11 +6,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { apiFetch, userAvatarUrl } from "@/lib/api";
 import type { ProjectMember, PublicUser } from "@/lib/types";
-import { CrownIcon, PencilIcon, EyeIcon } from "lucide-react";
+import {
+  CrownIcon,
+  EyeIcon,
+  GraduationCapIcon,
+  PencilIcon,
+} from "lucide-react";
 
 const ROLE_LABEL: Record<string, string> = {
   EDITOR: "Editor",
   VIEWER: "Lector",
+  STUDENT: "Estudiante",
 };
 
 function initials(name: string): string {
@@ -97,6 +103,8 @@ export function ParticipantsPanel({
               icon={
                 member.role === "EDITOR" ? (
                   <PencilIcon data-icon="inline-start" />
+                ) : member.role === "STUDENT" ? (
+                  <GraduationCapIcon data-icon="inline-start" />
                 ) : (
                   <EyeIcon data-icon="inline-start" />
                 )

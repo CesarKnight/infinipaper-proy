@@ -17,14 +17,43 @@ enum UserStatus {
   ARCHIVED
 }
 
+enum GlobalRole {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum TeacherStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  REVOKED
+}
+
+enum TeacherVerificationMethod {
+  INSTITUTIONAL_EMAIL
+  MANUAL
+}
+
 enum ProjectVisibility {
   PUBLIC
   PRIVATE
 }
 
+enum ProjectType {
+  PERSONAL
+  COURSE
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 enum ProjectRole {
   EDITOR
   VIEWER
+  STUDENT
 }
 
 enum ResourceKind {
@@ -33,6 +62,7 @@ enum ResourceKind {
   AUDIO
   VIDEO
   MARKDOWN
+  QUIZ
 }
 
 enum TranscriptionStatus {
@@ -49,30 +79,66 @@ enum AgentJobStatus {
   FAILED
 }
 
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuizQuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+enum QuizAssignmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum QuizAttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
+  EXPIRED
+}
+
 // ---------------------------------------------------------------
 // Usuarios y sesiones
 // ---------------------------------------------------------------
 
 model User {
-  id           String     @id @default(cuid())
-  username     String     @unique
-  email        String     @unique
-  passwordHash String
-  displayName  String
-  avatarUrl    String?
-  bio          String?
-  status       UserStatus @default(ACTIVE)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id              String     @id @default(cuid())
+  username        String     @unique
+  email           String     @unique
+  passwordHash    String
+  displayName     String
+  avatarUrl       String?
+  bio             String?
+  role            GlobalRole @default(STUDENT)
+  emailVerifiedAt DateTime?
+  status          UserStatus @default(ACTIVE)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
-  sessions       Session[]
-  projects       Project[]
-  memberships    ProjectMember[]
-  uploads        Resource[]
-  transcriptions TranscriptionJob[]
-  structureJobs  NoteStructureJob[]
+  sessions                Session[]
+  projects                Project[]
+  memberships             ProjectMember[]
+  uploads                 Resource[]
+  transcriptions          TranscriptionJob[]
+  structureJobs           NoteStructureJob[]
+  emailVerificationTokens EmailVerificationToken[]
+  teacherProfile          TeacherProfile?               @relation("TeacherProfileUser")
+  reviewedTeacherProfiles TeacherProfile[]              @relation("TeacherProfileReviewer")
+  auditEvents             AuditEvent[]                  @relation("AuditActor")
+  createdQuizzes          Quiz[]                        @relation("QuizCreator")
+  createdQuizAssignments  QuizAssignment[]              @relation("QuizAssignmentCreator")
+  quizAssignments         QuizAssignmentStudent[]       @relation("StudentAssignments")
+  quizAttempts            QuizAttempt[]                 @relation("StudentQuizAttempts")
 
   @@index([status])
+  @@index([role])
 }
 
 model Session {
@@ -88,25 +154,88 @@ model Session {
   @@index([expiresAt])
 }
 
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model TeacherProfile {
+  id              String                    @id @default(cuid())
+  userId          String                    @unique
+  status          TeacherStatus             @default(PENDING)
+  method          TeacherVerificationMethod @default(MANUAL)
+  institution     String
+  area            String?
+  position        String?
+  evidenceUrl     String?
+  reviewerId      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  user     User  @relation("TeacherProfileUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("TeacherProfileReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([reviewerId])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
 // ---------------------------------------------------------------
 // Proyectos
 // ---------------------------------------------------------------
 
 model Project {
-  id          String            @id @default(cuid())
-  ownerId     String
-  name        String
-  description String?
-  visibility  ProjectVisibility @default(PRIVATE)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id                  String            @id @default(cuid())
+  ownerId             String
+  name                String
+  description         String?
+  visibility          ProjectVisibility @default(PRIVATE)
+  type                ProjectType       @default(PERSONAL)
+  status              ProjectStatus     @default(ACTIVE)
+  institution         String?
+  period              String?
+  subject             String?
+  code                String?
+  archivedAt          DateTime?
+  archiveAccessUntil  DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
-  owner   User            @relation(fields: [ownerId], references: [id])
-  folders Folder[]
-  members ProjectMember[]
+  owner            User              @relation(fields: [ownerId], references: [id])
+  folders          Folder[]
+  members          ProjectMember[]
+  quizAssignments  QuizAssignment[]
 
   @@index([ownerId])
   @@index([visibility])
+  @@index([type])
+  @@index([status])
 }
 
 model ProjectMember {
@@ -165,6 +294,7 @@ model Resource {
   transcriptions    TranscriptionJob[]
   structureJobs     NoteStructureJob[] @relation("StructureJobs")
   structuredResults NoteStructureJob[] @relation("StructuredResult")
+  quiz              Quiz?
 
   @@unique([folderId, name])
   @@index([folderId])
@@ -219,4 +349,135 @@ model NoteStructureJob {
 
   @@index([resourceId])
   @@index([status])
+}
+
+// ---------------------------------------------------------------
+// Cuestionarios
+// ---------------------------------------------------------------
+
+model Quiz {
+  id           String     @id @default(cuid())
+  resourceId   String     @unique
+  title        String
+  instructions String?
+  status       QuizStatus @default(DRAFT)
+  settings     Json?
+  createdById  String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  resource    Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdBy   User               @relation("QuizCreator", fields: [createdById], references: [id])
+  questions   QuizQuestion[]
+  assignments QuizAssignment[]
+
+  @@index([status])
+  @@index([createdById])
+}
+
+model QuizQuestion {
+  id            String           @id @default(cuid())
+  quizId        String
+  type          QuizQuestionType
+  prompt        String
+  points        Int              @default(1)
+  order         Int              @default(0)
+  correctText   String?
+  caseSensitive Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options QuizOption[]
+  answers QuizAnswer[]
+
+  @@index([quizId])
+}
+
+model QuizOption {
+  id         String  @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean @default(false)
+  order      Int     @default(0)
+
+  question QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers  QuizAnswer[]
+
+  @@index([questionId])
+}
+
+model QuizAssignment {
+  id                  String               @id @default(cuid())
+  quizId              String
+  projectId           String
+  createdById         String
+  startsAt            DateTime?
+  dueAt               DateTime?
+  attemptsAllowed     Int                  @default(1)
+  status              QuizAssignmentStatus @default(DRAFT)
+  resultsPublishedAt  DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  quiz      Quiz                    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  project   Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User                    @relation("QuizAssignmentCreator", fields: [createdById], references: [id])
+  students  QuizAssignmentStudent[]
+  attempts  QuizAttempt[]
+
+  @@index([quizId])
+  @@index([projectId, status])
+  @@index([createdById])
+}
+
+model QuizAssignmentStudent {
+  assignmentId String
+  studentId    String
+
+  assignment QuizAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    User           @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([assignmentId, studentId])
+  @@index([studentId])
+}
+
+model QuizAttempt {
+  id            String            @id @default(cuid())
+  assignmentId  String
+  studentId     String
+  attemptNumber Int
+  status        QuizAttemptStatus @default(IN_PROGRESS)
+  score         Float             @default(0)
+  maxScore      Float             @default(0)
+  startedAt     DateTime          @default(now())
+  submittedAt   DateTime?
+  gradedAt      DateTime?
+
+  assignment QuizAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    User           @relation("StudentQuizAttempts", fields: [studentId], references: [id], onDelete: Cascade)
+  answers    QuizAnswer[]
+
+  @@unique([assignmentId, studentId, attemptNumber])
+  @@index([assignmentId])
+  @@index([studentId])
+}
+
+model QuizAnswer {
+  id             String  @id @default(cuid())
+  attemptId      String
+  questionId     String
+  optionId       String?
+  text           String?
+  isCorrect      Boolean?
+  pointsAwarded  Float?
+  feedback       String?
+
+  attempt  QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  option   QuizOption?  @relation(fields: [optionId], references: [id], onDelete: SetNull)
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+  @@index([optionId])
 }
