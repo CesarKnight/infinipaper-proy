@@ -250,6 +250,53 @@ var MODEL = {
         "Estudiante"
       ],
       "notes": "Asignación de quizzes, intentos, guardado de respuestas, autocorrección MC/VF, calificación manual de respuesta corta y publicación de resultados."
+    },
+    {
+      "id": "UC-19",
+      "name": "Panel docente y progreso",
+      "spec": "019",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor",
+        "Estudiante"
+      ],
+      "notes": "Panel agregado por proyecto, riesgo, completitud, dificultad y exportación CSV; progreso personal del estudiante."
+    },
+    {
+      "id": "UC-20",
+      "name": "Trazabilidad y validación",
+      "spec": "020",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor",
+        "Viewer",
+        "Estudiante"
+      ],
+      "notes": "Origen, fuentes, validación docente, badges, filtros y auditoría."
+    },
+    {
+      "id": "UC-21",
+      "name": "Mapas mentales con IA",
+      "spec": "021",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor"
+      ],
+      "notes": "Job asíncrono desde apunte/carpeta/proyecto, JSON canónico y recurso MINDMAP."
+    },
+    {
+      "id": "UC-22",
+      "name": "Cuestionarios con IA",
+      "spec": "022",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor"
+      ],
+      "notes": "Job asíncrono que produce un QUIZ DRAFT con preguntas y fuentes para revisión humana."
     }
   ],
   "packageModel": {
@@ -262,11 +309,11 @@ var MODEL = {
         "children": [
           {
             "name": "app",
-            "notes": "Rutas, layouts y páginas (specs 001–012 y 015–018)."
+            "notes": "Rutas, layouts, páginas, panel docente y progreso (specs 001–012 y 015–022)."
           },
           {
             "name": "components",
-            "notes": "UI y componentes de dominio, incluidos quiz (specs 002–012 y 015–018)."
+            "notes": "UI y dominio, incluidos quiz, mindmap y procedencia (specs 002–012 y 015–022)."
           },
           {
             "name": "lib",
@@ -280,7 +327,7 @@ var MODEL = {
         "children": [
           {
             "name": "modules",
-            "notes": "auth, users, projects, folders, resources, members, transcriptions, note-structure, dashboard, teacher, quizzes y quiz-assignments."
+            "notes": "auth, users, projects, folders, resources, members, transcriptions, note-structure, dashboard, teacher, quizzes, quiz-assignments, analytics, provenance y content-generation."
           },
           {
             "name": "common",
@@ -884,6 +931,24 @@ var MODEL = {
           "type": "Component",
           "stereotype": "external_system",
           "notes": "Correo de desarrollo."
+        },
+        {
+          "name": "Analytics",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Panel docente y progreso personal."
+        },
+        {
+          "name": "Provenance",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Origen, fuentes y validación."
+        },
+        {
+          "name": "ContentGeneration",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Jobs de mapas mentales y quiz IA."
         }
       ],
       "relationships": [
@@ -1016,6 +1081,46 @@ var MODEL = {
           "from": "Email",
           "to": "SMTP / Mailpit",
           "label": "SMTP"
+        },
+        {
+          "from": "Analytics",
+          "to": "Prisma",
+          "label": "Agrega"
+        },
+        {
+          "from": "Analytics",
+          "to": "Permissions",
+          "label": "Autoriza"
+        },
+        {
+          "from": "Provenance",
+          "to": "Prisma",
+          "label": "Valida"
+        },
+        {
+          "from": "Provenance",
+          "to": "Permissions",
+          "label": "Autoriza"
+        },
+        {
+          "from": "ContentGeneration",
+          "to": "Prisma",
+          "label": "Jobs"
+        },
+        {
+          "from": "ContentGeneration",
+          "to": "pg-boss",
+          "label": "Encola"
+        },
+        {
+          "from": "ContentGeneration",
+          "to": "Agents",
+          "label": "Genera"
+        },
+        {
+          "from": "ContentGeneration",
+          "to": "Resources",
+          "label": "Guarda"
         }
       ]
     },
@@ -1357,6 +1462,26 @@ var MODEL = {
           {
             "name": "kind",
             "type": "ResourceKind"
+          },
+          {
+            "name": "origin",
+            "type": "ResourceOrigin"
+          },
+          {
+            "name": "validationStatus",
+            "type": "ValidationStatus"
+          },
+          {
+            "name": "validatedById",
+            "type": "String"
+          },
+          {
+            "name": "validatedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "validationNote",
+            "type": "String"
           },
           {
             "name": "mimeType",
@@ -1899,6 +2024,108 @@ var MODEL = {
             "type": "String"
           }
         ]
+      },
+      {
+        "name": "ResourceSource",
+        "stereotype": "entity",
+        "notes": "sourceResourceId se vuelve null si la fuente se elimina.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "resourceId",
+            "type": "String"
+          },
+          {
+            "name": "sourceResourceId",
+            "type": "String"
+          },
+          {
+            "name": "relation",
+            "type": "ResourceSourceRelation"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "ContentGenerationJob",
+        "stereotype": "entity",
+        "notes": "sources, config, resultJson, warnings y usage son opcionales.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "type",
+            "type": "ContentGenerationType"
+          },
+          {
+            "name": "folderId",
+            "type": "String"
+          },
+          {
+            "name": "requestedById",
+            "type": "String"
+          },
+          {
+            "name": "status",
+            "type": "AgentJobStatus"
+          },
+          {
+            "name": "sources",
+            "type": "Json"
+          },
+          {
+            "name": "config",
+            "type": "Json"
+          },
+          {
+            "name": "resultJson",
+            "type": "Json"
+          },
+          {
+            "name": "resultResourceId",
+            "type": "String"
+          },
+          {
+            "name": "warnings",
+            "type": "Json"
+          },
+          {
+            "name": "error",
+            "type": "String"
+          },
+          {
+            "name": "model",
+            "type": "String"
+          },
+          {
+            "name": "promptVersion",
+            "type": "String"
+          },
+          {
+            "name": "inputTokens",
+            "type": "Int"
+          },
+          {
+            "name": "outputTokens",
+            "type": "Int"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
       }
     ],
     "enums": [
@@ -2022,6 +2249,43 @@ var MODEL = {
           "SUBMITTED",
           "GRADED",
           "EXPIRED"
+        ]
+      },
+      {
+        "name": "ResourceOrigin",
+        "values": [
+          "UPLOAD",
+          "NOTE",
+          "TRANSCRIPTION",
+          "AI_STRUCTURE",
+          "AI_MINDMAP",
+          "AI_QUIZ",
+          "QUIZ",
+          "IMPORT"
+        ]
+      },
+      {
+        "name": "ValidationStatus",
+        "values": [
+          "UNVERIFIED",
+          "PENDING",
+          "VERIFIED",
+          "REJECTED"
+        ]
+      },
+      {
+        "name": "ResourceSourceRelation",
+        "values": [
+          "DERIVED_FROM",
+          "CITES",
+          "USES"
+        ]
+      },
+      {
+        "name": "ContentGenerationType",
+        "values": [
+          "MINDMAP",
+          "QUIZ"
         ]
       }
     ],
@@ -2369,6 +2633,86 @@ var MODEL = {
       {
         "from": "QuizAttempt",
         "to": "QuizAttemptStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "status"
+      },
+      {
+        "from": "Resource",
+        "to": "ResourceSource",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "sources"
+      },
+      {
+        "from": "ResourceSource",
+        "to": "Resource",
+        "type": "Association",
+        "fromMultiplicity": "0..1",
+        "toMultiplicity": "0..1",
+        "label": "sourceResource"
+      },
+      {
+        "from": "Folder",
+        "to": "ContentGenerationJob",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "generationJobs"
+      },
+      {
+        "from": "User",
+        "to": "ContentGenerationJob",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "requestedBy"
+      },
+      {
+        "from": "ContentGenerationJob",
+        "to": "Resource",
+        "type": "Association",
+        "fromMultiplicity": "0..1",
+        "toMultiplicity": "0..1",
+        "label": "resultResource"
+      },
+      {
+        "from": "Resource",
+        "to": "ResourceOrigin",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "origin"
+      },
+      {
+        "from": "Resource",
+        "to": "ValidationStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "validationStatus"
+      },
+      {
+        "from": "ResourceSource",
+        "to": "ResourceSourceRelation",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "relation"
+      },
+      {
+        "from": "ContentGenerationJob",
+        "to": "ContentGenerationType",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "type"
+      },
+      {
+        "from": "ContentGenerationJob",
+        "to": "AgentJobStatus",
         "type": "Dependency",
         "fromMultiplicity": "",
         "toMultiplicity": "",
@@ -4267,6 +4611,386 @@ var MODEL = {
           "to": "FE",
           "name": "Resultado visible",
           "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "019",
+      "name": "019 · Panel docente",
+      "participants": [
+        {
+          "alias": "D",
+          "name": "Docente / Owner",
+          "type": "Actor"
+        },
+        {
+          "alias": "S",
+          "name": "Estudiante",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Abre el panel"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /projects/:id/analytics"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Agrega assignments, intentos y respuestas"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Resumen, tareas, estudiantes y preguntas",
+          "notes": "respuesta"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /projects/:id/analytics/export"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "CSV",
+          "notes": "respuesta"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Abre Mi progreso"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /projects/:id/my-progress"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Consulta solo intentos propios"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Progreso personal",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "020",
+      "name": "020 · Trazabilidad",
+      "participants": [
+        {
+          "alias": "E",
+          "name": "Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Abre un recurso"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /files/:id/provenance"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Consulta origen, validación y fuentes"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Procedencia",
+          "notes": "respuesta"
+        },
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Verifica el recurso"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /files/:id/validate"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Valida rol y actualiza estado"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea AuditEvent"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Recurso validado",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "021",
+      "name": "021 · Mapas mentales",
+      "participants": [
+        {
+          "alias": "E",
+          "name": "Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "Q",
+          "name": "pg-boss",
+          "type": "Object"
+        },
+        {
+          "alias": "AG",
+          "name": "Agents",
+          "type": "Object"
+        },
+        {
+          "alias": "LLM",
+          "name": "LLM",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Genera mapa mental"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /folders/:id/mindmaps"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea ContentGenerationJob MINDMAP"
+        },
+        {
+          "from": "API",
+          "to": "Q",
+          "name": "Encola job"
+        },
+        {
+          "from": "Q",
+          "to": "API",
+          "name": "Worker PROCESSING"
+        },
+        {
+          "from": "API",
+          "to": "AG",
+          "name": "POST /v1/mindmaps/generate"
+        },
+        {
+          "from": "AG",
+          "to": "LLM",
+          "name": "Prompt de mapa"
+        },
+        {
+          "from": "AG",
+          "to": "API",
+          "name": "JSON validado + usage",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Guarda JSON"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Resource MINDMAP + fuentes + DONE"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /files/:id/content"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Mapa renderizable",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "022",
+      "name": "022 · Cuestionarios IA",
+      "participants": [
+        {
+          "alias": "D",
+          "name": "Docente / Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "Q",
+          "name": "pg-boss",
+          "type": "Object"
+        },
+        {
+          "alias": "AG",
+          "name": "Agents",
+          "type": "Object"
+        },
+        {
+          "alias": "LLM",
+          "name": "LLM",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Genera cuestionario IA"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /folders/:id/quizzes/generate"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea ContentGenerationJob QUIZ"
+        },
+        {
+          "from": "API",
+          "to": "Q",
+          "name": "Encola job"
+        },
+        {
+          "from": "Q",
+          "to": "API",
+          "name": "Worker PROCESSING"
+        },
+        {
+          "from": "API",
+          "to": "AG",
+          "name": "POST /v1/quizzes/generate"
+        },
+        {
+          "from": "AG",
+          "to": "LLM",
+          "name": "Prompt de preguntas"
+        },
+        {
+          "from": "AG",
+          "to": "API",
+          "name": "JSON validado + usage",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Resource QUIZ + Quiz DRAFT + sourceRefs"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Job DONE"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Revisa y publica"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "PUT /quizzes/:id/questions + POST /publish"
         }
       ]
     }

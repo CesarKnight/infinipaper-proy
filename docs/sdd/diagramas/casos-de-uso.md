@@ -43,6 +43,10 @@ flowchart LR
     UC16([UC-16<br/>Proyectos académicos y archivado]):::usecase
     UC17([UC-17<br/>Cuestionarios como recursos]):::usecase
     UC18([UC-18<br/>Tareas, intentos y revisión]):::usecase
+    UC19([UC-19<br/>Panel docente y progreso]):::usecase
+    UC20([UC-20<br/>Trazabilidad y validación]):::usecase
+    UC21([UC-21<br/>Mapas mentales con IA]):::usecase
+    UC22([UC-22<br/>Cuestionarios con IA]):::usecase
   end
 
   Visitante --> UC01
@@ -111,6 +115,21 @@ flowchart LR
   Estudiante --> UC18
   Viewer --> UC16
   Viewer --> UC17
+  Owner --> UC19
+  Editor --> UC19
+  Docente --> UC19
+  Estudiante --> UC19
+  Owner --> UC20
+  Editor --> UC20
+  Docente --> UC20
+  Viewer --> UC20
+  Estudiante --> UC20
+  Owner --> UC21
+  Editor --> UC21
+  Docente --> UC21
+  Owner --> UC22
+  Editor --> UC22
+  Docente --> UC22
 ```
 
 ## Trazabilidad
@@ -133,5 +152,9 @@ flowchart LR
 | UC-16 Proyectos académicos y archivado | [016](../specs/016-proyectos-academicos/spec.md) | Docente, Owner, Editor, Viewer, Estudiante, Administrador |
 | UC-17 Cuestionarios como recursos | [017](../specs/017-cuestionarios/spec.md) | Docente, Owner, Editor, Viewer, Estudiante, MinIO |
 | UC-18 Tareas, intentos y revisión | [018](../specs/018-tareas-intentos/spec.md) | Docente, Owner, Editor, Estudiante |
+| UC-19 Panel docente y progreso | [019](../specs/019-panel-docente/spec.md) | Docente, Owner, Editor, Estudiante |
+| UC-20 Trazabilidad y validación | [020](../specs/020-trazabilidad-recursos/spec.md) | Docente, Owner, Editor, Viewer, Estudiante |
+| UC-21 Mapas mentales con IA | [021](../specs/021-mapas-mentales/spec.md) | Docente, Owner, Editor |
+| UC-22 Cuestionarios con IA | [022](../specs/022-cuestionarios-ia/spec.md) | Docente, Owner, Editor |
 
 > `Visitante` solo accede a proyectos públicos en modo lectura y a las pantallas de registro/login. Las acciones de escritura requieren un rol de proyecto. Los roles globales `Administrador`, `Docente` y `Estudiante` no conceden acceso implícito a proyectos privados.

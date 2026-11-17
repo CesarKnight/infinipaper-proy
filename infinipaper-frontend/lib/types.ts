@@ -11,7 +11,23 @@ export type ResourceKind =
   | "AUDIO"
   | "VIDEO"
   | "MARKDOWN"
-  | "QUIZ";
+  | "QUIZ"
+  | "MINDMAP";
+export type ResourceOrigin =
+  | "UPLOAD"
+  | "NOTE"
+  | "TRANSCRIPTION"
+  | "AI_STRUCTURE"
+  | "AI_MINDMAP"
+  | "AI_QUIZ"
+  | "QUIZ"
+  | "IMPORT";
+export type ValidationStatus =
+  | "UNVERIFIED"
+  | "PENDING"
+  | "VERIFIED"
+  | "REJECTED";
+export type ResourceSourceRelation = "DERIVED_FROM" | "CITES" | "USES";
 export type TranscriptionStatus = "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
 export type AgentJobStatus = "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
 export type QuizStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -135,11 +151,31 @@ export interface Resource {
   checksum: string | null;
   createdAt: string;
   updatedAt: string;
+  origin: ResourceOrigin;
+  validationStatus: ValidationStatus;
+  validatedById?: string | null;
+  validatedAt?: string | null;
+  validationNote?: string | null;
+  validatedBy?: PublicUser | null;
+  sources?: ResourceSource[];
   author?: PublicUser;
   quiz?: {
     id: string;
     status: QuizStatus;
     title: string;
+  } | null;
+}
+
+export interface ResourceSource {
+  id: string;
+  relation: ResourceSourceRelation;
+  sourceResourceId: string | null;
+  sourceResource?: {
+    id: string;
+    name: string;
+    origin: ResourceOrigin;
+    validationStatus: ValidationStatus;
+    kind?: ResourceKind;
   } | null;
 }
 
@@ -190,6 +226,117 @@ export interface NoteStructureJob {
   updatedAt: string;
 }
 
+export type ContentGenerationType = "MINDMAP" | "QUIZ";
+
+export interface ContentGenerationJob {
+  id: string;
+  type: ContentGenerationType;
+  folderId: string;
+  requestedById: string;
+  status: AgentJobStatus;
+  sources: Array<{ resourceId: string; name: string }>;
+  config: Record<string, unknown> | null;
+  resultJson: Record<string, unknown> | null;
+  resultResourceId: string | null;
+  warnings: string[] | null;
+  error: string | null;
+  model: string | null;
+  promptVersion: string | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MindmapNode {
+  id: string;
+  label: string;
+  type?: string;
+  description?: string;
+}
+
+export interface MindmapEdge {
+  source: string;
+  target: string;
+  label?: string;
+}
+
+export interface Mindmap {
+  title: string;
+  nodes: MindmapNode[];
+  edges: MindmapEdge[];
+  sources?: string[];
+}
+
+export interface AnalyticsSummary {
+  students: number;
+  activeStudents: number;
+  pendingStudents: number;
+  assignments: number;
+  publishedAssignments: number;
+  closedAssignments: number;
+  pendingGrading: number;
+  completion: number;
+  riskThreshold: number;
+  average: number | null;
+  median: number | null;
+  min: number | null;
+  max: number | null;
+  distribution: Array<{ label: string; count: number }>;
+}
+
+export interface AnalyticsTask {
+  id: string;
+  title: string;
+  status: QuizAssignmentStatus;
+  dueAt: string | null;
+  assigned: number;
+  completed: number;
+  completion: number;
+  average: number | null;
+  pendingGrading: number;
+}
+
+export interface AnalyticsStudent {
+  studentId: string;
+  username: string;
+  displayName: string;
+  assigned: number;
+  completed: number;
+  pending: number;
+  average: number | null;
+  atRisk: boolean;
+  riskReason: string | null;
+}
+
+export interface AnalyticsQuestion {
+  id: string;
+  prompt: string;
+  answered: number;
+  correct: number;
+  accuracy: number | null;
+}
+
+export interface AnalyticsPanel {
+  filters: Record<string, string | null>;
+  summary: AnalyticsSummary;
+  tasks: AnalyticsTask[];
+  students: AnalyticsStudent[];
+  questions: AnalyticsQuestion[];
+}
+
+export interface MyProgress {
+  assignments: Array<{
+    id: string;
+    title: string;
+    dueAt: string | null;
+    status: QuizAssignmentStatus;
+    attemptsAllowed: number;
+    latestAttempt: QuizAttempt | null;
+    completed: boolean;
+  }>;
+}
+
 export interface Paged<T> {
   items: T[];
   nextCursor: string | null;
@@ -218,6 +365,7 @@ export interface QuizQuestion {
   order: number;
   correctText: string | null;
   caseSensitive: boolean;
+  sourceRefs: string[] | null;
   options: QuizOption[];
 }
 

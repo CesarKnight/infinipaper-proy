@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `020` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -166,10 +166,17 @@ Los recursos actuales no declaran de dónde vienen ni si son confiables. Un apun
 | G-01 | Sin historial de versiones de contenido. | La validación aplica al recurso actual. | `T-060` |
 | G-02 | Sin verificación externa automática. | La confianza depende del docente. | `T-061` |
 
+| G-03 | Sin notificación al autor rechazado. | El autor debe revisar el recurso. | `T-062` |
+
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01 | Apunte creado con `origin=NOTE` y autor. | 2026-11-16 |
+| CA-02–CA-04 | Validación `VERIFIED`, validador, fecha y auditoría. | 2026-11-16 |
+| CA-05–CA-07 | Rechazo visible, filtros y advertencia de fuentes. | 2026-11-16 |
+| CA-08 | Validación restringida a Owner/Editor. | 2026-11-16 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+
+> Diagramas: [UC-20](../../diagramas/casos-de-uso.md) · [Secuencia 020](../../diagramas/secuencia/020-trazabilidad-recursos.md).

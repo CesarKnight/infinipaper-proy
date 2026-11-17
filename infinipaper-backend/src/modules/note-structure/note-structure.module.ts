@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ProvenanceModule } from '../provenance/provenance.module.js';
 import { ResourcesModule } from '../resources/resources.module.js';
 import { AgentClientService } from './agent-client.service.js';
 import { NoteStructureController } from './note-structure.controller.js';
@@ -7,7 +8,7 @@ import { NoteStructureService } from './note-structure.service.js';
 import { NoteStructureWorker } from './note-structure.worker.js';
 
 @Module({
-  imports: [ResourcesModule],
+  imports: [ResourcesModule, ProvenanceModule],
   controllers: [NoteStructureController],
   providers: [
     AgentClientService,

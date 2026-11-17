@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `021` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -156,10 +156,16 @@ El requisito pide mapas mentales generados desde el contenido almacenado, guarda
 | G-01 | Sin exportación de imagen. | El mapa solo se usa dentro de la app. | `T-060` |
 | G-02 | Sin edición manual. | El usuario debe regenerar para cambiar el resultado. | `T-061` |
 
+| G-03 | Layout avanzado y rendimiento para mapas muy grandes. | El visor usa un layout radial simple. | `T-062` |
+
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-04 | Job `DONE` desde carpeta; recurso `MINDMAP` con 8 nodos y 6 aristas; original intacto. | 2026-11-16 |
+| CA-05 | Permisos de proyecto aplicados por el guard. | 2026-11-16 |
+| CA-06 | Job fallido y reintento disponibles. | 2026-11-16 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+
+> Diagramas: [UC-21](../../diagramas/casos-de-uso.md) · [Secuencia 021](../../diagramas/secuencia/021-mapas-mentales.md).

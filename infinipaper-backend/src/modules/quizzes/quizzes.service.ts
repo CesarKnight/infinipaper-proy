@@ -48,6 +48,7 @@ export class QuizzesService {
         authorId,
         name,
         kind: 'QUIZ',
+        origin: 'QUIZ',
         mimeType: QUIZ_MIME,
         size: 0,
         s3Key,
@@ -160,6 +161,7 @@ export class QuizzesService {
             order: question.order ?? index,
             correctText: question.correctText?.trim() || null,
             caseSensitive: question.caseSensitive ?? false,
+            sourceRefs: (question.sourceRefs ?? null) as Prisma.InputJsonValue,
             options: {
               create: (question.options ?? []).map((option, optionIndex) => ({
                 text: option.text.trim(),
@@ -221,6 +223,7 @@ export class QuizzesService {
         authorId: userId,
         name,
         kind: 'QUIZ',
+        origin: 'QUIZ',
         mimeType: QUIZ_MIME,
         size: 0,
         s3Key,
@@ -241,6 +244,9 @@ export class QuizzesService {
             order: question.order,
             correctText: question.correctText,
             caseSensitive: question.caseSensitive,
+            ...(question.sourceRefs
+              ? { sourceRefs: question.sourceRefs as Prisma.InputJsonValue }
+              : {}),
             options: {
               create: question.options.map((option) => ({
                 text: option.text,

@@ -23,6 +23,7 @@ interface RouteParams {
   quizId?: string;
   assignmentId?: string;
   attemptId?: string;
+  generationJobId?: string;
 }
 
 @Injectable()
@@ -122,6 +123,13 @@ export class ProjectAccessGuard implements CanActivate {
         select: { assignment: { select: { projectId: true } } },
       });
       return attempt?.assignment.projectId ?? null;
+    }
+    if (params.generationJobId) {
+      const job = await this.prisma.contentGenerationJob.findUnique({
+        where: { id: params.generationJobId },
+        select: { folder: { select: { projectId: true } } },
+      });
+      return job?.folder.projectId ?? null;
     }
     return null;
   }

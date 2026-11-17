@@ -22,10 +22,10 @@
 | `016` | [Proyectos académicos y archivado](./016-proyectos-academicos/spec.md) | Implementada con brechas | 001, 002, 008, 015 |
 | `017` | [Cuestionarios como recursos](./017-cuestionarios/spec.md) | Implementada con brechas | 003, 005, 008, 009, 016 |
 | `018` | [Tareas, intentos y revisión](./018-tareas-intentos/spec.md) | Implementada con brechas | 016, 017 |
-| `019` | [Panel docente y estadísticas del proyecto](./019-panel-docente/spec.md) | Borrador | 016, 017, 018 |
-| `020` | [Trazabilidad y validación de recursos](./020-trazabilidad-recursos/spec.md) | Borrador | 005, 009, 010, 012, 017 |
-| `021` | [Mapas mentales a partir del contenido](./021-mapas-mentales/spec.md) | Borrador | 009, 012, 016, 020 |
-| `022` | [Generación de cuestionarios con IA](./022-cuestionarios-ia/spec.md) | Borrador | 012, 017, 020 |
+| `019` | [Panel docente y estadísticas del proyecto](./019-panel-docente/spec.md) | Implementada con brechas | 016, 017, 018 |
+| `020` | [Trazabilidad y validación de recursos](./020-trazabilidad-recursos/spec.md) | Implementada con brechas | 005, 009, 010, 012, 017 |
+| `021` | [Mapas mentales a partir del contenido](./021-mapas-mentales/spec.md) | Implementada con brechas | 009, 012, 016, 020 |
+| `022` | [Generación de cuestionarios con IA](./022-cuestionarios-ia/spec.md) | Implementada con brechas | 012, 017, 020 |
 | `023` | [Métricas de uso de recursos](./023-metricas-recursos/spec.md) | Borrador | 005, 009, 010, 017, 018, 020 |
 | `024` | [Procesamiento semántico y búsqueda](./024-busqueda-semantica/spec.md) | Borrador | 005, 009, 010, 017, 020 |
 | `025` | [MCP para consulta de desempeño](./025-mcp-desempeno/spec.md) | Borrador | 016, 018, 019, 023 |
@@ -34,7 +34,7 @@
 
 La cobertura automatizada es parcial: la spec 012 incluye tests del grafo LangGraph, validadores y servicio NestJS. El resto de specs se apoya en `npm run build`, `npm run lint` y flujos manuales. Cada spec registra sus brechas funcionales en `G-*`; las tareas de pruebas automatizadas se añaden a medida que se abordan.
 
-Las specs `015`–`018` están implementadas con brechas documentadas. Las specs `019`–`025` siguen en `Borrador`: describen el alcance y los criterios, pero sus `plan.md` y `tasks.md` se crearán después de la aprobación explícita de cada una.
+Las specs `015`–`018` están implementadas con brechas documentadas. Las specs `019`–`022` también están implementadas con brechas. Las specs `023`–`025` siguen en `Borrador`: describen el alcance y los criterios, pero sus `plan.md` y `tasks.md` se crearán después de la aprobación explícita de cada una.
 
 ## Cómo añadir una spec
 

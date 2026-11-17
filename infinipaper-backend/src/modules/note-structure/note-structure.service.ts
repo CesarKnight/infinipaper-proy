@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppException } from '../../common/errors/app.exception.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { StorageService } from '../../common/storage/storage.service.js';
+import { ProvenanceService } from '../provenance/provenance.service.js';
 import { ResourcesService } from '../resources/resources.service.js';
 import { AgentClientService } from './agent-client.service.js';
 import { NoteStructureQueueService } from './note-structure.queue.js';
@@ -20,6 +21,7 @@ export class NoteStructureService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly resources: ResourcesService,
+    private readonly provenance: ProvenanceService,
     private readonly agent: AgentClientService,
     private readonly queue: NoteStructureQueueService,
     config: ConfigService,
@@ -151,6 +153,13 @@ export class NoteStructureService {
       { name, content: job.resultMarkdown },
     );
 
+    await this.prisma.resource.update({
+      where: { id: created.id },
+      data: { origin: 'AI_STRUCTURE' },
+    });
+    await this.provenance.addSources(created.id, [
+      { resourceId: original.id },
+    ]);
     await this.prisma.noteStructureJob.update({
       where: { id: job.id },
       data: { resultResourceId: created.id },

@@ -27,6 +27,8 @@ export const envValidationSchema = Joi.object({
   ADMIN_EMAILS: Joi.string().allow('').default(''),
   TEACHER_INSTITUTION_DOMAINS: Joi.string().allow('').default(''),
   PROJECT_ARCHIVE_ACCESS_DAYS: Joi.number().min(1).default(30),
+  PROJECT_RISK_THRESHOLD: Joi.number().min(0).max(100).default(70),
+  AGENT_CONTENT_ENABLED: Joi.boolean().default(true),
   PROJECT_PURGE_CRON: Joi.string().default('0 * * * *'),
 
   S3_ENDPOINT: Joi.string().default('http://localhost:9000'),

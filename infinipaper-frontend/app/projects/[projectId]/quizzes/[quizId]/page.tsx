@@ -44,6 +44,7 @@ interface DraftQuestion {
   prompt: string;
   points: number;
   correctText?: string;
+  sourceRefs?: string[];
   options?: DraftOption[];
 }
 
@@ -53,6 +54,7 @@ function toDraft(quiz: Quiz): DraftQuestion[] {
     prompt: question.prompt,
     points: question.points,
     correctText: question.correctText ?? undefined,
+    sourceRefs: question.sourceRefs ?? undefined,
     options: question.options.map((option) => ({
       text: option.text,
       isCorrect: option.isCorrect,
@@ -271,6 +273,9 @@ export default function QuizEditorPage() {
                 <p className="text-xs text-muted-foreground">
                   {question.type} · {question.points} punto
                   {question.points === 1 ? "" : "s"}
+                  {question.sourceRefs?.length
+                    ? ` · ${question.sourceRefs.length} fuente(s)`
+                    : ""}
                 </p>
                 {question.options?.length ? (
                   <ul className="mt-2 list-inside list-disc text-xs text-muted-foreground">

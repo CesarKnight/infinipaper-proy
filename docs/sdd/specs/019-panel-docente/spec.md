@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `019` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -167,10 +167,15 @@ El panel debe ser una vista del proyecto, respetando que el docente/editor ve su
 | G-01 | Sin comparación entre cursos. | El panel es por proyecto. | `T-060` |
 | G-02 | Sin predicción de abandono. | El riesgo es una regla simple. | `T-061` |
 
+| G-03 | Sin snapshots históricos ni tiempo real. | El panel siempre refleja el estado actual. | `T-062` |
+
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-05 | Panel agregado, filtros, riesgo, dificultad y CSV verificados en E2E. | 2026-11-16 |
+| CA-06–CA-07 | Progreso personal y bloqueo de panel general para estudiantes. | 2026-11-16 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+
+> Diagramas: [UC-19](../../diagramas/casos-de-uso.md) · [Secuencia 019](../../diagramas/secuencia/019-panel-docente.md).

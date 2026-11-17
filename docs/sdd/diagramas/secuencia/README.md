@@ -20,6 +20,10 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 | 016 Proyectos académicos | [016-proyectos-academicos.md](./016-proyectos-academicos.md) | Docente, Owner, Editor, API, DB, MinIO, pg-boss |
 | 017 Cuestionarios | [017-cuestionarios.md](./017-cuestionarios.md) | Docente/Editor, Estudiante, API, DB, MinIO |
 | 018 Tareas e intentos | [018-tareas-intentos.md](./018-tareas-intentos.md) | Docente/Editor, Estudiante, API, DB |
+| 019 Panel docente | [019-panel-docente.md](./019-panel-docente.md) | Docente/Owner, Estudiante, API, DB |
+| 020 Trazabilidad | [020-trazabilidad-recursos.md](./020-trazabilidad-recursos.md) | Editor, API, DB |
+| 021 Mapas mentales | [021-mapas-mentales.md](./021-mapas-mentales.md) | Editor, API, DB, pg-boss, Agents, LLM, MinIO |
+| 022 Cuestionarios IA | [022-cuestionarios-ia.md](./022-cuestionarios-ia.md) | Docente/Editor, API, DB, pg-boss, Agents, LLM, MinIO |
 
 ## Convenciones
 

@@ -6,7 +6,7 @@ import { AppException } from '../../common/errors/app.exception.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { StorageService } from '../../common/storage/storage.service.js';
 import type { UploadedFileData } from '../../common/types/uploaded-file.js';
-import type { PaginationDto } from '../../common/dto/pagination.dto.js';
+import type { ListResourcesDto } from './dto/list-resources.dto.js';
 import type { Prisma, Resource } from '../../generated/prisma/client.js';
 import { PermissionsService } from '../../common/permissions/permissions.service.js';
 import { isMarkdown, resolveKind } from './resource-kind.util.js';
@@ -33,7 +33,7 @@ export class ResourcesService {
     this.avisoFilename = config.get<string>('AVISO_FILENAME') ?? 'aviso.md';
   }
 
-  async listByFolder(folderId: string, dto: PaginationDto, userId?: string) {
+  async listByFolder(folderId: string, dto: ListResourcesDto, userId?: string) {
     const limit = dto.limit ?? 50;
     const folder = await this.getFolderOrFail(folderId);
     const project = await this.prisma.project.findUniqueOrThrow({
@@ -41,7 +41,11 @@ export class ResourcesService {
     });
     const role = await this.permissions.resolveRole(userId ?? null, project);
 
-    const where: Prisma.ResourceWhereInput = { folderId };
+    const where: Prisma.ResourceWhereInput = {
+      folderId,
+      ...(dto.origin ? { origin: dto.origin } : {}),
+      ...(dto.validationStatus ? { validationStatus: dto.validationStatus } : {}),
+    };
     if (role !== 'owner' && role !== 'editor') {
       where.OR = [
         { kind: { not: 'QUIZ' } },
@@ -62,7 +66,23 @@ export class ResourcesService {
       where,
       include: {
         author: AUTHOR_SELECT,
+        validatedBy: AUTHOR_SELECT,
         quiz: { select: { id: true, status: true, title: true } },
+        sources: {
+          select: {
+            id: true,
+            relation: true,
+            sourceResourceId: true,
+            sourceResource: {
+              select: {
+                id: true,
+                name: true,
+                origin: true,
+                validationStatus: true,
+              },
+            },
+          },
+        },
       },
       orderBy: [{ kind: 'asc' }, { name: 'asc' }],
       take: limit + 1,
@@ -79,7 +99,23 @@ export class ResourcesService {
       where: { id },
       include: {
         author: AUTHOR_SELECT,
+        validatedBy: AUTHOR_SELECT,
         quiz: { select: { id: true, status: true, title: true } },
+        sources: {
+          select: {
+            id: true,
+            relation: true,
+            sourceResourceId: true,
+            sourceResource: {
+              select: {
+                id: true,
+                name: true,
+                origin: true,
+                validationStatus: true,
+              },
+            },
+          },
+        },
       },
     });
     if (!resource) {
@@ -127,6 +163,7 @@ export class ResourcesService {
         authorId,
         name,
         kind: info.kind,
+        origin: 'UPLOAD',
         mimeType: info.mimeType,
         size: file.size,
         s3Key,
@@ -150,6 +187,38 @@ export class ResourcesService {
       this.avisoFilename,
       content,
     );
+  }
+
+  async createGenerated(
+    folderId: string,
+    authorId: string,
+    input: {
+      name: string;
+      kind: 'MINDMAP' | 'QUIZ';
+      mimeType: string;
+      content: Buffer;
+      origin: 'AI_MINDMAP' | 'AI_QUIZ' | 'QUIZ';
+    },
+  ) {
+    const folder = await this.getFolderOrFail(folderId);
+    const finalName = await this.ensureNameAvailable(folderId, input.name);
+    const s3Key = `projects/${folder.projectId}/folders/${folderId}/${randomUUID()}/${finalName}`;
+    await this.storage.put(s3Key, input.content, input.mimeType);
+    return this.prisma.resource.create({
+      data: {
+        folderId,
+        authorId,
+        name: finalName,
+        kind: input.kind,
+        origin: input.origin,
+        validationStatus: 'UNVERIFIED',
+        mimeType: input.mimeType,
+        size: input.content.length,
+        s3Key,
+        checksum: this.checksum(input.content),
+      },
+      include: { author: AUTHOR_SELECT },
+    });
   }
 
   async readText(id: string): Promise<{ content: string }> {
@@ -263,6 +332,7 @@ export class ResourcesService {
         authorId,
         name: finalName,
         kind: 'MARKDOWN',
+        origin: 'NOTE',
         mimeType: 'text/markdown',
         size: buffer.length,
         s3Key,

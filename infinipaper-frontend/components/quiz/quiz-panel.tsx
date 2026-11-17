@@ -82,6 +82,9 @@ export function QuizPanel({
                 <p className="text-xs">
                   {question.type} · {question.points} punto
                   {question.points === 1 ? "" : "s"}
+                  {question.sourceRefs?.length
+                    ? ` · ${question.sourceRefs.length} fuente(s)`
+                    : ""}
                 </p>
               </div>
             ))

@@ -19,7 +19,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { PaginationDto } from '../../common/dto/pagination.dto.js';
+import { ListResourcesDto } from './dto/list-resources.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { RequireProjectRole } from '../../common/decorators/require-project-role.decorator.js';
 import { ProjectAccessGuard } from '../../common/guards/project-access.guard.js';
@@ -44,7 +44,7 @@ export class ResourcesController {
   @RequireProjectRole('viewer')
   list(
     @Param('folderId') folderId: string,
-    @Query() dto: PaginationDto,
+    @Query() dto: ListResourcesDto,
     @CurrentUser() user?: User,
   ) {
     return this.resources.listByFolder(folderId, dto, user?.id);

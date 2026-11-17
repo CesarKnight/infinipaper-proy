@@ -35,5 +35,9 @@
 | Archivado | 30 días por defecto, ampliable; al vencer se purgan archivos y proyecto | [016](../specs/016-proyectos-academicos/spec.md) |
 | Cuestionarios | `Resource(kind=QUIZ)` con preguntas relacionales y snapshot JSON | [017](../specs/017-cuestionarios/spec.md) |
 | Tareas | `QuizAssignment` + `QuizAttempt` + `QuizAnswer`; autocorrección y revisión manual | [018](../specs/018-tareas-intentos/spec.md) |
+| Analítica | Agregaciones en vivo por proyecto; riesgo configurable con `PROJECT_RISK_THRESHOLD` | [019](../specs/019-panel-docente/spec.md) |
+| Procedencia | `Resource.origin` + `ResourceSource` + validación docente auditada | [020](../specs/020-trazabilidad-recursos/spec.md) |
+| Mapas mentales | JSON canónico en `Resource(MINDMAP)`; render en frontend | [021](../specs/021-mapas-mentales/spec.md) |
+| Quiz IA | Job asíncrono que produce un `QUIZ` en `DRAFT` con fuentes por pregunta | [022](../specs/022-cuestionarios-ia/spec.md) |
 | Peticiones del navegador | Same-origin mediante rewrites de Next (`/api/*` → `API_URL`); cookie *first-party* | [referencia/api.md](./api.md) |
 | API | Prefijo `/api/v1`, errores uniformes, paginación por cursor | [referencia/api.md](./api.md) |

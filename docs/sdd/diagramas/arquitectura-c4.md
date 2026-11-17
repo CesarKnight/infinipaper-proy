@@ -101,6 +101,9 @@ C4Component
     Component(transcriptions, "Transcriptions", "NestJS", "Jobs ASR, worker y guardado como apunte")
     Component(noteStructure, "NoteStructure", "NestJS", "Jobs de estructuración y cliente de agentes")
     Component(dashboard, "Dashboard", "NestJS", "Agregado de proyectos por categoría")
+    Component(analytics, "Analytics", "NestJS", "Panel docente, riesgo y progreso personal")
+    Component(provenance, "Provenance", "NestJS", "Origen, fuentes y validación de recursos")
+    Component(contentGeneration, "ContentGeneration", "NestJS", "Jobs de mapas mentales y quiz IA")
     Component(storage, "Storage", "S3 SDK", "Adaptador de MinIO")
     Component(prisma, "Prisma", "Prisma 7", "Acceso a PostgreSQL")
   }
@@ -137,6 +140,14 @@ C4Component
   Rel(noteStructure, prisma, "Lee y escribe jobs", "Prisma")
   Rel(noteStructure, agents, "Solicita estructuración", "HTTP interno")
   Rel(dashboard, prisma, "Consulta", "Prisma")
+  Rel(analytics, prisma, "Agrega", "Prisma")
+  Rel(analytics, permissions, "Autoriza", "interno")
+  Rel(provenance, prisma, "Lee y valida", "Prisma")
+  Rel(provenance, permissions, "Autoriza", "interno")
+  Rel(contentGeneration, prisma, "Jobs", "Prisma")
+  Rel(contentGeneration, queue, "Encola", "SQL")
+  Rel(contentGeneration, agents, "Genera contenido", "HTTP interno")
+  Rel(contentGeneration, resources, "Guarda recurso", "interno")
   Rel(email, mailpit, "SMTP", "SMTP")
   Rel(prisma, db, "Lee y escribe", "SQL")
   Rel(storage, minio, "Objetos", "S3")
@@ -188,5 +199,8 @@ C4Component
 | Componentes | `QuizzesService` mantiene preguntas relacionales y un snapshot JSON |
 | Componentes | `QuizAssignmentsService` gestiona tareas, intentos, calificación y resultados |
 | Componentes | `TeacherService` gestiona verificación docente y auditoría |
+| Componentes | `AnalyticsService` agrega métricas solo para docentes/editores |
+| Componentes | `ProvenanceService` valida recursos y conserva fuentes |
+| Componentes | `ContentGenerationService` usa agentes para mapas y quizzes IA |
 | Agentes | LangGraph orquesta router, extractor, planner, structurer y validator |
 | Agentes | v1 solo procesa Markdown; el contrato admite múltiples fuentes |

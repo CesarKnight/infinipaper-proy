@@ -84,3 +84,40 @@ class StructureResponse(ApiModel):
     coverage: float = 0.0
     usage: Usage
     prompt_version: str
+
+
+class MindmapRequest(ApiModel):
+    job_id: str
+    sources: list[SourceRef] = Field(min_length=1)
+    context: Context
+    config: dict = Field(default_factory=dict)
+
+
+class MindmapResponse(ApiModel):
+    mindmap: dict
+    warnings: list[str] = Field(default_factory=list)
+    usage: Usage
+    prompt_version: str
+
+
+class QuizGenerationConfig(ApiModel):
+    count: int = 10
+    difficulty: Literal["easy", "medium", "hard"] = "medium"
+    types: list[Literal["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER"]] = Field(
+        default_factory=lambda: ["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER"]
+    )
+    instructions: str | None = None
+
+
+class QuizGenerationRequest(ApiModel):
+    job_id: str
+    sources: list[SourceRef] = Field(min_length=1)
+    context: Context
+    config: QuizGenerationConfig = Field(default_factory=lambda: QuizGenerationConfig())
+
+
+class QuizGenerationResponse(ApiModel):
+    quiz: dict
+    warnings: list[str] = Field(default_factory=list)
+    usage: Usage
+    prompt_version: str

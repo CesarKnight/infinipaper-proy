@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `022` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -158,10 +158,16 @@ El requisito pide generar cuestionarios desde un proyecto, carpeta o apunte, per
 | G-01 | Sin evaluación pedagógica automática. | La calidad depende de la revisión humana. | `T-060` |
 | G-02 | Sin generación desde PDFs. | Solo fuentes de texto extraíble. | `T-061` |
 
+| G-03 | Edición avanzada de fuentes por pregunta. | La fuente se conserva, pero la UI no permite cambiarla. | `T-062` |
+
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-02 | Job `DONE` con 5 preguntas desde carpeta y fuentes citadas. | 2026-11-16 |
+| CA-03 | El cuestionario nace `DRAFT` y se edita antes de publicar. | 2026-11-16 |
+| CA-04–CA-06 | Fuente vacía, salida inválida y no publicación automática cubiertas por el backend. | 2026-11-16 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+
+> Diagramas: [UC-22](../../diagramas/casos-de-uso.md) · [Secuencia 022](../../diagramas/secuencia/022-cuestionarios-ia.md).

@@ -91,6 +91,11 @@ export class QuizQuestionInputDto {
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
+  sourceRefs?: string[];
+
+  @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => QuizOptionInputDto)
   options?: QuizOptionInputDto[];

@@ -2,6 +2,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AppException } from '../../common/errors/app.exception.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { StorageService } from '../../common/storage/storage.service.js';
+import { ProvenanceService } from '../provenance/provenance.service.js';
 import { ResourcesService } from '../resources/resources.service.js';
 import type { Readable } from 'node:stream';
 import { AsrService } from './asr.service.js';
@@ -21,6 +22,7 @@ export class TranscriptionsService {
     private readonly asr: AsrService,
     private readonly queue: QueueService,
     private readonly resources: ResourcesService,
+    private readonly provenance: ProvenanceService,
   ) {}
 
   async create(fileId: string, userId: string, dto: CreateTranscriptionDto) {
@@ -90,10 +92,18 @@ export class TranscriptionsService {
       throw new AppException('FILE_NOT_FOUND', 'Recurso no encontrado', 404);
     }
 
-    return this.resources.createNote(resource.folderId, userId, {
+    const created = await this.resources.createNote(resource.folderId, userId, {
       name: dto.name,
       content,
     });
+    await this.prisma.resource.update({
+      where: { id: created.id },
+      data: { origin: 'TRANSCRIPTION' },
+    });
+    await this.provenance.addSources(created.id, [
+      { resourceId: job.resourceId },
+    ]);
+    return created;
   }
 
   /** Procesa un trabajo (invocado por el worker de la cola). */

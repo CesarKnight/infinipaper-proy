@@ -146,12 +146,30 @@ function ProjectWorkspaceLayoutInner({
         </Breadcrumb>
           <div className="flex shrink-0 items-center gap-2">
             {project?.role === "owner" || project?.role === "editor" ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={<Link href={`/projects/${projectId}/analytics`} />}
+                >
+                  Panel
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={<Link href={`/projects/${projectId}/assignments`} />}
+                >
+                  Tareas
+                </Button>
+              </>
+            ) : null}
+            {project?.role === "student" ? (
               <Button
                 variant="outline"
                 size="sm"
-                render={<Link href={`/projects/${projectId}/assignments`} />}
+                render={<Link href={`/projects/${projectId}/my-progress`} />}
               >
-                Tareas
+                Mi progreso
               </Button>
             ) : null}
             {project?.role === "owner" ? (

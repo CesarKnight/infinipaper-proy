@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NoteStructureService } from './note-structure.service.js';
 
 const prisma = {
-  resource: { findUnique: vi.fn() },
+  resource: { findUnique: vi.fn(), update: vi.fn() },
   noteStructureJob: {
     findFirst: vi.fn(),
     create: vi.fn(),
@@ -12,6 +12,7 @@ const prisma = {
 };
 const storage = { getPresignedGetUrl: vi.fn() };
 const resources = { createNote: vi.fn() };
+const provenance = { addSources: vi.fn() };
 const agent = { isEnabled: vi.fn(() => true), structure: vi.fn() };
 const queue = { enqueue: vi.fn() };
 const config = { get: vi.fn((_key: string, fallback: unknown) => fallback) };
@@ -21,6 +22,7 @@ function makeService(): NoteStructureService {
     prisma as never,
     storage as never,
     resources as never,
+    provenance as never,
     agent as never,
     queue as never,
     config as never,
@@ -105,6 +107,8 @@ describe('NoteStructureService', () => {
       folderId: 'folder-1',
     });
     resources.createNote.mockResolvedValue({ id: 'new-resource' });
+    prisma.resource.update.mockResolvedValue({});
+    provenance.addSources.mockResolvedValue(undefined);
     prisma.noteStructureJob.update.mockResolvedValue({});
 
     const service = makeService();

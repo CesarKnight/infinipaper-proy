@@ -67,3 +67,7 @@
 | [016 Proyectos académicos](../specs/016-proyectos-academicos/spec.md) | `/projects/:id/archive`, `/projects/:id/archive/extend`, `/projects/:id/restore`, `/admin/projects/purge-expired` |
 | [017 Cuestionarios](../specs/017-cuestionarios/spec.md) | `/folders/:id/quizzes`, `/quizzes/:id`, `/quizzes/:id/questions`, `/quizzes/:id/publish` |
 | [018 Tareas e intentos](../specs/018-tareas-intentos/spec.md) | `/quizzes/:id/assignments`, `/assignments/*`, `/attempts/*` |
+| [019 Panel docente](../specs/019-panel-docente/spec.md) | `/projects/:id/analytics`, `/projects/:id/analytics/tasks`, `/projects/:id/analytics/students`, `/projects/:id/analytics/export`, `/projects/:id/my-progress` |
+| [020 Trazabilidad](../specs/020-trazabilidad-recursos/spec.md) | `/files/:id/provenance`, `/files/:id/validate`, filtros `origin` y `validationStatus` |
+| [021 Mapas mentales](../specs/021-mapas-mentales/spec.md) | `/folders/:id/mindmaps`, `/generation-jobs/:id`, `/generation-jobs/:id/retry` |
+| [022 Cuestionarios IA](../specs/022-cuestionarios-ia/spec.md) | `/folders/:id/quizzes/generate`, `/generation-jobs/:id` |

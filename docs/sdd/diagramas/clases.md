@@ -85,6 +85,11 @@ classDiagram
     +String authorId
     +String name
     +ResourceKind kind
+    +ResourceOrigin origin
+    +ValidationStatus validationStatus
+    +String validatedById
+    +DateTime validatedAt
+    +String validationNote
     +String mimeType
     +Int size
     +String s3Key
@@ -189,6 +194,7 @@ classDiagram
     +Int order
     +String correctText
     +Boolean caseSensitive
+    +Json sourceRefs
     +DateTime createdAt
     +DateTime updatedAt
   }
@@ -249,6 +255,36 @@ classDiagram
     +String feedback
   }
 
+  class ResourceSource {
+    <<entity>>
+    +String id
+    +String resourceId
+    +String sourceResourceId
+    +ResourceSourceRelation relation
+    +DateTime createdAt
+  }
+
+  class ContentGenerationJob {
+    <<entity>>
+    +String id
+    +ContentGenerationType type
+    +String folderId
+    +String requestedById
+    +AgentJobStatus status
+    +Json sources
+    +Json config
+    +Json resultJson
+    +String resultResourceId
+    +Json warnings
+    +String error
+    +String model
+    +String promptVersion
+    +Int inputTokens
+    +Int outputTokens
+    +DateTime createdAt
+    +DateTime updatedAt
+  }
+
   class UserStatus {
     <<enumeration>>
     ACTIVE
@@ -274,6 +310,39 @@ classDiagram
     <<enumeration>>
     INSTITUTIONAL_EMAIL
     MANUAL
+  }
+
+  class ResourceOrigin {
+    <<enumeration>>
+    UPLOAD
+    NOTE
+    TRANSCRIPTION
+    AI_STRUCTURE
+    AI_MINDMAP
+    AI_QUIZ
+    QUIZ
+    IMPORT
+  }
+
+  class ValidationStatus {
+    <<enumeration>>
+    UNVERIFIED
+    PENDING
+    VERIFIED
+    REJECTED
+  }
+
+  class ResourceSourceRelation {
+    <<enumeration>>
+    DERIVED_FROM
+    CITES
+    USES
+  }
+
+  class ContentGenerationType {
+    <<enumeration>>
+    MINDMAP
+    QUIZ
   }
 
   class ProjectVisibility {
@@ -373,6 +442,11 @@ classDiagram
   Resource "1" --> "0..*" NoteStructureJob : structureJobs
   NoteStructureJob "0..1" --> "0..1" Resource : resultResource
   Resource "1" *-- "0..1" Quiz : quiz
+  Resource "1" *-- "0..*" ResourceSource : sources
+  ResourceSource "0..1" --> "0..1" Resource : sourceResource
+  Folder "1" *-- "0..*" ContentGenerationJob : generationJobs
+  User "1" --> "0..*" ContentGenerationJob : requestedBy
+  ContentGenerationJob "0..1" --> "0..1" Resource : resultResource
 
   User "1" *-- "0..*" EmailVerificationToken : emailVerificationTokens
   User "1" --> "0..1" TeacherProfile : teacherProfile
@@ -400,6 +474,11 @@ classDiagram
   Project --> ProjectStatus
   ProjectMember --> ProjectRole
   Resource --> ResourceKind
+  Resource --> ResourceOrigin
+  Resource --> ValidationStatus
+  ResourceSource --> ResourceSourceRelation
+  ContentGenerationJob --> ContentGenerationType
+  ContentGenerationJob --> AgentJobStatus
   TranscriptionJob --> TranscriptionStatus
   NoteStructureJob --> AgentJobStatus
   TeacherProfile --> TeacherStatus
@@ -412,7 +491,9 @@ classDiagram
   note for User "avatarUrl, bio y emailVerifiedAt son opcionales"
   note for Project "description, institution, period, subject, code, archivedAt y archiveAccessUntil son opcionales"
   note for Folder "parentId es opcional; la raíz tiene isRoot=true"
-  note for Resource "checksum es opcional; s3Key es único; QUIZ enlaza con Quiz"
+  note for Resource "checksum es opcional; s3Key es único; QUIZ enlaza con Quiz; origin y validación son metadatos"
+  note for ResourceSource "sourceResourceId se vuelve null si la fuente se elimina"
+  note for ContentGenerationJob "sources, config, resultJson, warnings y usage son opcionales"
   note for TranscriptionJob "text y error son opcionales"
   note for NoteStructureJob "resultMarkdown, outline, warnings, error y usage son opcionales"
   note for EmailVerificationToken "usedAt es opcional; tokenHash es único"
@@ -465,6 +546,33 @@ classDiagram
     +approve()
     +reject()
     +revoke()
+  }
+  class AnalyticsService {
+    +getPanel()
+    +getTasks()
+    +getStudents()
+    +exportCsv()
+    +myProgress()
+  }
+  class ProvenanceService {
+    +get()
+    +validate()
+    +addSources()
+    +setOrigin()
+  }
+  class ContentGenerationService {
+    +createMindmap()
+    +createQuiz()
+    +getJob()
+    +retry()
+    +process()
+  }
+  class ContentGenerationQueueService {
+    +enqueue()
+    +registerWorker()
+  }
+  class ContentAgentClient {
+    +generate()
   }
   class RolesGuard {
     +canActivate()
@@ -631,6 +739,18 @@ classDiagram
   TeacherService --> PrismaService
   TeacherService --> EmailService
   RolesGuard --> PermissionsService
+  AnalyticsService --> PrismaService
+  AnalyticsService --> PermissionsService
+  ProvenanceService --> PrismaService
+  ProvenanceService --> PermissionsService
+  ContentGenerationService --> PrismaService
+  ContentGenerationService --> StorageService
+  ContentGenerationService --> PermissionsService
+  ContentGenerationService --> QuizzesService
+  ContentGenerationService --> ResourcesService
+  ContentGenerationService --> ProvenanceService
+  ContentGenerationService --> ContentAgentClient
+  ContentGenerationService --> ContentGenerationQueueService
 
   UsersController --> UsersService
   UsersService --> PasswordService
@@ -783,5 +903,9 @@ classDiagram
 | `Project.type/status/archiveAccessUntil`, `ProjectPurgeQueueService` | 016 |
 | `Quiz`, `QuizQuestion`, `QuizOption`, `QuizzesService` | 017 |
 | `QuizAssignment`, `QuizAssignmentStudent`, `QuizAttempt`, `QuizAnswer`, `QuizAssignmentsService` | 018 |
+| `AnalyticsService` | 019 |
+| `ResourceSource`, `ProvenanceService`, `Resource.origin/validationStatus` | 020 |
+| `ContentGenerationJob`, `ResourceKind.MINDMAP`, `ContentGenerationService` | 021 |
+| `ContentGenerationJob` tipo QUIZ, `QuizQuestion.sourceRefs` | 022 |
 
 > El diagrama formal equivalente se crea en Enterprise Architect desde [`docs/sdd/ea/modelo.json`](../ea/modelo.json).

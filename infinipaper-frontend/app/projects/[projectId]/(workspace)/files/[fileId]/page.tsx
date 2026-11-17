@@ -14,6 +14,8 @@ import type { Resource, TranscriptionJob } from "@/lib/types";
 import { MarkdownView } from "@/components/project/markdown-view";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import { QuizPanel } from "@/components/quiz/quiz-panel";
+import { MindmapViewer } from "@/components/mindmap/mindmap-viewer";
+import { ProvenancePanel } from "@/components/project/provenance-panel";
 import { StructureNoteButton } from "@/components/markdown/structure-note-dialog";
 import { AutosaveStatusIndicator } from "@/components/markdown/autosave-status";
 import { useWorkspace } from "@/components/project/workspace-context";
@@ -71,11 +73,18 @@ export default function FileViewerPage() {
       {resourceQuery.isLoading || !resource ? (
         <Skeleton className="h-64 w-full" />
       ) : (
-        <ResourceContent
-          resource={resource}
-          canEdit={Boolean(canEdit)}
-          projectId={projectId}
-        />
+        <div className="flex flex-col gap-4">
+          <ResourceContent
+            resource={resource}
+            canEdit={Boolean(canEdit)}
+            projectId={projectId}
+          />
+          <ProvenancePanel
+            resource={resource}
+            canEdit={Boolean(canEdit)}
+            projectId={projectId}
+          />
+        </div>
       )}
     </div>
   );
@@ -117,6 +126,10 @@ function ResourceContent({
 
   if (resource.kind === "MARKDOWN") {
     return <MarkdownViewer resource={resource} canEdit={canEdit} />;
+  }
+
+  if (resource.kind === "MINDMAP") {
+    return <MindmapViewer resourceId={resource.id} />;
   }
 
   if (resource.kind === "QUIZ") {

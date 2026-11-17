@@ -68,6 +68,36 @@ enum ResourceKind {
   VIDEO
   MARKDOWN
   QUIZ
+  MINDMAP
+}
+
+enum ResourceOrigin {
+  UPLOAD
+  NOTE
+  TRANSCRIPTION
+  AI_STRUCTURE
+  AI_MINDMAP
+  AI_QUIZ
+  QUIZ
+  IMPORT
+}
+
+enum ValidationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ResourceSourceRelation {
+  DERIVED_FROM
+  CITES
+  USES
+}
+
+enum ContentGenerationType {
+  MINDMAP
+  QUIZ
 }
 
 enum TranscriptionStatus {
@@ -141,6 +171,8 @@ model User {
   createdQuizAssignments  QuizAssignment[]              @relation("QuizAssignmentCreator")
   quizAssignments         QuizAssignmentStudent[]       @relation("StudentAssignments")
   quizAttempts            QuizAttempt[]                 @relation("StudentQuizAttempts")
+  validatedResources      Resource[]                    @relation("ResourceValidator")
+  generationJobs          ContentGenerationJob[]        @relation("ContentGenerationRequester")
 
   @@index([status])
   @@index([role])
@@ -275,6 +307,7 @@ model Folder {
   parent    Folder?    @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
   children  Folder[]   @relation("FolderChildren")
   resources Resource[]
+  generationJobs ContentGenerationJob[]
 
   @@unique([projectId, parentId, name])
   @@index([projectId])
@@ -282,28 +315,84 @@ model Folder {
 }
 
 model Resource {
-  id        String       @id @default(cuid())
-  folderId  String
-  authorId  String
-  name      String
-  kind      ResourceKind
-  mimeType  String
-  size      Int
-  s3Key     String       @unique
-  checksum  String?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id               String           @id @default(cuid())
+  folderId         String
+  authorId         String
+  name             String
+  kind             ResourceKind
+  origin           ResourceOrigin   @default(UPLOAD)
+  validationStatus ValidationStatus @default(UNVERIFIED)
+  validatedById    String?
+  validatedAt      DateTime?
+  validationNote   String?
+  mimeType         String
+  size             Int
+  s3Key            String           @unique
+  checksum         String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
-  folder            Folder             @relation(fields: [folderId], references: [id], onDelete: Cascade)
-  author            User               @relation(fields: [authorId], references: [id])
+  folder            Folder                @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  author            User                  @relation(fields: [authorId], references: [id])
+  validatedBy       User?                 @relation("ResourceValidator", fields: [validatedById], references: [id], onDelete: SetNull)
   transcriptions    TranscriptionJob[]
-  structureJobs     NoteStructureJob[] @relation("StructureJobs")
-  structuredResults NoteStructureJob[] @relation("StructuredResult")
+  structureJobs     NoteStructureJob[]    @relation("StructureJobs")
+  structuredResults NoteStructureJob[]    @relation("StructuredResult")
   quiz              Quiz?
+  sources           ResourceSource[]      @relation("ResourceSources")
+  sourceOf          ResourceSource[]      @relation("ResourceSourceTargets")
+  generationResult  ContentGenerationJob? @relation("GenerationResult")
 
   @@unique([folderId, name])
   @@index([folderId])
   @@index([kind])
+  @@index([origin])
+  @@index([validationStatus])
+  @@index([validatedById])
+}
+
+model ResourceSource {
+  id               String                 @id @default(cuid())
+  resourceId       String
+  sourceResourceId String?
+  relation         ResourceSourceRelation @default(DERIVED_FROM)
+  createdAt        DateTime               @default(now())
+
+  resource       Resource  @relation("ResourceSources", fields: [resourceId], references: [id], onDelete: Cascade)
+  sourceResource Resource? @relation("ResourceSourceTargets", fields: [sourceResourceId], references: [id], onDelete: SetNull)
+
+  @@unique([resourceId, sourceResourceId, relation])
+  @@index([resourceId])
+  @@index([sourceResourceId])
+}
+
+model ContentGenerationJob {
+  id               String                 @id @default(cuid())
+  type             ContentGenerationType
+  folderId         String
+  requestedById    String
+  status           AgentJobStatus         @default(QUEUED)
+  sources          Json
+  config           Json?
+  resultJson       Json?
+  resultResourceId String?                @unique
+  warnings         Json?
+  error            String?
+  model            String?
+  promptVersion    String?
+  inputTokens      Int?
+  outputTokens     Int?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  folder         Folder    @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  requestedBy    User      @relation("ContentGenerationRequester", fields: [requestedById], references: [id])
+  resultResource Resource? @relation("GenerationResult", fields: [resultResourceId], references: [id], onDelete: SetNull)
+
+  @@index([folderId])
+  @@index([requestedById])
+  @@index([status])
+  @@index([type])
 }
 
 // ---------------------------------------------------------------
@@ -389,6 +478,7 @@ model QuizQuestion {
   order         Int              @default(0)
   correctText   String?
   caseSensitive Boolean          @default(false)
+  sourceRefs    Json?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
@@ -504,3 +594,5 @@ model QuizAnswer {
 - **Proyectos académicos:** `Project.type` distingue `PERSONAL` y `COURSE`; `status` y `archiveAccessUntil` controlan el archivado. Al vencer, un job purga archivos y proyecto.
 - **Cuestionarios:** `Resource(kind=QUIZ)` es la entrada en la jerarquía; `Quiz` guarda preguntas, opciones y configuración. El snapshot JSON vive en MinIO.
 - **Tareas:** `QuizAssignment` asigna un quiz a estudiantes; `QuizAttempt` y `QuizAnswer` conservan intentos, puntajes y feedback.
+- **Procedencia:** `Resource.origin`, `validationStatus` y `ResourceSource` enlazan recursos derivados con sus fuentes y permiten validación docente.
+- **Generación IA:** `ContentGenerationJob` registra jobs de mapas mentales y cuestionarios, sus fuentes, configuración, usage y recurso resultante.

@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from infinipaper_agents.api.routes.content import router as content_router
 from infinipaper_agents.api.routes.notes import router as notes_router
 from infinipaper_agents.config import get_settings
 from infinipaper_agents.errors import AgentError
@@ -17,7 +18,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     configure_logging(settings)
     app.state.settings = settings
-    app.state.graph = build_graph(settings, create_model(settings))
+    model = create_model(settings)
+    app.state.model = model
+    app.state.graph = build_graph(settings, model)
     yield
 
 
@@ -29,6 +32,7 @@ app = FastAPI(
 )
 
 app.include_router(notes_router)
+app.include_router(content_router)
 
 
 @app.exception_handler(AgentError)

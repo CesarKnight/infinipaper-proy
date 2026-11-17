@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,10 +23,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { GenerationDialog } from "@/components/generation/generation-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiFetch, ApiError, userAvatarUrl } from "@/lib/api";
-import type { Paged, Resource, ResourceKind } from "@/lib/types";
+import type {
+  Paged,
+  Resource,
+  ResourceKind,
+  ResourceOrigin,
+  ValidationStatus,
+} from "@/lib/types";
 import {
+  BrainCircuitIcon,
   ClipboardListIcon,
   FileIcon,
   FileTextIcon,
@@ -33,6 +42,7 @@ import {
   MusicIcon,
   NotebookPenIcon,
   Trash2Icon,
+  SparklesIcon,
   UploadIcon,
   VideoIcon,
 } from "lucide-react";
@@ -49,6 +59,8 @@ function kindIcon(kind: ResourceKind) {
       return <FileTextIcon className="size-4 text-muted-foreground" />;
     case "QUIZ":
       return <ClipboardListIcon className="size-4 text-muted-foreground" />;
+    case "MINDMAP":
+      return <BrainCircuitIcon className="size-4 text-muted-foreground" />;
     default:
       return <FileIcon className="size-4 text-muted-foreground" />;
   }
@@ -69,6 +81,24 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
+const ORIGIN_LABEL: Record<ResourceOrigin, string> = {
+  UPLOAD: "Subida",
+  NOTE: "Apunte",
+  TRANSCRIPTION: "Transcripción",
+  AI_STRUCTURE: "IA · estructura",
+  AI_MINDMAP: "IA · mapa",
+  AI_QUIZ: "IA · quiz",
+  QUIZ: "Cuestionario",
+  IMPORT: "Importado",
+};
+
+const VALIDATION_LABEL: Record<ValidationStatus, string> = {
+  UNVERIFIED: "No verificado",
+  PENDING: "Pendiente",
+  VERIFIED: "Verificado",
+  REJECTED: "Rechazado",
+};
+
 interface ResourceListProps {
   projectId: string;
   folderId: string;
@@ -85,11 +115,23 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
   const [quizOpen, setQuizOpen] = React.useState(false);
   const [quizTitle, setQuizTitle] = React.useState("");
   const [quizInstructions, setQuizInstructions] = React.useState("");
+  const [generationKind, setGenerationKind] = React.useState<"MINDMAP" | "QUIZ" | null>(null);
+  const [origin, setOrigin] = React.useState<string>("all");
+  const [validationStatus, setValidationStatus] = React.useState<string>("all");
   const [sort, setSort] = React.useState<"name" | "date" | "type">("name");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["files", folderId],
-    queryFn: () => apiFetch<Paged<Resource>>(`/folders/${folderId}/files`),
+    queryKey: ["files", folderId, origin, validationStatus],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (origin !== "all") params.set("origin", origin);
+      if (validationStatus !== "all")
+        params.set("validationStatus", validationStatus);
+      const suffix = params.toString();
+      return apiFetch<Paged<Resource>>(
+        `/folders/${folderId}/files${suffix ? `?${suffix}` : ""}`,
+      );
+    },
   });
 
   const items = React.useMemo(() => {
@@ -189,7 +231,53 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-medium text-muted-foreground">Archivos</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            value={origin}
+            onValueChange={(value) => setOrigin(value ?? "all")}
+            items={[
+              { label: "Todo origen", value: "all" },
+              ...Object.entries(ORIGIN_LABEL).map(([value, label]) => ({
+                value,
+                label,
+              })),
+            ]}
+          >
+            <SelectTrigger className="h-7 w-36" aria-label="Filtrar por origen">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todo origen</SelectItem>
+              {Object.entries(ORIGIN_LABEL).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={validationStatus}
+            onValueChange={(value) => setValidationStatus(value ?? "all")}
+            items={[
+              { label: "Toda validación", value: "all" },
+              ...Object.entries(VALIDATION_LABEL).map(([value, label]) => ({
+                value,
+                label,
+              })),
+            ]}
+          >
+            <SelectTrigger className="h-7 w-40" aria-label="Filtrar por validación">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toda validación</SelectItem>
+              {Object.entries(VALIDATION_LABEL).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select
             value={sort}
             onValueChange={(value) =>
@@ -239,6 +327,22 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
                 Nuevo cuestionario
               </Button>
               <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerationKind("MINDMAP")}
+              >
+                <BrainCircuitIcon data-icon="inline-start" />
+                Mapa mental IA
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerationKind("QUIZ")}
+              >
+                <SparklesIcon data-icon="inline-start" />
+                Quiz IA
+              </Button>
+              <Button
                 size="sm"
                 onClick={() => inputRef.current?.click()}
                 disabled={upload.isPending}
@@ -267,6 +371,22 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
                 {kindIcon(resource.kind)}
                 <span className="truncate">{resource.name}</span>
               </Link>
+              <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
+                {ORIGIN_LABEL[resource.origin] ?? resource.origin}
+              </Badge>
+              <Badge
+                variant={
+                  resource.validationStatus === "VERIFIED"
+                    ? "secondary"
+                    : resource.validationStatus === "REJECTED"
+                      ? "destructive"
+                      : "outline"
+                }
+                className="hidden shrink-0 sm:inline-flex"
+              >
+                {VALIDATION_LABEL[resource.validationStatus] ??
+                  resource.validationStatus}
+              </Badge>
               {resource.author ? (
                 <div
                   className="hidden shrink-0 items-center gap-1.5 sm:flex"
@@ -365,6 +485,23 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {generationKind ? (
+        <GenerationDialog
+          projectId={projectId}
+          folderId={folderId}
+          kind={generationKind}
+          open
+          onOpenChange={(value) => {
+            if (!value) setGenerationKind(null);
+          }}
+          onCreated={(resourceId) => {
+            invalidate();
+            router.push(
+              `/projects/${projectId}/files/${resourceId}?folder=${folderId}`,
+            );
+          }}
+        />
+      ) : null}
     </section>
   );
 }
