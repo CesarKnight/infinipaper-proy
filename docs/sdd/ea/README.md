@@ -32,7 +32,7 @@ El script crea un paquete raíz llamado **`Infinipaper SDD`** con estas ramas:
 Infinipaper SDD
 ├── 01 · Casos de uso
 │   ├── Actores
-│   ├── UC-01 … UC-11
+│   ├── UC-01 … UC-12 y UC-15 … UC-18
 │   └── Diagrama "Casos de uso · Infinipaper"
 ├── 02 · Paquetes
 │   ├── Sistema
@@ -46,8 +46,8 @@ Infinipaper SDD
 │   ├── C4 · Componentes del backend
 │   └── C4 · Componentes de agentes
 ├── 04 · Secuencias
-│   ├── 001 · Usuarios … 012 · Estructuración IA
-│   └── 12 diagramas de secuencia
+│   ├── 001 · Usuarios … 018 · Tareas e intentos
+│   └── 16 diagramas de secuencia
 └── 05 · Clases
     ├── User, Session, Project, ProjectMember, Folder, Resource
     ├── TranscriptionJob, NoteStructureJob
@@ -56,7 +56,7 @@ Infinipaper SDD
     └── Diagrama "Clases · Modelo de dominio"
 ```
 
-En total: **5 ramas, 19 diagramas** (1 casos de uso, 1 paquetes, 4 C4, 1 clases y 12 secuencias).
+En total: **5 ramas, 23 diagramas** (1 casos de uso, 1 paquetes, 4 C4, 1 clases y 16 secuencias).
 
 ### Idempotencia
 
@@ -87,12 +87,12 @@ El generador valida:
 
 ## Convenciones del modelo
 
-- **Caso de uso = spec:** `UC-01` corresponde a la spec `001`, y así sucesivamente.
-- **Actores:** `Visitante`, `Usuario`, `Owner`, `Editor`, `Viewer`, `Whisper ASR` y `MinIO`.
+- **Caso de uso = spec:** `UC-01` corresponde a la spec `001`, y así sucesivamente. Las specs `013` y `014` son transversales de diseño y no tienen caso de uso; por eso no existen `UC-13` ni `UC-14`.
+- **Actores:** `Visitante`, `Usuario`, `Owner`, `Editor`, `Viewer`, `Administrador`, `Docente`, `Estudiante`, `Whisper ASR`, `MinIO`, `Mailpit` y `LLM`.
 - **Paquetes:** `infinipaper-frontend`, `infinipaper-backend` e `Infraestructura`.
 - **C4:** los elementos usan estereotipos `person`, `system`, `external_system`, `container`, `container_db` y `component`.
-- **Clases:** `User`, `Session`, `Project`, `ProjectMember`, `Folder`, `Resource`, `TranscriptionJob` y `NoteStructureJob`, con atributos, enums y relaciones de composición, asociación y dependencia.
-- **Secuencias:** cada diagrama usa lifelines con prefijo `NNN · ` para evitar colisiones entre specs.
+- **Clases:** `User`, `Session`, `EmailVerificationToken`, `TeacherProfile`, `AuditEvent`, `Project`, `ProjectMember`, `Folder`, `Resource`, `TranscriptionJob`, `NoteStructureJob`, `Quiz`, `QuizQuestion`, `QuizOption`, `QuizAssignment`, `QuizAssignmentStudent`, `QuizAttempt` y `QuizAnswer`, con atributos, enums y relaciones de composición, asociación y dependencia.
+- **Secuencias:** cada diagrama usa lifelines con prefijo `NNN · ` para evitar colisiones entre specs (001–012 y 015–018).
 - **Mensajes:** los conectores son de tipo `Sequence`; las respuestas se etiquetan en el nombre o en las notas.
 
 ## Limitaciones conocidas

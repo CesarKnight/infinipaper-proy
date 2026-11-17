@@ -212,3 +212,5 @@ Para que funcionen cuestionarios, tareas, paneles y MCP necesitamos:
 | CA-09–CA-10 | Privacidad y no acceso implícito de admin revisados en código. | 2026-11-15 |
 
 > Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+>
+> Diagramas: [UC-16](../../diagramas/casos-de-uso.md) · [Secuencia 016](../../diagramas/secuencia/016-proyectos-academicos.md).

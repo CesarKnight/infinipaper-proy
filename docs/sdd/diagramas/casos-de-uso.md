@@ -1,6 +1,8 @@
 # Casos de uso
 
-Cada caso de uso corresponde a una spec. Los actores `Owner`, `Editor` y `Viewer` son roles dentro de un proyecto; heredan las capacidades de `Usuario` y añaden o restringen acciones según la matriz de permisos de la [spec 008](../specs/008-permisos/spec.md).
+Cada caso de uso corresponde a una spec. Los actores `Owner`, `Editor`, `Viewer` y `Student` son roles dentro de un proyecto; heredan las capacidades de `Usuario` y añaden o restringen acciones según la matriz de permisos de la [spec 008](../specs/008-permisos/spec.md). Los roles globales `ADMIN`, `TEACHER` y `STUDENT` se representan con los actores `Administrador`, `Docente` y `Estudiante`.
+
+> Las specs 013 (sistema de diseño) y 014 (tema de marca) son transversales de producto y no añaden un caso de uso funcional. Por eso la numeración de casos de uso salta de `UC-12` a `UC-15`.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, sans-serif"}}}%%
@@ -15,8 +17,12 @@ flowchart LR
     Owner((Owner)):::actor
     Editor((Editor)):::actor
     Viewer((Viewer)):::actor
+    Administrador((Administrador)):::actor
+    Docente((Docente)):::actor
+    Estudiante((Estudiante)):::actor
     Whisper[Sistema ASR<br/>Whisper]:::external
     MinIO[(MinIO<br/>S3)]:::external
+    Mailpit[Sistema SMTP<br/>Mailpit]:::external
     LLM[Proveedor LLM]:::external
   end
 
@@ -33,6 +39,10 @@ flowchart LR
     UC10([UC-10<br/>Transcripción de audio]):::usecase
     UC11([UC-11<br/>Dashboard personal]):::usecase
     UC12([UC-12<br/>Estructuración de apuntes con IA]):::usecase
+    UC15([UC-15<br/>Perfil docente y verificación]):::usecase
+    UC16([UC-16<br/>Proyectos académicos y archivado]):::usecase
+    UC17([UC-17<br/>Cuestionarios como recursos]):::usecase
+    UC18([UC-18<br/>Tareas, intentos y revisión]):::usecase
   end
 
   Visitante --> UC01
@@ -79,7 +89,28 @@ flowchart LR
   MinIO --> UC05
   MinIO --> UC06
   MinIO --> UC09
+  MinIO --> UC17
+  Mailpit --> UC15
   LLM --> UC12
+
+  Usuario --> UC15
+  Administrador --> UC15
+  Administrador --> UC16
+  Docente --> UC15
+  Docente --> UC16
+  Docente --> UC17
+  Docente --> UC18
+  Owner --> UC16
+  Owner --> UC17
+  Owner --> UC18
+  Editor --> UC16
+  Editor --> UC17
+  Editor --> UC18
+  Estudiante --> UC16
+  Estudiante --> UC17
+  Estudiante --> UC18
+  Viewer --> UC16
+  Viewer --> UC17
 ```
 
 ## Trazabilidad
@@ -98,5 +129,9 @@ flowchart LR
 | UC-10 Transcripción de audio | [010](../specs/010-transcripcion/spec.md) | Usuario, Editor, Owner, Whisper |
 | UC-11 Dashboard personal | [011](../specs/011-dashboard/spec.md) | Usuario, Owner, Editor, Viewer |
 | UC-12 Estructuración de apuntes con IA | [012](../specs/012-estructuracion-apuntes-ia/spec.md) | Owner, Editor, LLM |
+| UC-15 Perfil docente y verificación | [015](../specs/015-perfil-docente/spec.md) | Usuario, Docente, Administrador, Mailpit |
+| UC-16 Proyectos académicos y archivado | [016](../specs/016-proyectos-academicos/spec.md) | Docente, Owner, Editor, Viewer, Estudiante, Administrador |
+| UC-17 Cuestionarios como recursos | [017](../specs/017-cuestionarios/spec.md) | Docente, Owner, Editor, Viewer, Estudiante, MinIO |
+| UC-18 Tareas, intentos y revisión | [018](../specs/018-tareas-intentos/spec.md) | Docente, Owner, Editor, Estudiante |
 
-> `Visitante` solo accede a proyectos públicos en modo lectura y a las pantallas de registro/login. Las acciones de escritura requieren un rol de proyecto.
+> `Visitante` solo accede a proyectos públicos en modo lectura y a las pantallas de registro/login. Las acciones de escritura requieren un rol de proyecto. Los roles globales `Administrador`, `Docente` y `Estudiante` no conceden acceso implícito a proyectos privados.

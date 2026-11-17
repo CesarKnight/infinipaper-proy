@@ -207,3 +207,5 @@ Sin este ciclo, el docente no puede evaluar y el estudiante no puede completar u
 | CA-10 | Cierre de tarea implementado; falta E2E dedicado. | 2026-11-15 |
 
 > Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+>
+> Diagramas: [UC-18](../../diagramas/casos-de-uso.md) · [Secuencia 018](../../diagramas/secuencia/018-tareas-intentos.md).

@@ -4,15 +4,15 @@ Diagramas de referencia del sistema, escritos en **Mermaid** para que se renderi
 
 | Diagrama | Archivo | Propósito |
 |---|---|---|
-| Casos de uso | [`casos-de-uso.md`](./casos-de-uso.md) | Actores y las 12 historias de usuario como casos de uso |
+| Casos de uso | [`casos-de-uso.md`](./casos-de-uso.md) | Actores y las 16 historias de usuario como casos de uso (001–012 y 015–018) |
 | Clases | [`clases.md`](./clases.md) | Modelo de dominio, implementación del backend y clases de agentes |
 | Paquetes | [`paquetes.md`](./paquetes.md) | Paquetes del frontend, backend, agentes e infraestructura |
 | Arquitectura C4 | [`arquitectura-c4.md`](./arquitectura-c4.md) | Contexto, contenedores y componentes de backend y agentes |
-| Secuencias | [`secuencia/`](./secuencia/) | Un diagrama por spec (001–012) |
+| Secuencias | [`secuencia/`](./secuencia/) | Un diagrama por spec (001–012 y 015–018) |
 
 ## Convenciones
 
-- **Caso de uso = spec.** Cada `UC-NN` corresponde a la spec `NNN` del índice SDD.
+- **Caso de uso = spec.** Cada `UC-NN` corresponde a la spec `NNN` del índice SDD. Las specs `013` y `014` son de diseño y tema, sin caso de uso funcional.
 - Los identificadores `UC-*`, `RF-*`, `CA-*` y `T-*` son estables y se usan también en el modelo de Enterprise Architect.
 - Los diagramas describen el comportamiento **vigente**; si una spec cambia, se actualiza su diagrama.
 - Mermaid no tiene un tipo nativo de diagrama UML de casos de uso: se representa con un `flowchart` y nodos tipo *stadium*. Es una aproximación visual, no un metamodelo UML formal. El modelo formal se mantiene en Enterprise Architect.

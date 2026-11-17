@@ -189,3 +189,5 @@ Además, un cuestionario no es solo un archivo: tiene preguntas, opciones, punta
 | CA-06–CA-08 | Snapshot JSON generado; archivo con intentos bloqueado. | 2026-11-15 |
 
 > Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+>
+> Diagramas: [UC-17](../../diagramas/casos-de-uso.md) · [Secuencia 017](../../diagramas/secuencia/017-cuestionarios.md).

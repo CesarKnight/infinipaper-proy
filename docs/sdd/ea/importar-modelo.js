@@ -44,6 +44,22 @@ var MODEL = {
     {
       "name": "LLM",
       "notes": "Proveedor de modelo de lenguaje configurable usado por el servicio de agentes."
+    },
+    {
+      "name": "Administrador",
+      "notes": "Rol global ADMIN. Revisa verificaciones docentes, revoca docentes y puede ejecutar purgas."
+    },
+    {
+      "name": "Docente",
+      "notes": "Rol global TEACHER verificado. Crea cursos, cuestionarios y tareas."
+    },
+    {
+      "name": "Estudiante",
+      "notes": "Rol global STUDENT. Consulta cursos, responde tareas y ve solo sus resultados."
+    },
+    {
+      "name": "Mailpit",
+      "notes": "Sistema SMTP de desarrollo que captura los correos de confirmación y verificación."
     }
   ],
   "useCases": [
@@ -182,6 +198,58 @@ var MODEL = {
         "LLM"
       ],
       "notes": "Job asíncrono que estructura un apunte Markdown con LangGraph y devuelve un nuevo apunte."
+    },
+    {
+      "id": "UC-15",
+      "name": "Perfil docente y verificación",
+      "spec": "015",
+      "actors": [
+        "Usuario",
+        "Docente",
+        "Administrador",
+        "Mailpit"
+      ],
+      "notes": "Confirmación de email, solicitud docente, verificación automática o manual, aprobación, rechazo y revocación con auditoría."
+    },
+    {
+      "id": "UC-16",
+      "name": "Proyectos académicos y archivado",
+      "spec": "016",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor",
+        "Viewer",
+        "Estudiante",
+        "Administrador"
+      ],
+      "notes": "Cursos creados por docentes verificados, estudiantes en ProjectMember, archivado de 30 días, extensión, restauración y purga."
+    },
+    {
+      "id": "UC-17",
+      "name": "Cuestionarios como recursos",
+      "spec": "017",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor",
+        "Viewer",
+        "Estudiante",
+        "MinIO"
+      ],
+      "notes": "Cuestionario como Resource(kind=QUIZ), preguntas MC/VF/corta, snapshot JSON, publicación y visibilidad solo para estudiantes asignados."
+    },
+    {
+      "id": "UC-18",
+      "name": "Tareas, intentos y revisión",
+      "spec": "018",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor",
+        "Estudiante"
+      ],
+      "notes": "Asignación de quizzes, intentos, guardado de respuestas, autocorrección MC/VF, calificación manual de respuesta corta y publicación de resultados."
     }
   ],
   "packageModel": {
@@ -194,15 +262,15 @@ var MODEL = {
         "children": [
           {
             "name": "app",
-            "notes": "Rutas, layouts y páginas (specs 001–011)."
+            "notes": "Rutas, layouts y páginas (specs 001–012 y 015–018)."
           },
           {
             "name": "components",
-            "notes": "UI y componentes de dominio (specs 002–011)."
+            "notes": "UI y componentes de dominio, incluidos quiz (specs 002–012 y 015–018)."
           },
           {
             "name": "lib",
-            "notes": "Cliente API, hooks, tipos y utilidades (specs 001–011)."
+            "notes": "Cliente API, hooks, tipos y utilidades (specs 001–012 y 015–018)."
           }
         ]
       },
@@ -212,11 +280,11 @@ var MODEL = {
         "children": [
           {
             "name": "modules",
-            "notes": "auth, users, projects, folders, resources, members, transcriptions, note-structure y dashboard."
+            "notes": "auth, users, projects, folders, resources, members, transcriptions, note-structure, dashboard, teacher, quizzes y quiz-assignments."
           },
           {
             "name": "common",
-            "notes": "guards, permissions, storage, prisma, config y errores."
+            "notes": "guards, permissions, email/SMTP, storage, prisma, config y errores."
           },
           {
             "name": "prisma",
@@ -265,6 +333,10 @@ var MODEL = {
           {
             "name": "LLM",
             "notes": "Proveedor de modelo de lenguaje: AWS Bedrock, OpenCode Go u OpenAI-compatible."
+          },
+          {
+            "name": "Mailpit",
+            "notes": "SMTP de desarrollo y bandeja de correo."
           }
         ]
       }
@@ -350,6 +422,11 @@ var MODEL = {
       "from": "Sistema/infinipaper-agents/graph",
       "to": "Sistema/Infraestructura/LLM",
       "label": "prompts"
+    },
+    {
+      "from": "Sistema/infinipaper-backend/common",
+      "to": "Sistema/Infraestructura/Mailpit",
+      "label": "SMTP"
     }
   ],
   "c4": {
@@ -397,6 +474,30 @@ var MODEL = {
           "type": "Component",
           "stereotype": "external_system",
           "notes": "Proveedor de modelo de lenguaje."
+        },
+        {
+          "name": "Administrador",
+          "type": "Actor",
+          "stereotype": "person",
+          "notes": "Rol global ADMIN."
+        },
+        {
+          "name": "Docente",
+          "type": "Actor",
+          "stereotype": "person",
+          "notes": "Rol global TEACHER verificado."
+        },
+        {
+          "name": "Estudiante",
+          "type": "Actor",
+          "stereotype": "person",
+          "notes": "Rol global STUDENT."
+        },
+        {
+          "name": "SMTP / Mailpit",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Correo de confirmación y verificación."
         }
       ],
       "relationships": [
@@ -435,6 +536,30 @@ var MODEL = {
           "to": "LLM",
           "label": "Estructura apuntes",
           "notes": "HTTPS"
+        },
+        {
+          "from": "Administrador",
+          "to": "Infinipaper",
+          "label": "Verifica docentes y purga",
+          "notes": "HTTPS"
+        },
+        {
+          "from": "Docente",
+          "to": "Infinipaper",
+          "label": "Crea cursos y evalúa",
+          "notes": "HTTPS"
+        },
+        {
+          "from": "Estudiante",
+          "to": "Infinipaper",
+          "label": "Responde tareas",
+          "notes": "HTTPS"
+        },
+        {
+          "from": "Infinipaper",
+          "to": "SMTP / Mailpit",
+          "label": "Envía correos",
+          "notes": "SMTP"
         }
       ]
     },
@@ -500,6 +625,30 @@ var MODEL = {
           "type": "Component",
           "stereotype": "container",
           "notes": "Cola de trabajos sobre PostgreSQL."
+        },
+        {
+          "name": "Administrador",
+          "type": "Actor",
+          "stereotype": "person",
+          "notes": "Rol global ADMIN."
+        },
+        {
+          "name": "Docente",
+          "type": "Actor",
+          "stereotype": "person",
+          "notes": "Rol global TEACHER verificado."
+        },
+        {
+          "name": "Estudiante",
+          "type": "Actor",
+          "stereotype": "person",
+          "notes": "Rol global STUDENT."
+        },
+        {
+          "name": "SMTP / Mailpit",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Correo de confirmación y verificación."
         }
       ],
       "relationships": [
@@ -568,6 +717,30 @@ var MODEL = {
           "to": "LLM",
           "label": "Prompts",
           "notes": "HTTPS"
+        },
+        {
+          "from": "Administrador",
+          "to": "Frontend",
+          "label": "Administra",
+          "notes": "HTTPS"
+        },
+        {
+          "from": "Docente",
+          "to": "Frontend",
+          "label": "Crea y evalúa",
+          "notes": "HTTPS"
+        },
+        {
+          "from": "Estudiante",
+          "to": "Frontend",
+          "label": "Responde",
+          "notes": "HTTPS"
+        },
+        {
+          "from": "Backend",
+          "to": "SMTP / Mailpit",
+          "label": "Envía correos",
+          "notes": "SMTP"
         }
       ]
     },
@@ -681,6 +854,36 @@ var MODEL = {
           "type": "Component",
           "stereotype": "container",
           "notes": "Cola de trabajos."
+        },
+        {
+          "name": "Email",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Envío SMTP con Nodemailer."
+        },
+        {
+          "name": "Teacher",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Verificación docente y auditoría."
+        },
+        {
+          "name": "Quizzes",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Cuestionarios, preguntas y snapshots."
+        },
+        {
+          "name": "QuizAssignments",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Tareas, intentos, calificación y resultados."
+        },
+        {
+          "name": "SMTP / Mailpit",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Correo de desarrollo."
         }
       ],
       "relationships": [
@@ -773,6 +976,46 @@ var MODEL = {
           "from": "Storage",
           "to": "MinIO",
           "label": "S3"
+        },
+        {
+          "from": "Auth",
+          "to": "Email",
+          "label": "Solicita correo"
+        },
+        {
+          "from": "Teacher",
+          "to": "Prisma",
+          "label": "Usa"
+        },
+        {
+          "from": "Teacher",
+          "to": "Email",
+          "label": "Notifica"
+        },
+        {
+          "from": "Quizzes",
+          "to": "Prisma",
+          "label": "Usa"
+        },
+        {
+          "from": "Quizzes",
+          "to": "Storage",
+          "label": "Snapshot"
+        },
+        {
+          "from": "QuizAssignments",
+          "to": "Prisma",
+          "label": "Usa"
+        },
+        {
+          "from": "Projects",
+          "to": "pg-boss",
+          "label": "Programa purga"
+        },
+        {
+          "from": "Email",
+          "to": "SMTP / Mailpit",
+          "label": "SMTP"
         }
       ]
     },
@@ -878,7 +1121,7 @@ var MODEL = {
       {
         "name": "User",
         "stereotype": "entity",
-        "notes": "avatarUrl y bio son opcionales.",
+        "notes": "avatarUrl, bio y emailVerifiedAt son opcionales.",
         "attributes": [
           {
             "name": "id",
@@ -907,6 +1150,14 @@ var MODEL = {
           {
             "name": "bio",
             "type": "String"
+          },
+          {
+            "name": "role",
+            "type": "GlobalRole"
+          },
+          {
+            "name": "emailVerifiedAt",
+            "type": "DateTime"
           },
           {
             "name": "status",
@@ -952,7 +1203,7 @@ var MODEL = {
       {
         "name": "Project",
         "stereotype": "entity",
-        "notes": "description es opcional. ownerId es la fuente del rol Owner.",
+        "notes": "description, institution, period, subject, code, archivedAt y archiveAccessUntil son opcionales. ownerId es la fuente del rol Owner.",
         "attributes": [
           {
             "name": "id",
@@ -975,6 +1226,38 @@ var MODEL = {
             "type": "ProjectVisibility"
           },
           {
+            "name": "type",
+            "type": "ProjectType"
+          },
+          {
+            "name": "status",
+            "type": "ProjectStatus"
+          },
+          {
+            "name": "institution",
+            "type": "String"
+          },
+          {
+            "name": "period",
+            "type": "String"
+          },
+          {
+            "name": "subject",
+            "type": "String"
+          },
+          {
+            "name": "code",
+            "type": "String"
+          },
+          {
+            "name": "archivedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "archiveAccessUntil",
+            "type": "DateTime"
+          },
+          {
             "name": "createdAt",
             "type": "DateTime"
           },
@@ -987,7 +1270,7 @@ var MODEL = {
       {
         "name": "ProjectMember",
         "stereotype": "entity",
-        "notes": "role solo admite EDITOR o VIEWER; el Owner no se guarda aquí.",
+        "notes": "role admite EDITOR, VIEWER o STUDENT; el Owner no se guarda aquí.",
         "attributes": [
           {
             "name": "id",
@@ -1053,7 +1336,7 @@ var MODEL = {
       {
         "name": "Resource",
         "stereotype": "entity",
-        "notes": "checksum es opcional; s3Key es único. Representa archivos, avisos y apuntes.",
+        "notes": "checksum es opcional; s3Key es único. Representa archivos, avisos, apuntes y cuestionarios.",
         "attributes": [
           {
             "name": "id",
@@ -1222,6 +1505,400 @@ var MODEL = {
             "type": "DateTime"
           }
         ]
+      },
+      {
+        "name": "EmailVerificationToken",
+        "stereotype": "entity",
+        "notes": "usedAt es opcional; tokenHash es único.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "userId",
+            "type": "String"
+          },
+          {
+            "name": "tokenHash",
+            "type": "String"
+          },
+          {
+            "name": "expiresAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "usedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "TeacherProfile",
+        "stereotype": "entity",
+        "notes": "reviewerId, reviewedAt, rejectionReason y campos académicos son opcionales.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "userId",
+            "type": "String"
+          },
+          {
+            "name": "status",
+            "type": "TeacherStatus"
+          },
+          {
+            "name": "method",
+            "type": "TeacherVerificationMethod"
+          },
+          {
+            "name": "institution",
+            "type": "String"
+          },
+          {
+            "name": "area",
+            "type": "String"
+          },
+          {
+            "name": "position",
+            "type": "String"
+          },
+          {
+            "name": "evidenceUrl",
+            "type": "String"
+          },
+          {
+            "name": "reviewerId",
+            "type": "String"
+          },
+          {
+            "name": "reviewedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "rejectionReason",
+            "type": "String"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "AuditEvent",
+        "stereotype": "entity",
+        "notes": "actorId, entityId y metadata son opcionales.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "actorId",
+            "type": "String"
+          },
+          {
+            "name": "action",
+            "type": "String"
+          },
+          {
+            "name": "entityType",
+            "type": "String"
+          },
+          {
+            "name": "entityId",
+            "type": "String"
+          },
+          {
+            "name": "metadata",
+            "type": "Json"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "Quiz",
+        "stereotype": "entity",
+        "notes": "instructions y settings son opcionales; el snapshot JSON vive en MinIO.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "resourceId",
+            "type": "String"
+          },
+          {
+            "name": "title",
+            "type": "String"
+          },
+          {
+            "name": "instructions",
+            "type": "String"
+          },
+          {
+            "name": "status",
+            "type": "QuizStatus"
+          },
+          {
+            "name": "settings",
+            "type": "Json"
+          },
+          {
+            "name": "createdById",
+            "type": "String"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "QuizQuestion",
+        "stereotype": "entity",
+        "notes": "correctText es opcional; las opciones solo aplican a MC/VF.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "quizId",
+            "type": "String"
+          },
+          {
+            "name": "type",
+            "type": "QuizQuestionType"
+          },
+          {
+            "name": "prompt",
+            "type": "String"
+          },
+          {
+            "name": "points",
+            "type": "Int"
+          },
+          {
+            "name": "order",
+            "type": "Int"
+          },
+          {
+            "name": "correctText",
+            "type": "String"
+          },
+          {
+            "name": "caseSensitive",
+            "type": "Boolean"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "QuizOption",
+        "stereotype": "entity",
+        "notes": "isCorrect solo aplica a MC/VF.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "questionId",
+            "type": "String"
+          },
+          {
+            "name": "text",
+            "type": "String"
+          },
+          {
+            "name": "isCorrect",
+            "type": "Boolean"
+          },
+          {
+            "name": "order",
+            "type": "Int"
+          }
+        ]
+      },
+      {
+        "name": "QuizAssignment",
+        "stereotype": "entity",
+        "notes": "startsAt, dueAt y resultsPublishedAt son opcionales.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "quizId",
+            "type": "String"
+          },
+          {
+            "name": "projectId",
+            "type": "String"
+          },
+          {
+            "name": "createdById",
+            "type": "String"
+          },
+          {
+            "name": "startsAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "dueAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "attemptsAllowed",
+            "type": "Int"
+          },
+          {
+            "name": "status",
+            "type": "QuizAssignmentStatus"
+          },
+          {
+            "name": "resultsPublishedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "QuizAssignmentStudent",
+        "stereotype": "entity",
+        "notes": "Tabla puente entre tarea y estudiantes asignados.",
+        "attributes": [
+          {
+            "name": "assignmentId",
+            "type": "String"
+          },
+          {
+            "name": "studentId",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "name": "QuizAttempt",
+        "stereotype": "entity",
+        "notes": "submittedAt y gradedAt son opcionales.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "assignmentId",
+            "type": "String"
+          },
+          {
+            "name": "studentId",
+            "type": "String"
+          },
+          {
+            "name": "attemptNumber",
+            "type": "Int"
+          },
+          {
+            "name": "status",
+            "type": "QuizAttemptStatus"
+          },
+          {
+            "name": "score",
+            "type": "Float"
+          },
+          {
+            "name": "maxScore",
+            "type": "Float"
+          },
+          {
+            "name": "startedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "submittedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "gradedAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "QuizAnswer",
+        "stereotype": "entity",
+        "notes": "optionId, text, isCorrect, pointsAwarded y feedback son opcionales.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "attemptId",
+            "type": "String"
+          },
+          {
+            "name": "questionId",
+            "type": "String"
+          },
+          {
+            "name": "optionId",
+            "type": "String"
+          },
+          {
+            "name": "text",
+            "type": "String"
+          },
+          {
+            "name": "isCorrect",
+            "type": "Boolean"
+          },
+          {
+            "name": "pointsAwarded",
+            "type": "Float"
+          },
+          {
+            "name": "feedback",
+            "type": "String"
+          }
+        ]
       }
     ],
     "enums": [
@@ -1243,7 +1920,8 @@ var MODEL = {
         "name": "ProjectRole",
         "values": [
           "EDITOR",
-          "VIEWER"
+          "VIEWER",
+          "STUDENT"
         ]
       },
       {
@@ -1253,7 +1931,8 @@ var MODEL = {
           "IMAGE",
           "AUDIO",
           "VIDEO",
-          "MARKDOWN"
+          "MARKDOWN",
+          "QUIZ"
         ]
       },
       {
@@ -1272,6 +1951,77 @@ var MODEL = {
           "PROCESSING",
           "DONE",
           "FAILED"
+        ]
+      },
+      {
+        "name": "GlobalRole",
+        "values": [
+          "ADMIN",
+          "TEACHER",
+          "STUDENT"
+        ]
+      },
+      {
+        "name": "TeacherStatus",
+        "values": [
+          "PENDING",
+          "VERIFIED",
+          "REJECTED",
+          "REVOKED"
+        ]
+      },
+      {
+        "name": "TeacherVerificationMethod",
+        "values": [
+          "INSTITUTIONAL_EMAIL",
+          "MANUAL"
+        ]
+      },
+      {
+        "name": "ProjectType",
+        "values": [
+          "PERSONAL",
+          "COURSE"
+        ]
+      },
+      {
+        "name": "ProjectStatus",
+        "values": [
+          "ACTIVE",
+          "ARCHIVED"
+        ]
+      },
+      {
+        "name": "QuizStatus",
+        "values": [
+          "DRAFT",
+          "PUBLISHED",
+          "ARCHIVED"
+        ]
+      },
+      {
+        "name": "QuizQuestionType",
+        "values": [
+          "MULTIPLE_CHOICE",
+          "TRUE_FALSE",
+          "SHORT_ANSWER"
+        ]
+      },
+      {
+        "name": "QuizAssignmentStatus",
+        "values": [
+          "DRAFT",
+          "PUBLISHED",
+          "CLOSED"
+        ]
+      },
+      {
+        "name": "QuizAttemptStatus",
+        "values": [
+          "IN_PROGRESS",
+          "SUBMITTED",
+          "GRADED",
+          "EXPIRED"
         ]
       }
     ],
@@ -1414,6 +2164,214 @@ var MODEL = {
         "from": "NoteStructureJob",
         "to": "AgentJobStatus",
         "type": "Dependency",
+        "label": "status"
+      },
+      {
+        "from": "User",
+        "to": "EmailVerificationToken",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "emailVerificationTokens"
+      },
+      {
+        "from": "User",
+        "to": "TeacherProfile",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..1",
+        "label": "teacherProfile"
+      },
+      {
+        "from": "User",
+        "to": "AuditEvent",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "auditEvents"
+      },
+      {
+        "from": "User",
+        "to": "Quiz",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "createdQuizzes"
+      },
+      {
+        "from": "User",
+        "to": "QuizAssignment",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "createdQuizAssignments"
+      },
+      {
+        "from": "User",
+        "to": "QuizAssignmentStudent",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "quizAssignments"
+      },
+      {
+        "from": "User",
+        "to": "QuizAttempt",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "quizAttempts"
+      },
+      {
+        "from": "Project",
+        "to": "QuizAssignment",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "quizAssignments"
+      },
+      {
+        "from": "Resource",
+        "to": "Quiz",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..1",
+        "label": "quiz"
+      },
+      {
+        "from": "Quiz",
+        "to": "QuizQuestion",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "questions"
+      },
+      {
+        "from": "QuizQuestion",
+        "to": "QuizOption",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "options"
+      },
+      {
+        "from": "Quiz",
+        "to": "QuizAssignment",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "assignments"
+      },
+      {
+        "from": "QuizAssignment",
+        "to": "QuizAssignmentStudent",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "students"
+      },
+      {
+        "from": "QuizAssignment",
+        "to": "QuizAttempt",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "attempts"
+      },
+      {
+        "from": "QuizAttempt",
+        "to": "QuizAnswer",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "answers"
+      },
+      {
+        "from": "QuizQuestion",
+        "to": "QuizAnswer",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "answers"
+      },
+      {
+        "from": "QuizOption",
+        "to": "QuizAnswer",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "selectedBy"
+      },
+      {
+        "from": "User",
+        "to": "GlobalRole",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "role"
+      },
+      {
+        "from": "Project",
+        "to": "ProjectType",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "type"
+      },
+      {
+        "from": "Project",
+        "to": "ProjectStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "status"
+      },
+      {
+        "from": "TeacherProfile",
+        "to": "TeacherStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "status"
+      },
+      {
+        "from": "TeacherProfile",
+        "to": "TeacherVerificationMethod",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "method"
+      },
+      {
+        "from": "Quiz",
+        "to": "QuizStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "status"
+      },
+      {
+        "from": "QuizQuestion",
+        "to": "QuizQuestionType",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "type"
+      },
+      {
+        "from": "QuizAssignment",
+        "to": "QuizAssignmentStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "status"
+      },
+      {
+        "from": "QuizAttempt",
+        "to": "QuizAttemptStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
         "label": "status"
       }
     ]
@@ -2736,6 +3694,578 @@ var MODEL = {
           "from": "API",
           "to": "FE",
           "name": "Apunte estructurado",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "015",
+      "name": "015 · Perfil docente y email",
+      "participants": [
+        {
+          "alias": "U",
+          "name": "Usuario",
+          "type": "Actor"
+        },
+        {
+          "alias": "AD",
+          "name": "Administrador",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "MAIL",
+          "name": "Mailpit / SMTP",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "U",
+          "to": "FE",
+          "name": "Completa el registro"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /auth/register"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea User STUDENT + EmailVerificationToken"
+        },
+        {
+          "from": "API",
+          "to": "MAIL",
+          "name": "Envía enlace de confirmación"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "201 User",
+          "notes": "respuesta"
+        },
+        {
+          "from": "U",
+          "to": "FE",
+          "name": "Abre /verify-email?token"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /auth/email/verify/confirm"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Marca emailVerifiedAt"
+        },
+        {
+          "from": "U",
+          "to": "FE",
+          "name": "Solicita verificación docente"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /teacher/verification"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea TeacherProfile PENDING o VERIFIED"
+        },
+        {
+          "from": "AD",
+          "to": "FE",
+          "name": "Revisa la cola admin"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /admin/teacher-verifications"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /admin/teacher-verifications/:id/approve"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "TeacherProfile VERIFIED + User.role TEACHER + AuditEvent"
+        },
+        {
+          "from": "API",
+          "to": "MAIL",
+          "name": "Notifica la decisión"
+        }
+      ]
+    },
+    {
+      "id": "016",
+      "name": "016 · Proyectos académicos",
+      "participants": [
+        {
+          "alias": "D",
+          "name": "Docente",
+          "type": "Actor"
+        },
+        {
+          "alias": "O",
+          "name": "Owner",
+          "type": "Actor"
+        },
+        {
+          "alias": "E",
+          "name": "Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        },
+        {
+          "alias": "Q",
+          "name": "pg-boss",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Crea un proyecto de curso"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /projects (type=COURSE)"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Verifica TeacherProfile VERIFIED y crea Project + Folder raíz"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Project académico",
+          "notes": "respuesta"
+        },
+        {
+          "from": "O",
+          "to": "FE",
+          "name": "Añade estudiantes"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /projects/:id/members (role=STUDENT)"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea ProjectMember STUDENT"
+        },
+        {
+          "from": "O",
+          "to": "FE",
+          "name": "Archiva el proyecto"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /projects/:id/archive"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "status=ARCHIVED + archiveAccessUntil (+30 días)"
+        },
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Intenta escribir"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /folders/:id/notes"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "PermissionsService detecta archivado"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "423 PROJECT_ARCHIVED",
+          "notes": "respuesta"
+        },
+        {
+          "from": "O",
+          "to": "FE",
+          "name": "Extiende o restaura"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /projects/:id/archive/extend o /restore"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Actualiza fechas o status=ACTIVE"
+        },
+        {
+          "from": "Q",
+          "to": "API",
+          "name": "Job project-purge"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Busca proyectos vencidos"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Borra objetos"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Borra Project en cascada"
+        }
+      ]
+    },
+    {
+      "id": "017",
+      "name": "017 · Cuestionarios como recursos",
+      "participants": [
+        {
+          "alias": "D",
+          "name": "Docente / Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "S",
+          "name": "Estudiante",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Crea un cuestionario"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /folders/:folderId/quizzes"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea Resource QUIZ + Quiz DRAFT"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Guarda snapshot JSON"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Edita preguntas"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "PUT /quizzes/:id/questions"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Reemplaza preguntas y opciones"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Regenera snapshot"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Publica el cuestionario"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /quizzes/:id/publish"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "status=PUBLISHED"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Abre la carpeta"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /folders/:id/files"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Filtra quizzes por asignación"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Abre el cuestionario"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /quizzes/:id"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Valida STUDENT, asignación y PUBLISHED"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Quiz sin isCorrect ni correctText",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "018",
+      "name": "018 · Tareas, intentos y revisión",
+      "participants": [
+        {
+          "alias": "D",
+          "name": "Docente / Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "S",
+          "name": "Estudiante",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Asigna el cuestionario"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /quizzes/:id/assignments"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea QuizAssignment + estudiantes"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /assignments/:id/publish"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "status=PUBLISHED"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Abre Mis tareas"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /assignments/mine"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Consulta tareas publicadas del estudiante"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Inicia un intento"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /assignments/:id/attempts"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea QuizAttempt IN_PROGRESS"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Responde"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "PATCH /attempts/:id/answers"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Upsert QuizAnswer"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Envía la tarea"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /attempts/:id/submit"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Autocorrige MC/VF y deja short pendiente"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Revisa resultados"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /assignments/:id/results"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Califica respuesta corta"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "PATCH /attempts/:id/answers/:answerId/grade"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "pointsAwarded + feedback + recálculo"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /assignments/:id/publish-results"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "resultsPublishedAt"
+        },
+        {
+          "from": "S",
+          "to": "FE",
+          "name": "Consulta su intento"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /attempts/:id"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Resultado visible",
           "notes": "respuesta"
         }
       ]

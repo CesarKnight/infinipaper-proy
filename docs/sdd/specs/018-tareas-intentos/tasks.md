@@ -39,6 +39,8 @@
 - [x] `T-041` Verificar que el quiz del estudiante no incluye respuestas correctas. <CA-09>
 - [x] `T-042` Backend y frontend lint/build/tests. <RNF>
 
+- [x] `T-044` Diagramas Mermaid, casos de uso y modelo EA actualizados. <RNF>
+
 ## Brechas
 
 - [ ] `T-060` Selector granular de estudiantes y fechas al asignar. <G-01>

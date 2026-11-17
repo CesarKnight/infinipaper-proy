@@ -39,6 +39,8 @@
 - [x] `T-041` E2E de purga manual con archivo vencido. <CA-08>
 - [x] `T-042` Backend y frontend lint/build/tests. <RNF>
 
+- [x] `T-044` Diagramas Mermaid, casos de uso y modelo EA actualizados. <RNF>
+
 ## Brechas
 
 - [ ] `T-060` Edición de metadatos académicos después de crear. <G-01>

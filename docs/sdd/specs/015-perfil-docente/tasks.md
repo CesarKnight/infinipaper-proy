@@ -38,6 +38,8 @@
 - [x] `T-042` Backend: `npm run lint && npm test && npm run build`. <RNF>
 - [x] `T-043` Frontend: `npm run lint && npm run build`. <RNF>
 
+- [x] `T-044` Diagramas Mermaid, casos de uso y modelo EA actualizados. <RNF>
+
 ## Brechas
 
 - [ ] `T-060` UI para revocar docentes (el endpoint existe). <G-01>

@@ -218,3 +218,5 @@ Para habilitar cuestionarios, tareas, paneles docentes y MCP se necesita una bas
 | CA-09 | Revocación implementada; UI pendiente. | 2026-11-15 |
 
 > Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+>
+> Diagramas: [UC-15](../../diagramas/casos-de-uso.md) · [Secuencia 015](../../diagramas/secuencia/015-perfil-docente.md).

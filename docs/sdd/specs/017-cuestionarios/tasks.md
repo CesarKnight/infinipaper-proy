@@ -37,6 +37,8 @@
 - [x] `T-041` Verificar que el estudiante no ve `isCorrect` ni `correctText`. <CA-05>
 - [x] `T-042` Backend y frontend lint/build/tests. <RNF>
 
+- [x] `T-044` Diagramas Mermaid, casos de uso y modelo EA actualizados. <RNF>
+
 ## Brechas
 
 - [ ] `T-060` UI para duplicar y archivar quizzes. <G-01>

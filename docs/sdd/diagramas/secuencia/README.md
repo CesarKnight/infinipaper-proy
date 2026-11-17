@@ -16,6 +16,10 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 | 010 Transcripción | [010-transcripcion.md](./010-transcripcion.md) | Editor, API, DB, pg-boss, MinIO, Whisper |
 | 011 Dashboard | [011-dashboard.md](./011-dashboard.md) | Usuario, API, DB |
 | 012 Estructuración IA | [012-estructuracion-apuntes.md](./012-estructuracion-apuntes.md) | Editor, API, pg-boss, Agents, MinIO, LLM |
+| 015 Perfil docente | [015-perfil-docente.md](./015-perfil-docente.md) | Usuario, Administrador, API, DB, Mailpit |
+| 016 Proyectos académicos | [016-proyectos-academicos.md](./016-proyectos-academicos.md) | Docente, Owner, Editor, API, DB, MinIO, pg-boss |
+| 017 Cuestionarios | [017-cuestionarios.md](./017-cuestionarios.md) | Docente/Editor, Estudiante, API, DB, MinIO |
+| 018 Tareas e intentos | [018-tareas-intentos.md](./018-tareas-intentos.md) | Docente/Editor, Estudiante, API, DB |
 
 ## Convenciones
 
@@ -23,3 +27,5 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 - `alt`/`opt` representan caminos alternativos y opcionales.
 - Las respuestas usan flechas discontinuas (`-->>`).
 - El modelo formal equivalente está en `docs/sdd/ea/modelo.json`.
+
+> Las specs 013 (sistema de diseño) y 014 (tema de marca) no tienen diagrama de secuencia porque no introducen un flujo de backend o de usuario nuevo.
