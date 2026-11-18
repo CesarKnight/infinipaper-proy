@@ -49,6 +49,36 @@ class Settings(BaseSettings):
     max_retries: int = Field(1, alias="AGENT_MAX_RETRIES")
     prompt_version: str = Field("note-structurer/v1", alias="AGENT_PROMPT_VERSION")
 
+    extraction_version: str = Field("v1", alias="AGENT_EXTRACTION_VERSION")
+    extraction_concurrency: int = Field(3, alias="AGENT_EXTRACTION_CONCURRENCY")
+    extraction_timeout_seconds: int = Field(
+        120, alias="AGENT_EXTRACTION_TIMEOUT_SECONDS"
+    )
+    max_sources: int = Field(30, alias="AGENT_MAX_SOURCES")
+    max_source_bytes: int = Field(
+        55 * 1024 * 1024, alias="AGENT_MAX_SOURCE_BYTES"
+    )
+    max_total_source_bytes: int = Field(
+        250 * 1024 * 1024, alias="AGENT_MAX_TOTAL_SOURCE_BYTES"
+    )
+    max_extracted_chars: int = Field(2_000_000, alias="AGENT_MAX_EXTRACTED_CHARS")
+    max_ocr_pages: int = Field(100, alias="AGENT_MAX_OCR_PAGES")
+    ocr_language: str = Field("spa+eng", alias="AGENT_OCR_LANGUAGE")
+    max_audio_minutes: int = Field(60, alias="AGENT_MAX_AUDIO_MINUTES")
+    vision_enabled: bool = Field(False, alias="AGENT_VISION_ENABLED")
+    vision_max_image_px: int = Field(1600, alias="AGENT_VISION_MAX_IMAGE_PX")
+    video_frame_fallback: bool = Field(True, alias="AGENT_VIDEO_FRAME_FALLBACK")
+    video_frame_interval_seconds: int = Field(
+        60, alias="AGENT_VIDEO_FRAME_INTERVAL_SECONDS"
+    )
+    max_video_frames: int = Field(8, alias="AGENT_MAX_VIDEO_FRAMES")
+
+    asr_url: str = Field("http://localhost:8000", alias="ASR_URL")
+    asr_api_key: str | None = Field(None, alias="ASR_API_KEY")
+    asr_default_language: str = Field("es", alias="ASR_DEFAULT_LANGUAGE")
+    asr_timeout_seconds: int = Field(600, alias="ASR_TIMEOUT_SECONDS")
+
+
     otel_enabled: bool = Field(False, alias="OTEL_ENABLED")
     log_level: str = Field("INFO", alias="LOG_LEVEL")
 
@@ -64,6 +94,7 @@ class Settings(BaseSettings):
         "aws_secret_access_key",
         "aws_session_token",
         "opencode_api_key",
+        "asr_api_key",
         mode="before",
     )
     @classmethod

@@ -37,7 +37,7 @@ El requisito pide generar cuestionarios desde un proyecto, carpeta o apunte, per
 - Generación de imágenes para preguntas.
 - Evaluación automática de calidad pedagógica.
 - Traducción automática.
-- Generación desde PDFs sin extracción de texto.
+- Generación desde PDFs: ampliada por la spec 027 para PDF, Office, imágenes, audio y video.
 
 ## 4. Requisitos funcionales
 
@@ -149,14 +149,14 @@ El requisito pide generar cuestionarios desde un proyecto, carpeta o apunte, per
 | D-03 | Cada pregunta cita sus fuentes. | Cerrada |
 | D-04 | Cantidad v1: 5–30 preguntas; tipos: opción múltiple, V/F y respuesta corta. | Cerrada |
 | Q-01 | ¿Se añadirá evaluación automática de calidad? | Abierta (futuro) |
-| Q-02 | ¿Se podrá generar desde PDFs? | Abierta (requiere extracción) |
+| Q-02 | ¿Se podrá generar desde PDFs? | Resuelta por la spec 027 |
 
 ## 10. Brechas conocidas
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
 | G-01 | Sin evaluación pedagógica automática. | La calidad depende de la revisión humana. | `T-060` |
-| G-02 | Sin generación desde PDFs. | Solo fuentes de texto extraíble. | `T-061` |
+| G-02 | Sin generación desde PDFs. | Resuelta por la spec 027 (fuentes multiformato). | `T-061` |
 
 | G-03 | Edición avanzada de fuentes por pregunta. | La fuente se conserva, pero la UI no permite cambiarla. | `T-062` |
 

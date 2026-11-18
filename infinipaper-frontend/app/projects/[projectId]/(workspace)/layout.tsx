@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { FolderPickerTree } from "@/components/project/folder-tree";
 import { ParticipantsPanel } from "@/components/project/participants-panel";
+import { GenerationQueue } from "@/components/generation/generation-queue";
 import {
   WorkspaceProvider,
   type WorkspaceValue,
@@ -211,7 +212,10 @@ function ProjectWorkspaceLayoutInner({
             </div>
           </aside>
 
-          <div className="flex min-w-0 flex-col gap-6">{children}</div>
+          <div className="flex min-w-0 flex-col gap-6">
+            <GenerationQueue projectId={projectId} canEdit={canEdit} />
+            {children}
+          </div>
 
           {project?.owner ? (
             <div className="lg:sticky lg:top-20 lg:self-start">

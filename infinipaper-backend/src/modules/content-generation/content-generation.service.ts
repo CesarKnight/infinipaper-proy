@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Prisma } from '../../generated/prisma/client.js';
@@ -8,8 +9,17 @@ import { StorageService } from '../../common/storage/storage.service.js';
 import { ProvenanceService } from '../provenance/provenance.service.js';
 import { QuizzesService } from '../quizzes/quizzes.service.js';
 import { ResourcesService } from '../resources/resources.service.js';
-import { ContentAgentClient } from './content-agent.client.js';
+import {
+  ContentAgentClient,
+  type ContentAgentSource,
+  type ContentSourceKind,
+} from './content-agent.client.js';
 import { ContentGenerationQueueService } from './content-generation.queue.js';
+import { ResourceExtractionService } from './extraction.service.js';
+import {
+  isDeferredSource,
+  resolveSourceFamily,
+} from '../resources/resource-kind.util.js';
 import type {
   CreateMindmapDto,
   CreateQuizGenerationDto,
@@ -17,6 +27,7 @@ import type {
 
 interface JobSource {
   resourceId: string;
+  kind: ContentSourceKind;
   name: string;
   mimeType: string;
   size: number;
@@ -65,6 +76,9 @@ const MINDMAP_MIME = 'application/vnd.infinipaper.mindmap+json';
 export class ContentGenerationService {
   private readonly logger = new Logger(ContentGenerationService.name);
   private readonly presignTtlSeconds: number;
+  private readonly multiformatEnabled: boolean;
+  private readonly maxSources: number;
+  private readonly maxTotalBytes: number;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -75,9 +89,16 @@ export class ContentGenerationService {
     private readonly quizzes: QuizzesService,
     private readonly agent: ContentAgentClient,
     private readonly queue: ContentGenerationQueueService,
+    private readonly extraction: ResourceExtractionService,
     config: ConfigService,
   ) {
     this.presignTtlSeconds = config.get<number>('S3_PRESIGN_TTL_SECONDS', 900);
+    this.multiformatEnabled =
+      config.get<boolean>('AGENT_MULTIFORMAT_ENABLED', true) ?? true;
+    this.maxSources = config.get<number>('AGENT_MAX_SOURCES', 30) ?? 30;
+    this.maxTotalBytes =
+      config.get<number>('AGENT_MAX_TOTAL_SOURCE_BYTES', 250 * 1024 * 1024) ??
+      250 * 1024 * 1024;
   }
 
   async createMindmap(
@@ -120,7 +141,17 @@ export class ContentGenerationService {
   async getJob(jobId: string, userId: string) {
     const job = await this.prisma.contentGenerationJob.findUnique({
       where: { id: jobId },
-      include: { folder: { select: { projectId: true } } },
+      include: {
+        folder: { select: { projectId: true, name: true } },
+        requestedBy: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+      },
     });
     if (!job) {
       throw new AppException(
@@ -137,6 +168,51 @@ export class ContentGenerationService {
     return job;
   }
 
+  async listActiveByProject(projectId: string, userId: string, limit = 20) {
+    await this.permissions.assertProjectRole(userId, projectId, 'editor');
+    const jobs = await this.prisma.contentGenerationJob.findMany({
+      where: {
+        folder: { projectId },
+        status: { in: ['QUEUED', 'PROCESSING'] },
+      },
+      include: {
+        folder: { select: { id: true, name: true } },
+        requestedBy: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+      take: Math.min(Math.max(limit, 1), 50),
+    });
+    return {
+      items: jobs.map((job) => {
+        const sources = Array.isArray(job.sources)
+          ? (job.sources as unknown as JobSource[])
+          : [];
+        return {
+          id: job.id,
+          type: job.type,
+          status: job.status,
+          stage: job.stage,
+          progress: job.progress,
+          folder: job.folder,
+          requestedBy: job.requestedBy,
+          sourceType: job.sourceType,
+          sourceId: job.sourceId,
+          sourceCount: sources.length,
+          sourceNames: sources.slice(0, 3).map((source) => source.name),
+          config: job.config,
+          createdAt: job.createdAt,
+        };
+      }),
+    };
+  }
+
   async retry(jobId: string, userId: string) {
     const job = await this.getJob(jobId, userId);
     if (job.status !== 'FAILED') {
@@ -146,12 +222,31 @@ export class ContentGenerationService {
         HttpStatus.CONFLICT,
       );
     }
-    const updated = await this.prisma.contentGenerationJob.update({
-      where: { id: jobId },
-      data: { status: 'QUEUED', error: null },
-    });
-    await this.queue.enqueue(jobId);
-    return updated;
+    const activeKey =
+      job.sourceType && job.sourceId
+        ? buildActiveKey(job.type, job.folderId, {
+            type: job.sourceType as 'RESOURCE' | 'FOLDER' | 'PROJECT',
+            id: job.sourceId,
+          }, job.config)
+        : null;
+    try {
+      const updated = await this.prisma.contentGenerationJob.update({
+        where: { id: jobId },
+        data: {
+          status: 'QUEUED',
+          error: null,
+          stage: null,
+          activeKey,
+        },
+      });
+      await this.queue.enqueue(jobId);
+      return updated;
+    } catch (error) {
+      if (isUniqueConflict(error)) {
+        throw await this.duplicateJobException(activeKey);
+      }
+      throw error;
+    }
   }
 
   async process(jobId: string): Promise<void> {
@@ -166,13 +261,24 @@ export class ContentGenerationService {
       data: { status: 'PROCESSING' },
     });
 
+    const initialWarnings = asStringArray(job.warnings);
+    const warnings = [...initialWarnings];
+    const sources = job.sources as unknown as JobSource[];
+    const total = sources.length;
+
     try {
-      const sources = job.sources as unknown as JobSource[];
-      const agentSources = await Promise.all(
-        sources.map(async (source) => {
+      const extracted: ContentAgentSource[] = [];
+      await this.updateJobStage(jobId, 'EXTRACTING', 0, total);
+      for (const [index, source] of sources.entries()) {
+        try {
           const resource = await this.prisma.resource.findUnique({
             where: { id: source.resourceId },
-            select: { s3Key: true, checksum: true, size: true },
+            select: {
+              s3Key: true,
+              checksum: true,
+              size: true,
+              updatedAt: true,
+            },
           });
           if (!resource) {
             throw new AppException(
@@ -181,9 +287,30 @@ export class ContentGenerationService {
               HttpStatus.UNPROCESSABLE_ENTITY,
             );
           }
-          return {
+          const sourceVersion =
+            source.checksum ??
+            resource.checksum ??
+            resource.updatedAt.toISOString();
+          const artifact = await this.extraction.getOrExtract({
+            jobId: job.id,
             resourceId: source.resourceId,
-            kind: 'markdown' as const,
+            name: source.name,
+            kind: source.kind,
+            mimeType: source.mimeType,
+            size: resource.size,
+            checksum: source.checksum ?? resource.checksum,
+            sourceVersion,
+            s3Key: resource.s3Key,
+            projectId: job.folder.projectId,
+            folderId: job.folderId,
+            language: 'es',
+          });
+          warnings.push(
+            ...artifact.warnings.map((warning) => `${source.name}: ${warning}`),
+          );
+          extracted.push({
+            resourceId: source.resourceId,
+            kind: source.kind,
             name: source.name,
             mimeType: source.mimeType,
             size: resource.size,
@@ -192,15 +319,44 @@ export class ContentGenerationService {
               resource.s3Key,
               this.presignTtlSeconds,
             ),
-          };
-        }),
-      );
+            extraction: {
+              sourceId: source.resourceId,
+              kind: source.kind,
+              text: artifact.markdown,
+              markdown: artifact.markdown,
+              blocks: artifact.blocks,
+              metadata: artifact.metadata,
+              warnings: artifact.warnings,
+              extractor: artifact.extractor,
+            },
+          });
+        } catch (error) {
+          if (sources.length === 1 || job.sourceType === 'RESOURCE') {
+            throw error;
+          }
+          const code =
+            error instanceof AppException
+              ? error.code
+              : 'SOURCE_EXTRACTION_FAILED';
+          warnings.push(`Se omitió ${source.name}: ${code}`);
+        }
+        await this.updateJobStage(jobId, 'EXTRACTING', index + 1, total);
+      }
 
+      if (!extracted.length) {
+        throw new AppException(
+          'EMPTY_SOURCE',
+          'Ninguna fuente produjo contenido utilizable',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      await this.updateJobStage(jobId, 'GENERATING', total, total);
       const result = await this.agent.generate(
         job.type === 'MINDMAP' ? 'mindmap' : 'quiz',
         {
           jobId: job.id,
-          sources: agentSources,
+          sources: extracted,
           context: {
             projectId: job.folder.projectId,
             folderId: job.folderId,
@@ -214,23 +370,49 @@ export class ContentGenerationService {
         },
       );
 
+      const requestedIds = new Set(result.usedSourceIds);
+      const usedSources = requestedIds.size
+        ? sources.filter((source) => requestedIds.has(source.resourceId))
+        : sources;
+      const persistenceSources = usedSources.length ? usedSources : sources;
+
+      await this.updateJobStage(jobId, 'SAVING', total, total);
       const resourceId =
         job.type === 'MINDMAP'
-          ? await this.persistMindmap(job.id, job.folderId, job.requestedById, sources, result.data)
-          : await this.persistQuiz(job.id, job.folderId, job.requestedById, sources, result.data, job.config);
+          ? await this.persistMindmap(
+              job.id,
+              job.folderId,
+              job.requestedById,
+              persistenceSources,
+              result.data,
+            )
+          : await this.persistQuiz(
+              job.id,
+              job.folderId,
+              job.requestedById,
+              persistenceSources,
+              result.data,
+              job.config,
+            );
 
+      const finalWarnings = [
+        ...new Set([...warnings, ...result.warnings]),
+      ];
       await this.prisma.contentGenerationJob.update({
         where: { id: jobId },
         data: {
           status: 'DONE',
           resultJson: result.data as Prisma.InputJsonValue,
           resultResourceId: resourceId,
-          warnings: result.warnings as Prisma.InputJsonValue,
+          warnings: finalWarnings as Prisma.InputJsonValue,
           model: result.usage?.model ?? null,
           promptVersion: result.promptVersion ?? null,
           inputTokens: result.usage?.inputTokens ?? null,
           outputTokens: result.usage?.outputTokens ?? null,
           error: null,
+          activeKey: null,
+          stage: null,
+          progress: { completed: total, total } as Prisma.InputJsonValue,
         },
       });
     } catch (error) {
@@ -243,9 +425,30 @@ export class ContentGenerationService {
       );
       await this.prisma.contentGenerationJob.update({
         where: { id: job.id },
-        data: { status: 'FAILED', error: code },
+        data: {
+          status: 'FAILED',
+          error: code,
+          activeKey: null,
+          stage: null,
+          warnings: warnings as Prisma.InputJsonValue,
+        },
       });
     }
+  }
+
+  private async updateJobStage(
+    jobId: string,
+    stage: string,
+    completed: number,
+    total: number,
+  ): Promise<void> {
+    await this.prisma.contentGenerationJob.update({
+      where: { id: jobId },
+      data: {
+        stage,
+        progress: { completed, total } as Prisma.InputJsonValue,
+      },
+    });
   }
 
   private async createJob(
@@ -274,47 +477,105 @@ export class ContentGenerationService {
       );
     }
     await this.permissions.assertProjectRole(userId, folder.projectId, 'editor');
-    const sources = await this.resolveSources(folder.projectId, source);
-    return this.prisma.contentGenerationJob.create({
-      data: {
-        type,
-        folderId,
-        requestedById: userId,
-        sources: sources as unknown as Prisma.InputJsonValue,
-        config: config as Prisma.InputJsonValue,
-      },
-    });
+    const { sources, warnings } = await this.resolveSources(
+      folder.projectId,
+      source,
+    );
+    const activeKey = buildActiveKey(type, folderId, source, config);
+    try {
+      return await this.prisma.contentGenerationJob.create({
+        data: {
+          type,
+          folderId,
+          requestedById: userId,
+          sourceType: source.type,
+          sourceId: source.id,
+          activeKey,
+          warnings: warnings as Prisma.InputJsonValue,
+          sources: sources as unknown as Prisma.InputJsonValue,
+          config: config as Prisma.InputJsonValue,
+        },
+      });
+    } catch (error) {
+      if (isUniqueConflict(error)) {
+        throw await this.duplicateJobException(activeKey);
+      }
+      throw error;
+    }
+  }
+
+  private async duplicateJobException(
+    activeKey: string | null,
+  ): Promise<AppException> {
+    const existing = activeKey
+      ? await this.prisma.contentGenerationJob.findFirst({
+          where: {
+            activeKey,
+            status: { in: ['QUEUED', 'PROCESSING'] },
+          },
+          select: { id: true },
+        })
+      : null;
+    return new AppException(
+      'GENERATION_JOB_IN_PROGRESS',
+      'Ya hay una generación idéntica en curso',
+      HttpStatus.CONFLICT,
+      { jobId: existing?.id ?? null },
+    );
   }
 
   private async resolveSources(
     projectId: string,
     source: CreateMindmapDto['source'],
-  ): Promise<JobSource[]> {
+  ): Promise<{ sources: JobSource[]; warnings: string[] }> {
     const select = {
       id: true,
       name: true,
+      kind: true,
       mimeType: true,
       size: true,
       checksum: true,
       folderId: true,
       folder: { select: { projectId: true } },
     } as const;
-
-    let resources: Array<{
+    type SourceResource = {
       id: string;
       name: string;
+      kind: string;
       mimeType: string;
       size: number;
       checksum: string | null;
       folderId: string;
       folder: { projectId: string };
-    }> = [];
+    };
+    const warnings: string[] = [];
+    const toJobSource = (resource: SourceResource): JobSource | null => {
+      const family = resolveSourceFamily(resource.name, resource.mimeType);
+      if (!family || family === 'web') {
+        if (isDeferredSource(resource.name)) {
+          warnings.push(
+            `${resource.name}: formato diferido a la segunda fase`,
+          );
+        } else {
+          warnings.push(`${resource.name}: formato no compatible`);
+        }
+        return null;
+      }
+      return {
+        resourceId: resource.id,
+        kind: family,
+        name: resource.name,
+        mimeType: resource.mimeType,
+        size: resource.size,
+        checksum: resource.checksum,
+      };
+    };
 
     if (source.type === 'RESOURCE') {
-      const resource = await this.prisma.resource.findUnique({
+      const resource = (await this.prisma.resource.findUnique({
         where: { id: source.id },
         select,
-      });
+      })) as SourceResource | null;
       if (!resource || resource.folder.projectId !== projectId) {
         throw new AppException(
           'EMPTY_SOURCE',
@@ -322,15 +583,21 @@ export class ContentGenerationService {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
-      if (resource.mimeType !== 'text/markdown') {
+      const mapped = toJobSource(resource);
+      if (!mapped || (!this.multiformatEnabled && mapped.kind !== 'markdown')) {
         throw new AppException(
           'UNSUPPORTED_SOURCE_TYPE',
-          'Solo se pueden usar apuntes Markdown como fuente',
+          isDeferredSource(resource.name)
+            ? 'Este formato se habilitará en la segunda fase'
+            : 'El formato de la fuente no es compatible con la generación',
           HttpStatus.UNSUPPORTED_MEDIA_TYPE,
         );
       }
-      resources = [resource];
-    } else if (source.type === 'FOLDER') {
+      return { sources: [mapped], warnings };
+    }
+
+    let resources: SourceResource[];
+    if (source.type === 'FOLDER') {
       const folder = await this.prisma.folder.findUnique({
         where: { id: source.id },
         select: { projectId: true },
@@ -342,35 +609,59 @@ export class ContentGenerationService {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
-      resources = await this.prisma.resource.findMany({
-        where: { folderId: source.id, mimeType: 'text/markdown' },
+      resources = (await this.prisma.resource.findMany({
+        where: {
+          folderId: source.id,
+          kind: this.multiformatEnabled
+            ? { in: ['MARKDOWN', 'DOCUMENT', 'IMAGE', 'AUDIO', 'VIDEO'] }
+            : 'MARKDOWN',
+        },
+        orderBy: { name: 'asc' },
         select,
-      });
+      })) as SourceResource[];
     } else {
-      resources = await this.prisma.resource.findMany({
+      resources = (await this.prisma.resource.findMany({
         where: {
           folder: { projectId },
-          mimeType: 'text/markdown',
+          kind: this.multiformatEnabled
+            ? { in: ['MARKDOWN', 'DOCUMENT', 'IMAGE', 'AUDIO', 'VIDEO'] }
+            : 'MARKDOWN',
         },
+        orderBy: { name: 'asc' },
         select,
-      });
+      })) as SourceResource[];
     }
 
-    if (!resources.length) {
+    const mappedSources = resources
+      .map(toJobSource)
+      .filter((item): item is JobSource => item !== null);
+    if (!mappedSources.length) {
       throw new AppException(
         'EMPTY_SOURCE',
-        'No hay apuntes de texto para generar contenido',
+        'No hay archivos compatibles para generar contenido',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        { warnings },
+      );
+    }
+    if (mappedSources.length > this.maxSources) {
+      throw new AppException(
+        'TOO_MANY_SOURCES',
+        `Se permiten como máximo ${this.maxSources} archivos por generación`,
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-
-    return resources.map((resource) => ({
-      resourceId: resource.id,
-      name: resource.name,
-      mimeType: resource.mimeType,
-      size: resource.size,
-      checksum: resource.checksum,
-    }));
+    const totalBytes = mappedSources.reduce(
+      (sum, item) => sum + item.size,
+      0,
+    );
+    if (totalBytes > this.maxTotalBytes) {
+      throw new AppException(
+        'SOURCE_TOO_LARGE',
+        'El conjunto de archivos supera el límite de tamaño',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    return { sources: mappedSources, warnings };
   }
 
   private async persistMindmap(
@@ -576,4 +867,49 @@ function validateQuiz(
 
 function cleanText(value: string): string {
   return value.replace(/<[^>]*>/g, '').slice(0, 4000).trim();
+}
+
+export function buildActiveKey(
+  type: 'MINDMAP' | 'QUIZ',
+  folderId: string,
+  source: { type: 'RESOURCE' | 'FOLDER' | 'PROJECT'; id: string },
+  config: unknown,
+): string {
+  return createHash('sha256')
+    .update(
+      JSON.stringify({
+        type,
+        folderId,
+        sourceType: source.type,
+        sourceId: source.id,
+        config: canonicalize(config),
+      }),
+    )
+    .digest('hex');
+}
+
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, item]) => [key, canonicalize(item)]),
+    );
+  }
+  return value;
+}
+
+function isUniqueConflict(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: string }).code === 'P2002'
+  );
+}
+
+function asStringArray(value: Prisma.JsonValue | null): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }

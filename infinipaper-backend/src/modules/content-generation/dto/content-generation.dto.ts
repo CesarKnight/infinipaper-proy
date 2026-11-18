@@ -54,3 +54,16 @@ export class CreateQuizGenerationDto {
   @MaxLength(2000)
   instructions?: string;
 }
+
+export class ListGenerationJobsDto {
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  active?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit?: number;
+}

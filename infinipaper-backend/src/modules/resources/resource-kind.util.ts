@@ -95,3 +95,99 @@ export function decodeMobileFilename(filename: string): string {
 export function isMarkdown(filename: string): boolean {
   return extname(filename).toLowerCase() === '.md';
 }
+
+export type SourceFamily =
+  | 'markdown'
+  | 'pdf'
+  | 'word'
+  | 'spreadsheet'
+  | 'slides'
+  | 'image'
+  | 'audio'
+  | 'video'
+  | 'web';
+
+const SOURCE_FAMILY_BY_EXTENSION: Record<string, SourceFamily> = {
+  '.md': 'markdown',
+  '.pdf': 'pdf',
+  '.docx': 'word',
+  '.docm': 'word',
+  '.dotx': 'word',
+  '.xlsx': 'spreadsheet',
+  '.xlsm': 'spreadsheet',
+  '.csv': 'spreadsheet',
+  '.pptx': 'slides',
+  '.pptm': 'slides',
+  '.ppsx': 'slides',
+  '.jpg': 'image',
+  '.jpeg': 'image',
+  '.png': 'image',
+  '.webp': 'image',
+  '.gif': 'image',
+  '.avif': 'image',
+  '.mp3': 'audio',
+  '.wav': 'audio',
+  '.ogg': 'audio',
+  '.m4a': 'audio',
+  '.mp4': 'video',
+  '.m4v': 'video',
+  '.mov': 'video',
+  '.webm': 'video',
+  '.ogv': 'video',
+};
+
+const DEFERRED_SOURCE_EXTENSIONS = new Set([
+  '.doc',
+  '.odt',
+  '.xls',
+  '.xlsb',
+  '.ods',
+  '.ppt',
+  '.odp',
+]);
+
+const SOURCE_FAMILY_BY_MIME: Record<string, SourceFamily> = {
+  'text/markdown': 'markdown',
+  'application/pdf': 'pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+    'word',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.template':
+    'word',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+    'spreadsheet',
+  'text/csv': 'spreadsheet',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+    'slides',
+  'application/vnd.openxmlformats-officedocument.presentationml.slideshow':
+    'slides',
+  'image/jpeg': 'image',
+  'image/png': 'image',
+  'image/webp': 'image',
+  'image/gif': 'image',
+  'image/avif': 'image',
+  'audio/mpeg': 'audio',
+  'audio/wav': 'audio',
+  'audio/ogg': 'audio',
+  'audio/mp4': 'audio',
+  'video/mp4': 'video',
+  'video/quicktime': 'video',
+  'video/webm': 'video',
+  'video/ogg': 'video',
+};
+
+export function resolveSourceFamily(
+  filename: string,
+  mimeType: string,
+): SourceFamily | null {
+  const extension = extname(filename).toLowerCase();
+  if (DEFERRED_SOURCE_EXTENSIONS.has(extension)) return null;
+  return (
+    SOURCE_FAMILY_BY_EXTENSION[extension] ??
+    SOURCE_FAMILY_BY_MIME[mimeType] ??
+    null
+  );
+}
+
+export function isDeferredSource(filename: string): boolean {
+  return DEFERRED_SOURCE_EXTENSIONS.has(extname(filename).toLowerCase());
+}

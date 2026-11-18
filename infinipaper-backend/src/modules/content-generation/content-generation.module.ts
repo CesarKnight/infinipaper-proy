@@ -7,6 +7,7 @@ import { ContentGenerationController } from './content-generation.controller.js'
 import { ContentGenerationQueueService } from './content-generation.queue.js';
 import { ContentGenerationService } from './content-generation.service.js';
 import { ContentGenerationWorker } from './content-generation.worker.js';
+import { ResourceExtractionService } from './extraction.service.js';
 
 @Module({
   imports: [ProvenanceModule, QuizzesModule, ResourcesModule],
@@ -16,6 +17,7 @@ import { ContentGenerationWorker } from './content-generation.worker.js';
     ContentGenerationQueueService,
     ContentGenerationService,
     ContentGenerationWorker,
+    ResourceExtractionService,
   ],
   exports: [ContentGenerationService],
 })

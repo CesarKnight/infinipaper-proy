@@ -1,6 +1,6 @@
 # Infinipaper Agents
 
-Servicio FastAPI + **LangGraph** para estructurar apuntes Markdown. Es stateless: recibe una o más fuentes con URLs presignadas de MinIO, ejecuta un grafo de agentes y devuelve Markdown estructurado.
+Servicio FastAPI + **LangGraph** para extraer fuentes académicas y generar material estructurado. Es stateless: recibe una o más fuentes con URLs presignadas de MinIO, extrae su contenido y lo entrega a los generadores de apuntes, mapas mentales y cuestionarios.
 
 ## Estructura
 
@@ -13,12 +13,20 @@ src/infinipaper_agents/
 ├── model.py                # Modelo LangChain configurable
 ├── graph/
 │   ├── state.py            # GraphState
-│   ├── nodes.py            # Nodos del grafo
-│   └── builder.py          # StateGraph v1
+│   ├── nodes.py            # Nodos del grafo de apuntes
+│   ├── builder.py          # StateGraph de apuntes
+│   └── content.py          # Generación de mapas y cuestionarios
+├── sources/                # Extractores por familia de formato
+│   ├── registry.py         # MIME/extensión → extractor
+│   ├── orchestrator.py     # Fan-out, deduplicación y presupuesto
+│   └── pdf.py / word.py / spreadsheet.py / slides.py / image.py / audio.py / video.py
 ├── tools/
 │   ├── fetch.py            # Descarga desde URL presignada
 │   └── markdown.py         # Análisis y validación
-└── api/routes/notes.py     # POST /v1/notes/structure
+└── api/routes/
+    ├── notes.py            # POST /v1/notes/structure
+    ├── content.py          # Mapas y cuestionarios
+    └── sources.py          # POST /v1/sources/extract
 ```
 
 ## Desarrollo
@@ -68,7 +76,9 @@ Los tests del grafo usan `FakeListChatModel`, sin llamadas reales al proveedor.
 }
 ```
 
-En v1 solo `kind = "markdown"`. Los demás tipos devuelven `UNSUPPORTED_SOURCE_TYPE`; el grafo está preparado para añadir `extract_pdf`, `extract_image`, `transcribe_audio`, `extract_video`, `extract_web` y `related_images`.
+Los tipos de fuente admitidos son `markdown`, `pdf`, `word`, `spreadsheet`, `slides`, `image`, `audio` y `video`. Los formatos legacy/ODF (`.doc`, `.odt`, `.xls`, `.xlsb`, `.ods`, `.ppt`, `.odp`) se habilitarán en una segunda fase.
+
+`POST /v1/sources/extract` extrae una sola fuente y devuelve un documento normalizado. `POST /v1/mindmaps/generate` y `POST /v1/quizzes/generate` orquestan varias fuentes y generan el recurso final. Los endpoints requieren `Authorization: Bearer <AGENT_SERVICE_TOKEN>`.
 
 ## Configuración de proveedores
 

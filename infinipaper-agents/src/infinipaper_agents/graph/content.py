@@ -8,10 +8,9 @@ from infinipaper_agents.errors import AgentError
 from infinipaper_agents.schemas import (
     MindmapRequest,
     QuizGenerationRequest,
-    SourceRef,
     Usage,
 )
-from infinipaper_agents.tools.fetch import fetch_source
+from infinipaper_agents.sources.orchestrator import orchestrate_sources
 from infinipaper_agents.tools.markdown import strip_json_fences
 
 CONTENT_SYSTEM_PROMPT = """Eres un agente académico de Infinipaper.
@@ -84,32 +83,12 @@ def _text_from_content(content: object) -> str:
     return str(content)
 
 
-async def _load_sources(
-    sources: list[SourceRef],
-    max_input_chars: int,
-) -> tuple[str, list[str]]:
-    documents = []
-    ids: list[str] = []
-    for source in sources:
-        if source.kind != "markdown":
-            raise AgentError(
-                "UNSUPPORTED_SOURCE_TYPE",
-                "En esta versión solo se admiten apuntes Markdown",
-                415,
-            )
-        document = await fetch_source(source, max_input_chars)
-        documents.append(document)
-        ids.append(source.resource_id)
-    text = "\n\n---\n\n".join(document.text for document in documents)
-    if not text.strip():
-        raise AgentError("EMPTY_SOURCE", "La fuente está vacía", 422)
-    if len(text) > max_input_chars:
-        raise AgentError(
-            "NOTE_TOO_LARGE",
-            f"La fuente supera el límite de {max_input_chars} caracteres",
-            422,
-        )
-    return text, ids
+def _merge_usage(current: Usage, extra: Usage) -> Usage:
+    return Usage(
+        model=extra.model or current.model,
+        input_tokens=current.input_tokens + extra.input_tokens,
+        output_tokens=current.output_tokens + extra.output_tokens,
+    )
 
 
 def _clean_text(value: object, limit: int = 4000) -> str:
@@ -251,9 +230,15 @@ async def generate_mindmap(
     model: BaseChatModel,
     settings: Settings,
     payload: MindmapRequest,
-) -> tuple[dict, list[str], Usage]:
-    text, source_ids = await _load_sources(payload.sources, settings.max_input_chars)
-    prompt = f"""Genera un mapa mental académico en español.
+) -> tuple[dict, list[str], list[str], Usage]:
+    orchestration = await orchestrate_sources(
+        payload.sources,
+        settings,
+        model,
+        settings.max_input_chars,
+    )
+    source_ids = orchestration.used_source_ids
+    prompt = f"""Genera un mapa mental académico en {payload.context.language}.
 
 Devuelve exactamente este JSON:
 {{"title":"Título","nodes":[{{"id":"n1","label":"Concepto","type":"concept","description":"..."}}],"edges":[{{"source":"n1","target":"n2","label":"relación"}}]}}
@@ -265,24 +250,34 @@ Requisitos:
 - No incluyas HTML.
 - Instrucciones del usuario: {payload.context.instructions or "ninguna"}
 
-<source>
-{text}
-</source>"""
+{orchestration.context_text}"""
     data, usage = await _invoke_json(model, prompt, settings)
-    return _validate_mindmap(data, source_ids), [], usage
+    return (
+        _validate_mindmap(data, source_ids),
+        source_ids,
+        orchestration.warnings,
+        _merge_usage(orchestration.usage, usage),
+    )
 
 
 async def generate_quiz(
     model: BaseChatModel,
     settings: Settings,
     payload: QuizGenerationRequest,
-) -> tuple[dict, list[str], Usage]:
-    text, source_ids = await _load_sources(payload.sources, settings.max_input_chars)
+) -> tuple[dict, list[str], list[str], Usage]:
+    orchestration = await orchestrate_sources(
+        payload.sources,
+        settings,
+        model,
+        settings.max_input_chars,
+    )
+    source_ids = orchestration.used_source_ids
     config = payload.config
-    prompt = f"""Genera un cuestionario académico en español.
+    source_hint = source_ids[0] if source_ids else "source-id"
+    prompt = f"""Genera un cuestionario académico en {payload.context.language}.
 
 Devuelve exactamente este JSON:
-{{"title":"Título","instructions":"Instrucciones","questions":[{{"type":"MULTIPLE_CHOICE","prompt":"...","points":1,"correctText":null,"caseSensitive":false,"options":[{{"text":"...","isCorrect":true}},{{"text":"...","isCorrect":false}}],"sourceRefs":["{source_ids[0]}"]}}]}}
+{{"title":"Título","instructions":"Instrucciones","questions":[{{"type":"MULTIPLE_CHOICE","prompt":"...","points":1,"correctText":null,"caseSensitive":false,"options":[{{"text":"...","isCorrect":true}},{{"text":"...","isCorrect":false}}],"sourceRefs":["{source_hint}"]}}]}}
 
 Requisitos:
 - Cantidad: {config.count} preguntas.
@@ -294,11 +289,14 @@ Requisitos:
 - No incluyas HTML.
 - Instrucciones del usuario: {config.instructions or payload.context.instructions or "ninguna"}
 
-<source>
-{text}
-</source>"""
+{orchestration.context_text}"""
     data, usage = await _invoke_json(model, prompt, settings)
-    warnings: list[str] = []
+    warnings = list(orchestration.warnings)
     if len(data.get("questions", [])) > config.count:
         warnings.append("Se recortaron preguntas sobrantes")
-    return _validate_quiz(data, source_ids, config.model_dump()), warnings, usage
+    return (
+        _validate_quiz(data, source_ids, config.model_dump()),
+        source_ids,
+        warnings,
+        _merge_usage(orchestration.usage, usage),
+    )

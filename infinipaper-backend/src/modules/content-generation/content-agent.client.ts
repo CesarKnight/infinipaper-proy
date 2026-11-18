@@ -2,18 +2,52 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppException } from '../../common/errors/app.exception.js';
 
+export type ContentSourceKind =
+  | 'markdown'
+  | 'pdf'
+  | 'word'
+  | 'spreadsheet'
+  | 'slides'
+  | 'image'
+  | 'audio'
+  | 'video';
+
+export interface ContentExtraction {
+  sourceId?: string;
+  kind?: ContentSourceKind;
+  text?: string;
+  markdown: string;
+  blocks?: unknown[];
+  metadata?: Record<string, unknown>;
+  warnings?: string[];
+  extractor?: string;
+}
+
 export interface ContentAgentSource {
   resourceId: string;
-  kind: 'markdown';
+  kind: ContentSourceKind;
   name: string;
   mimeType: string;
   size: number;
   checksum: string | null;
   url: string;
+  extraction?: ContentExtraction | null;
 }
 
 export interface ContentAgentResponse {
   data: Record<string, unknown>;
+  usedSourceIds: string[];
+  warnings: string[];
+  usage: {
+    model: string;
+    inputTokens: number;
+    outputTokens: number;
+  };
+  promptVersion: string;
+}
+
+export interface ExtractSourceResponse {
+  document: Record<string, unknown>;
   warnings: string[];
   usage: {
     model: string;
@@ -66,12 +100,85 @@ export class ContentAgentClient {
       );
     }
 
+    const path = kind === 'mindmap' ? 'mindmaps' : 'quizzes';
+    const data = await this.post(`/v1/${path}/generate`, payload);
+    const payloadKey = kind === 'mindmap' ? 'mindmap' : 'quiz';
+    const result = data?.[payloadKey];
+    if (!result || typeof result !== 'object') {
+      throw new AppException(
+        'AGENT_INVALID_OUTPUT',
+        'El servicio de agentes devolvió una respuesta inválida',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+    return {
+      data: result as Record<string, unknown>,
+      usedSourceIds: Array.isArray(data?.usedSourceIds)
+        ? data.usedSourceIds.map((item) => String(item))
+        : [],
+      warnings: Array.isArray(data?.warnings)
+        ? data.warnings.map((item) => String(item))
+        : [],
+      usage: (data?.usage as ContentAgentResponse['usage']) ?? {
+        model: '',
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      promptVersion:
+        typeof data?.promptVersion === 'string' ? data.promptVersion : '',
+    };
+  }
+
+  async extractSource(payload: {
+    jobId: string;
+    source: Omit<ContentAgentSource, 'extraction'>;
+    context: {
+      projectId: string;
+      folderId: string;
+      language: string;
+    };
+  }): Promise<ExtractSourceResponse> {
+    if (!this.enabled) {
+      throw new AppException(
+        'AGENT_CONTENT_DISABLED',
+        'La generación con IA está desactivada',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+
+    const data = await this.post('/v1/sources/extract', payload);
+    const document = data?.document;
+    if (!document || typeof document !== 'object') {
+      throw new AppException(
+        'AGENT_INVALID_OUTPUT',
+        'El servicio de agentes no devolvió una extracción válida',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+    return {
+      document: document as Record<string, unknown>,
+      warnings: Array.isArray(data?.warnings)
+        ? data.warnings.map((item) => String(item))
+        : [],
+      usage: (data?.usage as ExtractSourceResponse['usage']) ?? {
+        model: '',
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      promptVersion:
+        typeof data?.promptVersion === 'string' ? data.promptVersion : '',
+    };
+  }
+
+  private async post(
+    path: string,
+    payload: unknown,
+  ): Promise<Record<string, unknown>> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
-    const path = kind === 'mindmap' ? 'mindmaps' : 'quizzes';
 
     try {
-      const response = await fetch(`${this.baseUrl}/v1/${path}/generate`, {
+      const response = await fetch(`${this.baseUrl}${path}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,29 +202,14 @@ export class ContentAgentClient {
           data?.details ?? null,
         );
       }
-
-      const payloadKey = kind === 'mindmap' ? 'mindmap' : 'quiz';
-      const result = data?.[payloadKey];
-      if (!result || typeof result !== 'object') {
+      if (!data) {
         throw new AppException(
           'AGENT_INVALID_OUTPUT',
-          'El servicio de agentes devolvió una respuesta inválida',
+          'El servicio de agentes devolvió una respuesta vacía',
           HttpStatus.BAD_GATEWAY,
         );
       }
-      return {
-        data: result as Record<string, unknown>,
-        warnings: Array.isArray(data?.warnings)
-          ? data.warnings.map((item) => String(item))
-          : [],
-        usage: (data?.usage as ContentAgentResponse['usage']) ?? {
-          model: '',
-          inputTokens: 0,
-          outputTokens: 0,
-        },
-        promptVersion:
-          typeof data?.promptVersion === 'string' ? data.promptVersion : '',
-      };
+      return data;
     } catch (error) {
       if (error instanceof AppException) throw error;
       if ((error as Error).name === 'AbortError') {

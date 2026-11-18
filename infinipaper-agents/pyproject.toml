@@ -18,6 +18,12 @@ dependencies = [
   "langchain-openai>=1.0",
   "langchain-aws>=1.9.3",
   "fastmcp>=4.2.1",
+  "pymupdf>=2.1",
+  "python-docx>=1.2.0",
+  "openpyxl>=3.1.5",
+  "python-pptx>=1.0.2",
+  "pillow>=13.0.0",
+  "pytesseract>=0.3.13",
 ]
 
 [dependency-groups]

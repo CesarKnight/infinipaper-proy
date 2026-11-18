@@ -37,7 +37,7 @@ El requisito pide mapas mentales generados desde el contenido almacenado, guarda
 - Edición manual avanzada del mapa en v1.
 - Exportación PNG/SVG en v1 (queda como mejora).
 - Mapas 3D o layouts avanzados.
-- Generación desde PDFs sin extracción de texto.
+- Generación desde PDFs: ampliada por la spec 027 para PDF, Office, imágenes, audio y video.
 
 ## 4. Requisitos funcionales
 

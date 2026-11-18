@@ -25,7 +25,9 @@ async def create_mindmap(
     settings = request.app.state.settings
     model = request.app.state.model
     try:
-        mindmap, warnings, usage = await generate_mindmap(model, settings, payload)
+        mindmap, used_source_ids, warnings, usage = await generate_mindmap(
+            model, settings, payload
+        )
     except AgentError:
         raise
     except Exception as exc:  # noqa: BLE001
@@ -41,6 +43,7 @@ async def create_mindmap(
         ) from exc
     return MindmapResponse(
         mindmap=mindmap,
+        used_source_ids=used_source_ids,
         warnings=warnings,
         usage=usage,
         prompt_version=settings.prompt_version,
@@ -56,7 +59,9 @@ async def create_quiz(
     settings = request.app.state.settings
     model = request.app.state.model
     try:
-        quiz, warnings, usage = await generate_quiz(model, settings, payload)
+        quiz, used_source_ids, warnings, usage = await generate_quiz(
+            model, settings, payload
+        )
     except AgentError:
         raise
     except Exception as exc:  # noqa: BLE001
@@ -72,6 +77,7 @@ async def create_quiz(
         ) from exc
     return QuizGenerationResponse(
         quiz=quiz,
+        used_source_ids=used_source_ids,
         warnings=warnings,
         usage=usage,
         prompt_version=settings.prompt_version,

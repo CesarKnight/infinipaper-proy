@@ -352,6 +352,7 @@ model Resource {
   events            ResourceEvent[]
   chunks            ResourceChunk[]
   indexJobs         ContentIndexJob[]
+  extractions       ResourceExtraction[]
 
   @@unique([folderId, name])
   @@index([folderId])
@@ -452,6 +453,11 @@ model ContentGenerationJob {
   folderId         String
   requestedById    String
   status           AgentJobStatus         @default(QUEUED)
+  sourceType       String?
+  sourceId         String?
+  activeKey        String?                 @unique
+  stage            String?
+  progress         Json?
   sources          Json
   config           Json?
   resultJson       Json?
@@ -470,9 +476,30 @@ model ContentGenerationJob {
   resultResource Resource? @relation("GenerationResult", fields: [resultResourceId], references: [id], onDelete: SetNull)
 
   @@index([folderId])
+  @@index([folderId, status])
   @@index([requestedById])
   @@index([status])
   @@index([type])
+}
+
+model ResourceExtraction {
+  id               String         @id @default(cuid())
+  resourceId       String
+  checksum         String?
+  extractor        String
+  extractorVersion String
+  status           AgentJobStatus @default(QUEUED)
+  content          String?        @db.Text
+  metadata         Json?
+  warnings         Json?
+  error            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, checksum, extractorVersion])
+  @@index([resourceId, status])
 }
 
 // ---------------------------------------------------------------

@@ -3,7 +3,17 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
-SourceKind = Literal["markdown", "pdf", "image", "audio", "video", "web"]
+SourceKind = Literal[
+    "markdown",
+    "pdf",
+    "word",
+    "spreadsheet",
+    "slides",
+    "image",
+    "audio",
+    "video",
+    "web",
+]
 
 
 class ApiModel(BaseModel):
@@ -14,6 +24,32 @@ class ApiModel(BaseModel):
     )
 
 
+class Usage(ApiModel):
+    model: str = ""
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+
+class SourceBlock(ApiModel):
+    type: str
+    locator: str = ""
+    text: str = ""
+    level: int | None = None
+
+
+class ExtractedDocument(ApiModel):
+    source_id: str
+    kind: SourceKind
+    text: str
+    markdown: str = ""
+    blocks: list[SourceBlock] = Field(default_factory=list)
+    metadata: dict = Field(default_factory=dict)
+    provenance: list[dict] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    extractor: str = ""
+    usage: Usage = Field(default_factory=Usage)
+
+
 class SourceRef(ApiModel):
     resource_id: str
     kind: SourceKind
@@ -22,6 +58,7 @@ class SourceRef(ApiModel):
     size: int = 0
     checksum: str | None = None
     url: str
+    extraction: dict | None = None
 
 
 class Context(ApiModel):
@@ -37,12 +74,17 @@ class StructureRequest(ApiModel):
     context: Context
 
 
-class ExtractedDocument(ApiModel):
-    source_id: str
-    kind: SourceKind
-    text: str
-    metadata: dict = Field(default_factory=dict)
-    provenance: list[dict] = Field(default_factory=list)
+class ExtractRequest(ApiModel):
+    job_id: str | None = None
+    source: SourceRef
+    context: Context
+
+
+class ExtractResponse(ApiModel):
+    document: ExtractedDocument
+    warnings: list[str] = Field(default_factory=list)
+    usage: Usage
+    prompt_version: str
 
 
 class OutlineSection(ApiModel):
@@ -64,12 +106,6 @@ class ValidationReport(ApiModel):
     valid: bool
     coverage: float
     issues: list[ValidationIssue] = Field(default_factory=list)
-
-
-class Usage(ApiModel):
-    model: str = ""
-    input_tokens: int = 0
-    output_tokens: int = 0
 
 
 class StructuredNote(ApiModel):
@@ -95,6 +131,7 @@ class MindmapRequest(ApiModel):
 
 class MindmapResponse(ApiModel):
     mindmap: dict
+    used_source_ids: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     usage: Usage
     prompt_version: str
@@ -118,6 +155,7 @@ class QuizGenerationRequest(ApiModel):
 
 class QuizGenerationResponse(ApiModel):
     quiz: dict
+    used_source_ids: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     usage: Usage
     prompt_version: str

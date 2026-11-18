@@ -102,6 +102,12 @@ Python 3.12+ con `uv`.
 | `langchain-core` | Mensajes, modelos y utilidades |
 | `langchain-openai` | Cliente OpenAI-compatible configurable |
 | `langchain-aws` / `boto3` | Cliente AWS Bedrock y cadena de credenciales AWS |
+| `pymupdf` | Extracción de texto y renderizado de PDF |
+| `python-docx` | Extracción de DOCX/DOCM/DOTX |
+| `openpyxl` | Extracción de XLSX/XLSM |
+| `python-pptx` | Extracción de PPTX/PPTM/PPSX |
+| `pillow` / `pytesseract` | OCR de imágenes |
+| `tesseract-ocr` / `ffmpeg` | Binarios del contenedor para OCR y video |
 | `pytest` / `pytest-asyncio` | Tests |
 | `ruff` | Lint y formato |
 | `pyright` | Tipado estático |

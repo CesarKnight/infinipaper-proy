@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { RequireProjectRole } from '../../common/decorators/require-project-role.decorator.js';
@@ -8,6 +16,7 @@ import { ContentGenerationService } from './content-generation.service.js';
 import {
   CreateMindmapDto,
   CreateQuizGenerationDto,
+  ListGenerationJobsDto,
 } from './dto/content-generation.dto.js';
 
 @ApiTags('content-generation')
@@ -34,6 +43,20 @@ export class ContentGenerationController {
     @Body() dto: CreateQuizGenerationDto,
   ) {
     return this.generation.createQuiz(folderId, user.id, dto);
+  }
+
+  @Get('projects/:projectId/generation-jobs')
+  @RequireProjectRole('editor')
+  listActive(
+    @Param('projectId') projectId: string,
+    @CurrentUser() user: User,
+    @Query() query: ListGenerationJobsDto,
+  ) {
+    return this.generation.listActiveByProject(
+      projectId,
+      user.id,
+      query.limit ?? 20,
+    );
   }
 
   @Get('generation-jobs/:generationJobId')

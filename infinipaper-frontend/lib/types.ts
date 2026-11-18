@@ -235,6 +235,10 @@ export interface ContentGenerationJob {
   folderId: string;
   requestedById: string;
   status: AgentJobStatus;
+  sourceType?: "RESOURCE" | "FOLDER" | "PROJECT" | null;
+  sourceId?: string | null;
+  stage?: string | null;
+  progress?: { completed: number; total: number } | null;
   sources: Array<{ resourceId: string; name: string }>;
   config: Record<string, unknown> | null;
   resultJson: Record<string, unknown> | null;
@@ -245,8 +249,39 @@ export interface ContentGenerationJob {
   promptVersion: string | null;
   inputTokens: number | null;
   outputTokens: number | null;
+  requestedBy?: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface GenerationQueueItem {
+  id: string;
+  type: ContentGenerationType;
+  status: AgentJobStatus;
+  stage: string | null;
+  progress: { completed: number; total: number } | null;
+  folder: { id: string; name: string };
+  requestedBy: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+  } | null;
+  sourceType: "RESOURCE" | "FOLDER" | "PROJECT" | null;
+  sourceId: string | null;
+  sourceCount: number;
+  sourceNames: string[];
+  config: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface GenerationQueueResponse {
+  items: GenerationQueueItem[];
 }
 
 export interface MindmapNode {

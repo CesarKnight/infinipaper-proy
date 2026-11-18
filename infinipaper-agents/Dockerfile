@@ -6,6 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    tesseract-ocr \
+    tesseract-ocr-spa \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install uv
 
 COPY pyproject.toml uv.lock ./

@@ -9,10 +9,12 @@
 | `frontend` | build Next.js | 3000 | App web |
 | `minio` | `firstfinger/minio` | 9000 / 9001 / 9002 | Almacenamiento S3 + consola + Admin Console |
 | `whisper` | `fedirz/faster-whisper-server` | 8000 | Servicio ASR (API compatible OpenAI) |
-| `agents` | build FastAPI + LangGraph | 8100 | Servicio de agentes IA (estructuración de apuntes) |
+| `agents` | build FastAPI + LangGraph | 8100 | Extracción multiformato y agentes IA |
 | `mailpit` | `axllent/mailpit` | 1025 / 8025 | SMTP y bandeja de correo de desarrollo |
 
-Dependencias: `backend` espera a `db` y `minio`; `frontend` espera a `backend`. El `backend` llama a `agents` por HTTP interno; si `agents` no está disponible, la app sigue funcionando y solo falla la estructuración. `mailpit` recibe los correos de confirmación y verificación docente en desarrollo.
+Dependencias: `backend` espera a `db` y `minio`; `frontend` espera a `backend`. El `backend` llama a `agents` por HTTP interno; si `agents` no está disponible, la app sigue funcionando y solo fallan la estructuración y la generación de material. `mailpit` recibe los correos de confirmación y verificación docente en desarrollo.
+
+El contenedor `agents` incluye `pymupdf`, `python-docx`, `openpyxl`, `python-pptx`, `pytesseract`, `tesseract-ocr`, `tesseract-ocr-spa` y `ffmpeg`. Los formatos legacy/ODF quedan pendientes para una segunda fase.
 
 > **MinIO:** se usa la imagen [`firstfinger/minio`](https://hub.docker.com/r/firstfinger/minio) (servidor + Admin Console + `mc`), seleccionando `latest-amd64` o `latest-arm64` con `MINIO_IMAGE_TAG`. El bucket lo crea automáticamente el backend (`StorageService.ensureBucket`) al arrancar, por lo que no se necesita un contenedor `mc` aparte.
 
@@ -184,6 +186,18 @@ AGENT_MAX_OUTPUT_TOKENS=24000
 AGENT_TIMEOUT_SECONDS=300
 AGENT_MAX_RETRIES=1
 AGENT_PROMPT_VERSION=note-structurer/v1
+
+AGENT_EXTRACTION_VERSION=v1
+AGENT_MAX_SOURCES=30
+AGENT_MAX_SOURCE_BYTES=57671680
+AGENT_MAX_TOTAL_SOURCE_BYTES=262144000
+AGENT_MAX_EXTRACTED_CHARS=2000000
+AGENT_MAX_OCR_PAGES=100
+AGENT_OCR_LANGUAGE=spa+eng
+AGENT_VISION_ENABLED=false
+AGENT_VIDEO_FRAME_FALLBACK=true
+ASR_URL=http://localhost:8000
+ASR_TIMEOUT_SECONDS=600
 
 OTEL_ENABLED=false
 LOG_LEVEL=INFO

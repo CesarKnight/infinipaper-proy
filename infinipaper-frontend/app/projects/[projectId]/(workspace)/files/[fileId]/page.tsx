@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { PdfViewer } from "@/components/viewers/pdf-viewer";
 import { OfficeViewer } from "@/components/viewers/office-viewer";
 import { ViewerShell } from "@/components/viewers/viewer-shell";
 import { StructureNoteButton } from "@/components/markdown/structure-note-dialog";
+import { GenerationDialog } from "@/components/generation/generation-dialog";
 import { AutosaveStatusIndicator } from "@/components/markdown/autosave-status";
 import { useWorkspace } from "@/components/project/workspace-context";
 import { useAutosave } from "@/lib/use-autosave";
@@ -35,13 +36,23 @@ import {
 export default function FileViewerPage() {
   const params = useParams<{ fileId: string }>();
   const fileId = params.fileId;
+  const router = useRouter();
   const { projectId, selectedFolderId, canEdit } = useWorkspace();
+  const [generationKind, setGenerationKind] = React.useState<
+    "MINDMAP" | "QUIZ" | null
+  >(null);
 
   const resourceQuery = useQuery({
     queryKey: ["file", fileId],
     queryFn: () => apiFetch<Resource>(`/files/${fileId}`),
   });
   const resource = resourceQuery.data;
+  const canGenerate =
+    Boolean(canEdit) &&
+    Boolean(resource) &&
+    ["MARKDOWN", "DOCUMENT", "IMAGE", "AUDIO", "VIDEO"].includes(
+      resource?.kind ?? "",
+    );
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -63,16 +74,36 @@ export default function FileViewerPage() {
             {resource?.name ?? "…"}
           </h1>
         </div>
-        {resource?.kind !== "QUIZ" ? (
-          <Button
-            variant="outline"
-            size="sm"
-            render={<a href={fileDownloadUrl(fileId)} download />}
-          >
-            <DownloadIcon data-icon="inline-start" />
-            Descargar
-          </Button>
-        ) : null}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {canGenerate ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerationKind("MINDMAP")}
+              >
+                Mapa mental IA
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerationKind("QUIZ")}
+              >
+                Quiz IA
+              </Button>
+            </>
+          ) : null}
+          {resource?.kind !== "QUIZ" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              render={<a href={fileDownloadUrl(fileId)} download />}
+            >
+              <DownloadIcon data-icon="inline-start" />
+              Descargar
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {resourceQuery.isLoading || !resource ? (
@@ -91,6 +122,29 @@ export default function FileViewerPage() {
           />
         </div>
       )}
+      {generationKind && resource ? (
+        <GenerationDialog
+          projectId={projectId}
+          folderId={selectedFolderId ?? resource.folderId}
+          kind={generationKind}
+          open
+          fixedSource={{
+            type: "RESOURCE",
+            id: resource.id,
+            name: resource.name,
+          }}
+          onOpenChange={(value) => {
+            if (!value) setGenerationKind(null);
+          }}
+          onCreated={(resourceId) => {
+            router.push(
+              `/projects/${projectId}/files/${resourceId}?folder=${
+                selectedFolderId ?? resource.folderId
+              }`,
+            );
+          }}
+        />
+      ) : null}
     </div>
   );
 }

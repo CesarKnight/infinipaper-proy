@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from infinipaper_agents.api.routes.content import router as content_router
 from infinipaper_agents.api.routes.notes import router as notes_router
+from infinipaper_agents.api.routes.sources import router as sources_router
 from infinipaper_agents.config import get_settings
 from infinipaper_agents.errors import AgentError
 from infinipaper_agents.graph.builder import build_graph
@@ -37,6 +38,7 @@ app = FastAPI(
 
 app.include_router(notes_router)
 app.include_router(content_router)
+app.include_router(sources_router)
 app.mount('/mcp', mcp_app)
 
 
