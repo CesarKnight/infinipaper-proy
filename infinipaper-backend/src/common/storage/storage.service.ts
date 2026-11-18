@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CreateBucketCommand, DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, CreateBucketCommand, DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { Readable } from 'node:stream';
 
@@ -82,6 +82,20 @@ export class StorageService implements OnModuleInit {
       contentLength: result.ContentLength,
       contentRange: result.ContentRange,
     };
+  }
+
+  async copy(sourceKey: string, destinationKey: string): Promise<void> {
+    const copySource = encodeURIComponent(`${this.bucket}/${sourceKey}`).replaceAll(
+      '%2F',
+      '/',
+    );
+    await this.client.send(
+      new CopyObjectCommand({
+        Bucket: this.bucket,
+        Key: destinationKey,
+        CopySource: copySource,
+      }),
+    );
   }
 
   async delete(key: string): Promise<void> {

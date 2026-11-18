@@ -26,6 +26,7 @@ import { ProjectAccessGuard } from '../../common/guards/project-access.guard.js'
 import { AppException } from '../../common/errors/app.exception.js';
 import type { User } from '../../generated/prisma/client.js';
 import type { UploadedFileData } from '../../common/types/uploaded-file.js';
+import { BulkFileOperationDto } from './dto/bulk-file-operation.dto.js';
 import { CreateNoteDto } from './dto/create-note.dto.js';
 import { CreateNoticeDto } from './dto/create-notice.dto.js';
 import { RenameResourceDto } from './dto/rename-resource.dto.js';
@@ -72,6 +73,25 @@ export class ResourcesController {
       );
     }
     return this.resources.createFromUpload(folderId, user.id, file);
+  }
+
+  @Post('folders/:folderId/files/move')
+  @RequireProjectRole('editor')
+  moveMany(
+    @Param('folderId') targetFolderId: string,
+    @Body() dto: BulkFileOperationDto,
+  ) {
+    return this.resources.moveMany(dto.fileIds, targetFolderId);
+  }
+
+  @Post('folders/:folderId/files/copy')
+  @RequireProjectRole('editor')
+  copyMany(
+    @Param('folderId') targetFolderId: string,
+    @CurrentUser() user: User,
+    @Body() dto: BulkFileOperationDto,
+  ) {
+    return this.resources.copyMany(dto.fileIds, targetFolderId, user.id);
   }
 
   @Post('folders/:folderId/notes')

@@ -187,6 +187,10 @@ export class QuizzesService {
     });
   }
 
+  async refreshSnapshot(quizId: string): Promise<void> {
+    await this.syncSnapshot(quizId);
+  }
+
   async publish(quizId: string, userId: string) {
     await this.assertManager(quizId, userId);
     const count = await this.prisma.quizQuestion.count({ where: { quizId } });

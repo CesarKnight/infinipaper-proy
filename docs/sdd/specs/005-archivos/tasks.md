@@ -31,6 +31,8 @@
 - [x] `T-020` Implementar listado con icono, autor y tamaño. <RF-08>
 - [x] `T-021` Implementar subida con input múltiple, estado y errores. <RF-01, RF-07>
 - [x] `T-024` Implementar drop target, overlay y subida secuencial. <RF-11–RF-13>
+- [x] `T-025` Implementar selección múltiple y barra de acciones. <RF-14>
+- [x] `T-027` Implementar menú contextual y diálogo de carpeta destino. <RF-15–RF-17>
 - [x] `T-022` Implementar renombrado y eliminación para Editor+. <RF-07, RF-09>
 - [x] `T-023` Implementar orden por nombre, fecha y tipo. <RNF-04>
 
@@ -38,12 +40,14 @@
 
 - [x] `T-030` Verificar subida, listado y descarga. <CA-01, CA-05>
 - [x] `T-035` Verificar drag-and-drop en navegador. <CA-10, CA-11>
+- [x] `T-036` Verificar mover/copiar y menú contextual en navegador. <CA-12–CA-15>
 - [x] `T-031` Verificar formatos no admitidos y límite. <CA-02, CA-03>
 - [x] `T-032` Verificar duplicados y sugerencia. <CA-07>
 - [x] `T-033` Backend: `npm run lint && npm run build`. <RNF>
 - [x] `T-034` Frontend: `npm run lint && npm run build`. <RNF>
 - [ ] `T-050` Añadir tests de drag-and-drop y subida múltiple. <G-01>
 - [ ] `T-051` Añadir tests automatizados de límites, formatos y S3. <G-02>
+- [ ] `T-052` Añadir tests de mover/copiar y nombres duplicados. <G-03>
 
 ## Verificación final
 
@@ -52,3 +56,4 @@
 - [x] Drag & drop disponible.
 - [ ] Tests de drag & drop (G-01).
 - [ ] Cobertura automatizada de archivos (G-02).
+- [ ] Tests de mover/copiar (G-03).

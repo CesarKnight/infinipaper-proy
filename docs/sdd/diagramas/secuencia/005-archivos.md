@@ -38,6 +38,22 @@ sequenceDiagram
     FE-->>V: Descarga o visor
   end
 
+  opt Copiar o mover archivos
+    E->>FE: Selecciona varios archivos y abre clic derecho
+    FE->>FE: Muestra menú Copiar / Mover
+    E->>FE: Elige carpeta destino
+    FE->>API: POST /folders/:id/files/copy o /move
+    API->>API: Valida proyecto, permisos y nombres
+    alt Copiar
+      API->>S3: Copia objeto
+      API->>DB: Crea Resource copiado
+    else Mover
+      API->>DB: Actualiza folderId
+    end
+    API-->>FE: Recursos actualizados
+    FE-->>E: Refresca listado y selección
+  end
+
   opt Eliminar archivo
     E->>FE: Confirma eliminación
     FE->>API: DELETE /api/v1/files/:id
@@ -49,6 +65,9 @@ sequenceDiagram
 
 ## Notas
 
+- El menú contextual se abre con clic derecho y actúa sobre la selección.
+- Copiar duplica el objeto S3; mover solo cambia la carpeta.
+- Las copias resuelven colisiones con `(copia)`.
 - El drop target solo está activo para Owner/Editor.
 - Los archivos se suben secuencialmente para evitar saturar el backend.
 - El límite se aplica en el backend con `MAX_UPLOAD_SIZE_MB`.

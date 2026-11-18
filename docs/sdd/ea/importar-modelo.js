@@ -126,7 +126,7 @@ var MODEL = {
         "Viewer",
         "MinIO"
       ],
-      "notes": "Subida con selección múltiple y drag-and-drop, listado, descarga, renombrado y borrado con límite configurable."
+      "notes": "Subida con drag-and-drop y selección múltiple; copiar/mover entre carpetas, listado, descarga, renombrado y borrado con límite configurable."
     },
     {
       "id": "UC-06",
@@ -3615,6 +3615,42 @@ var MODEL = {
           "from": "API",
           "to": "FE",
           "name": "206 Partial Content",
+          "notes": "respuesta"
+        },
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Selecciona varios archivos y clic derecho"
+        },
+        {
+          "from": "FE",
+          "to": "FE",
+          "name": "Menú Copiar / Mover + carpeta destino"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /folders/:id/files/copy o /move"
+        },
+        {
+          "from": "API",
+          "to": "API",
+          "name": "Valida proyecto, permisos y nombres"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Copia objeto (solo copy)"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea Resource o actualiza folderId"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Recursos actualizados",
           "notes": "respuesta"
         },
         {

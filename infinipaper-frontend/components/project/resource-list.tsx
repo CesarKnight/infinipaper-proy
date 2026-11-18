@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import { GenerationDialog } from "@/components/generation/generation-dialog";
+import { FileDestinationDialog } from "@/components/project/file-destination-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiFetch, ApiError, userAvatarUrl } from "@/lib/api";
 import type {
@@ -36,6 +38,8 @@ import type {
 import {
   BrainCircuitIcon,
   ClipboardListIcon,
+  CopyIcon,
+  FolderInputIcon,
   FileIcon,
   FileTextIcon,
   ImageIcon,
@@ -43,6 +47,7 @@ import {
   NotebookPenIcon,
   Trash2Icon,
   SparklesIcon,
+  XIcon,
   UploadIcon,
   UploadCloudIcon,
   VideoIcon,
@@ -112,6 +117,9 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
   const inputRef = React.useRef<HTMLInputElement>(null);
   const dragDepth = React.useRef(0);
   const [dragActive, setDragActive] = React.useState(false);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number } | null>(null);
+  const [destination, setDestination] = React.useState<"move" | "copy" | null>(null);
   const [noteOpen, setNoteOpen] = React.useState(false);
   const [noteName, setNoteName] = React.useState("");
   const [noteContent, setNoteContent] = React.useState("");
@@ -122,6 +130,22 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
   const [origin, setOrigin] = React.useState<string>("all");
   const [validationStatus, setValidationStatus] = React.useState<string>("all");
   const [sort, setSort] = React.useState<"name" | "date" | "type">("name");
+
+  React.useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setContextMenu(null);
+    };
+    window.addEventListener("click", close);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("click", close);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [contextMenu]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["files", folderId, origin, validationStatus],
@@ -237,6 +261,76 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
       toast.error(error instanceof ApiError ? error.message : "Error"),
   });
 
+  const moveMany = useMutation({
+    mutationFn: (targetFolderId: string) =>
+      apiFetch(`/folders/${targetFolderId}/files/move`, {
+        method: "POST",
+        body: { fileIds: [...selectedIds] },
+      }),
+    onSuccess: () => {
+      toast.success("Archivos movidos");
+      setSelectedIds(new Set());
+      setDestination(null);
+      invalidate();
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
+  const copyMany = useMutation({
+    mutationFn: (targetFolderId: string) =>
+      apiFetch(`/folders/${targetFolderId}/files/copy`, {
+        method: "POST",
+        body: { fileIds: [...selectedIds] },
+      }),
+    onSuccess: () => {
+      toast.success("Archivos copiados");
+      setSelectedIds(new Set());
+      setDestination(null);
+      invalidate();
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
+  const removeMany = useMutation({
+    mutationFn: async () => {
+      for (const id of selectedIds) {
+        await apiFetch(`/files/${id}`, { method: "DELETE" });
+      }
+      return selectedIds.size;
+    },
+    onSuccess: (count) => {
+      toast.success(`${count} archivo(s) eliminado(s)`);
+      setSelectedIds(new Set());
+      invalidate();
+    },
+    onError: (error) =>
+      toast.error(error instanceof ApiError ? error.message : "Error"),
+  });
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const openContextMenu = (
+    event: React.MouseEvent<HTMLLIElement>,
+    id: string,
+  ) => {
+    if (!canEdit) return;
+    event.preventDefault();
+    if (!selectedIds.has(id)) setSelectedIds(new Set([id]));
+    setContextMenu({ x: event.clientX, y: event.clientY });
+  };
+
+  const allSelected = items.length > 0 && items.every((item) => selectedIds.has(item.id));
+  const selectedCount = selectedIds.size;
+
   const handleDragEnter = (event: React.DragEvent<HTMLElement>) => {
     if (!canEdit) return;
     event.preventDefault();
@@ -289,7 +383,20 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
         </div>
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-medium text-muted-foreground">Archivos</h2>
+        <div className="flex items-center gap-2">
+          {canEdit && items.length > 0 ? (
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={() =>
+                setSelectedIds(
+                  allSelected ? new Set() : new Set(items.map((item) => item.id)),
+                )
+              }
+              aria-label="Seleccionar todos los archivos"
+            />
+          ) : null}
+          <h2 className="text-sm font-medium text-muted-foreground">Archivos</h2>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select
             value={origin}
@@ -415,6 +522,37 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
         </div>
       </div>
 
+      {canEdit && selectedCount > 0 ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+          <span className="font-medium">{selectedCount} seleccionado(s)</span>
+          <Button size="sm" variant="outline" onClick={() => setDestination("copy")}>
+            <CopyIcon data-icon="inline-start" />
+            Copiar
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setDestination("move")}>
+            <FolderInputIcon data-icon="inline-start" />
+            Mover
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              if (window.confirm(`¿Eliminar ${selectedCount} archivo(s)?`)) {
+                removeMany.mutate();
+              }
+            }}
+            disabled={removeMany.isPending}
+          >
+            <Trash2Icon data-icon="inline-start" />
+            Eliminar
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+            <XIcon data-icon="inline-start" />
+            Cancelar
+          </Button>
+        </div>
+      ) : null}
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Cargando…</p>
       ) : items.length > 0 ? (
@@ -423,7 +561,16 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
             <li
               key={resource.id}
               className="flex items-center gap-3 px-3 py-2 text-sm"
+              onContextMenu={(event) => openContextMenu(event, resource.id)}
             >
+              {canEdit ? (
+                <Checkbox
+                  checked={selectedIds.has(resource.id)}
+                  onCheckedChange={() => toggleSelected(resource.id)}
+                  aria-label={`Seleccionar ${resource.name}`}
+                  onClick={(event) => event.stopPropagation()}
+                />
+              ) : null}
               <Link
                 href={`/projects/${projectId}/files/${resource.id}?folder=${folderId}`}
                 className="flex flex-1 items-center gap-2 min-w-0"
@@ -550,6 +697,66 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {contextMenu ? (
+        <div
+          className="fixed z-50 min-w-44 rounded-lg border bg-popover p-1 text-sm shadow-xl"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          role="menu"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-muted"
+            onClick={() => {
+              setDestination("copy");
+              setContextMenu(null);
+            }}
+          >
+            <CopyIcon className="size-4" />
+            Copiar
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-muted"
+            onClick={() => {
+              setDestination("move");
+              setContextMenu(null);
+            }}
+          >
+            <FolderInputIcon className="size-4" />
+            Mover
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-destructive hover:bg-destructive/10"
+            onClick={() => {
+              setContextMenu(null);
+              if (window.confirm(`¿Eliminar ${selectedCount} archivo(s)?`)) {
+                removeMany.mutate();
+              }
+            }}
+          >
+            <Trash2Icon className="size-4" />
+            Eliminar
+          </button>
+        </div>
+      ) : null}
+
+      <FileDestinationDialog
+        projectId={projectId}
+        mode={destination ?? "move"}
+        count={selectedCount}
+        open={destination !== null}
+        onOpenChange={(value) => {
+          if (!value) setDestination(null);
+        }}
+        onConfirm={(targetFolderId) => {
+          if (destination === "copy") copyMany.mutate(targetFolderId);
+          else moveMany.mutate(targetFolderId);
+        }}
+        pending={copyMany.isPending || moveMany.isPending}
+      />
+
       {generationKind ? (
         <GenerationDialog
           projectId={projectId}

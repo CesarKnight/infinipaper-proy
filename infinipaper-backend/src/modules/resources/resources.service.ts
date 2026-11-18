@@ -9,6 +9,7 @@ import type { UploadedFileData } from '../../common/types/uploaded-file.js';
 import type { ListResourcesDto } from './dto/list-resources.dto.js';
 import type { Prisma, Resource } from '../../generated/prisma/client.js';
 import { PermissionsService } from '../../common/permissions/permissions.service.js';
+import { QuizzesService } from '../quizzes/quizzes.service.js';
 import { SearchService } from '../search/search.service.js';
 import { isMarkdown, resolveKind } from './resource-kind.util.js';
 import type { CreateNoteDto } from './dto/create-note.dto.js';
@@ -28,6 +29,7 @@ export class ResourcesService {
     private readonly storage: StorageService,
     private readonly permissions: PermissionsService,
     private readonly searchQueue: SearchService,
+    private readonly quizzes: QuizzesService,
     config: ConfigService,
   ) {
     const maxMb = config.get<number>('MAX_UPLOAD_SIZE_MB') ?? 50;
@@ -301,6 +303,180 @@ export class ResourcesService {
     });
   }
 
+  async moveMany(fileIds: string[], targetFolderId: string) {
+    const target = await this.getFolderOrFail(targetFolderId);
+    const uniqueIds = [...new Set(fileIds)];
+    const sources = await this.prisma.resource.findMany({
+      where: { id: { in: uniqueIds } },
+      include: { folder: { select: { projectId: true } } },
+    });
+    if (sources.length !== uniqueIds.length) {
+      throw this.notFound();
+    }
+    if (sources.some((item) => item.folder.projectId !== target.projectId)) {
+      throw new AppException(
+        'PROJECT_FORBIDDEN',
+        'Todos los archivos deben pertenecer al mismo proyecto',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const targetResources = await this.prisma.resource.findMany({
+      where: { folderId: targetFolderId, id: { notIn: uniqueIds } },
+      select: { name: true },
+    });
+    const usedNames = new Set(
+      targetResources.map((item) => item.name.toLowerCase()),
+    );
+    for (const resource of sources) {
+      if (usedNames.has(resource.name.toLowerCase())) {
+        throw new AppException(
+          'FILE_NAME_TAKEN',
+          `Ya existe un archivo "${resource.name}" en la carpeta destino`,
+          HttpStatus.CONFLICT,
+          { suggestedName: this.suggestName(resource.name) },
+        );
+      }
+      usedNames.add(resource.name.toLowerCase());
+    }
+
+    await this.prisma.$transaction(
+      sources.map((resource) =>
+        this.prisma.resource.update({
+          where: { id: resource.id },
+          data: { folderId: targetFolderId },
+        }),
+      ),
+    );
+    for (const resource of sources) {
+      void this.searchQueue.enqueueResource(resource.id);
+    }
+    return this.prisma.resource.findMany({
+      where: { id: { in: uniqueIds } },
+      include: { author: AUTHOR_SELECT },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async copyMany(
+    fileIds: string[],
+    targetFolderId: string,
+    authorId: string,
+  ) {
+    const target = await this.getFolderOrFail(targetFolderId);
+    const uniqueIds = [...new Set(fileIds)];
+    const sources = await this.prisma.resource.findMany({
+      where: { id: { in: uniqueIds } },
+      include: {
+        folder: { select: { projectId: true } },
+        sources: true,
+        quiz: {
+          include: {
+            questions: {
+              include: { options: true },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+      },
+    });
+    if (sources.length !== uniqueIds.length) {
+      throw this.notFound();
+    }
+    if (sources.some((item) => item.folder.projectId !== target.projectId)) {
+      throw new AppException(
+        'PROJECT_FORBIDDEN',
+        'Todos los archivos deben pertenecer al mismo proyecto',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const targetResources = await this.prisma.resource.findMany({
+      where: { folderId: targetFolderId },
+      select: { name: true },
+    });
+    const usedNames = new Set(
+      targetResources.map((item) => item.name.toLowerCase()),
+    );
+    const copiedIds: string[] = [];
+
+    for (const source of sources) {
+      const name = this.availableCopyName(source.name, usedNames);
+      const s3Key = `projects/${target.projectId}/folders/${targetFolderId}/${randomUUID()}/${name}`;
+      await this.storage.copy(source.s3Key, s3Key);
+      const copied = await this.prisma.resource.create({
+        data: {
+          folderId: targetFolderId,
+          authorId,
+          name,
+          kind: source.kind,
+          origin: source.origin,
+          validationStatus: 'UNVERIFIED',
+          mimeType: source.mimeType,
+          size: source.size,
+          s3Key,
+          checksum: source.checksum,
+        },
+      });
+      copiedIds.push(copied.id);
+      if (source.sources.length) {
+        await this.prisma.resourceSource.createMany({
+          data: source.sources
+            .filter((item) => item.sourceResourceId)
+            .map((item) => ({
+              resourceId: copied.id,
+              sourceResourceId: item.sourceResourceId,
+              relation: item.relation,
+            })),
+          skipDuplicates: true,
+        });
+      }
+      if (source.quiz) {
+        const quiz = await this.prisma.quiz.create({
+          data: {
+            resourceId: copied.id,
+            title: `${source.quiz.title} (copia)`,
+            instructions: source.quiz.instructions,
+            status: 'DRAFT',
+            settings: (source.quiz.settings ?? {}) as Prisma.InputJsonValue,
+            createdById: authorId,
+            questions: {
+              create: source.quiz.questions.map((question) => ({
+                type: question.type,
+                prompt: question.prompt,
+                points: question.points,
+                order: question.order,
+                correctText: question.correctText,
+                caseSensitive: question.caseSensitive,
+                ...(question.sourceRefs
+                  ? {
+                      sourceRefs:
+                        question.sourceRefs as Prisma.InputJsonValue,
+                    }
+                  : {}),
+                options: {
+                  create: question.options.map((option) => ({
+                    text: option.text,
+                    isCorrect: option.isCorrect,
+                    order: option.order,
+                  })),
+                },
+              })),
+            },
+          },
+        });
+        await this.quizzes.refreshSnapshot(quiz.id);
+      }
+      void this.searchQueue.enqueueResource(copied.id);
+    }
+
+    return this.prisma.resource.findMany({
+      where: { id: { in: copiedIds } },
+      include: { author: AUTHOR_SELECT },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async remove(id: string): Promise<void> {
     const resource = await this.getOrFail(id);
     if (resource.kind === 'QUIZ') {
@@ -411,6 +587,20 @@ export class ResourcesService {
       HttpStatus.CONFLICT,
       { suggestedName: suggested },
     );
+  }
+
+  private availableCopyName(name: string, usedNames: Set<string>): string {
+    const dot = name.lastIndexOf('.');
+    const base = dot > 0 ? name.slice(0, dot) : name;
+    const ext = dot > 0 ? name.slice(dot) : '';
+    let candidate = `${base} (copia)${ext}`;
+    let index = 2;
+    while (usedNames.has(candidate.toLowerCase())) {
+      candidate = `${base} (copia ${index})${ext}`;
+      index += 1;
+    }
+    usedNames.add(candidate.toLowerCase());
+    return candidate;
   }
 
   private suggestName(name: string): string {

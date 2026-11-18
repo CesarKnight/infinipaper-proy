@@ -26,7 +26,8 @@ La subida pasa por el backend: Multer recibe el archivo, el servicio valida tama
 | D-02 | `kind` por extensión | MIME del navegador | Consistencia y seguridad |
 | D-03 | Clave S3 con UUID | Nombre del archivo como clave | Evita colisiones y filtra rutas |
 | D-04 | `FILE_NAME_TAKEN` con `suggestedName` | Reemplazo automático | Evita pérdida accidental |
-| D-05 | Input de archivo en v1 | Drag & drop | Menos superficie y dependencias |
+| D-05 | Input múltiple + drop nativo | `react-dropzone` | Sin dependencia extra y control visual propio |
+| D-06 | Copiar duplica objeto S3; mover cambia `folderId` | Copiar moviendo el mismo objeto | Semántica clara y segura |
 
 ## 4. Cambios por capa
 
@@ -46,7 +47,9 @@ La subida pasa por el backend: Multer recibe el archivo, el servicio valida tama
 ### Frontend
 
 - Listado con iconos, autor y tamaño.
-- Subida con input, estado y errores.
+- Subida con input múltiple, drag-and-drop, estado y errores.
+- Selección múltiple, menú contextual y diálogo de carpeta destino.
+- Copiar/mover por lotes entre carpetas del mismo proyecto.
 - Acciones de renombrar y eliminar (Editor+).
 
 ### Infraestructura

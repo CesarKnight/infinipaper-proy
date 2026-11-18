@@ -25,6 +25,9 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 - Subida por el backend hacia MinIO.
 - Arrastrar y soltar uno o varios archivos en la carpeta abierta.
 - Selección múltiple mediante `<input type="file" multiple>`.
+- Selección múltiple de recursos y menú contextual (clic derecho).
+- Copiar y mover archivos entre carpetas del mismo proyecto.
+- Diálogo de carpeta destino y operaciones por lotes.
 - Límite configurable `MAX_UPLOAD_SIZE_MB` (50 MB por defecto).
 - Validación por extensión/MIME y tamaño.
 - Metadatos: nombre, `kind`, `mimeType`, `size`, `s3Key`, `checksum`, autor y carpeta.
@@ -60,6 +63,10 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | RF-11 | El Editor puede arrastrar y soltar archivos sobre la carpeta abierta. | Must |
 | RF-12 | El drop target muestra un overlay de marca y sube varios archivos secuencialmente. | Should |
 | RF-13 | Viewer no puede activar el drop target ni iniciar cargas. | Must |
+| RF-14 | El usuario puede seleccionar varios archivos con checkbox y seleccionar todo. | Must |
+| RF-15 | Clic derecho abre un menú contextual con Copiar, Mover y Eliminar. | Must |
+| RF-16 | Copiar duplica archivos y su contenido S3 en la carpeta destino; Mover cambia la carpeta y conserva el objeto. | Must |
+| RF-17 | Solo se permite copiar/mover entre carpetas del mismo proyecto y con permiso Editor. | Must |
 
 ## 5. Requisitos no funcionales
 
@@ -72,6 +79,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | RNF-05 | El nombre no permite `/` ni rutas inseguras. | Validación de DTO y servicio. |
 | RNF-06 | El drop target solo se activa para Owner/Editor y no bloquea la navegación normal. | Revisión de UI y permisos. |
 | RNF-07 | La subida múltiple notifica cuántos archivos se subieron y refresca el listado una sola vez. | Revisión visual y E2E. |
+| RNF-08 | Copiar/mover conserva metadatos, checksum, procedencia y validación de origen de forma explícita. | Tests de integridad. |
+| RNF-09 | La selección y el menú contextual son accesibles por teclado y no rompen la navegación. | Revisión de UI y E2E. |
 
 ## 6. Criterios de aceptación
 
@@ -135,6 +144,36 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 - **cuando** arrastra un archivo sobre la carpeta,
 - **entonces** no se inicia ninguna carga.
 
+### CA-12 · Selección múltiple
+
+- **Dado** un Editor en una carpeta,
+- **cuando** marca varios archivos,
+- **entonces** ve el contador y las acciones Copiar, Mover y Eliminar.
+
+### CA-13 · Mover por lotes
+
+- **Dado** varios archivos seleccionados,
+- **cuando** elige Mover y una carpeta destino,
+- **entonces** los archivos desaparecen del origen y aparecen en el destino.
+
+### CA-14 · Copiar por lotes
+
+- **Dado** un archivo seleccionado,
+- **cuando** elige Copiar y una carpeta destino,
+- **entonces** se crea una copia con nombre único y el contenido se conserva.
+
+### CA-15 · Menú contextual
+
+- **Dado** un archivo,
+- **cuando** hace clic derecho,
+- **entonces** se abre un menú contextual con acciones sobre la selección.
+
+### CA-16 · Proyecto ajeno
+
+- **Dado** un archivo de otro proyecto,
+- **cuando** intenta moverlo o copiarlo,
+- **entonces** responde `403 PROJECT_FORBIDDEN`.
+
 ## 7. Contratos e interfaces
 
 ### API
@@ -143,6 +182,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 |---|---|---|---|
 | `GET` | `/api/v1/folders/:id/files?cursor=&limit=` | Viewer+ | Listar |
 | `POST` | `/api/v1/folders/:id/files` | Editor+ | Subir `multipart/form-data` campo `file` |
+| `POST` | `/api/v1/folders/:id/files/move` | Editor+ | Mover lote `{ fileIds }` |
+| `POST` | `/api/v1/folders/:id/files/copy` | Editor+ | Copiar lote `{ fileIds }` |
 | `GET` | `/api/v1/files/:id` | Viewer+ | Metadatos |
 | `GET` | `/api/v1/files/:id/content` | Viewer+ | Stream con `Range` |
 | `PATCH` | `/api/v1/files/:id` | Editor+ | Renombrar `{ name }` |
@@ -166,7 +207,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 
 ### UI
 
-- `resource-list.tsx`: botón de subida, input `multiple`, drop target con overlay, orden, listado y eliminación.
+- `resource-list.tsx`: input `multiple`, drop target, checkbox de selección, barra de acciones, menú contextual, diálogo de carpeta destino y listado.
+- El menú contextual actúa sobre la selección; si el archivo no estaba seleccionado, lo selecciona antes de abrirse.
 - El listado muestra icono por `kind`, autor, tamaño y acciones.
 - Los errores se muestran con toast.
 
@@ -182,6 +224,9 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | Sin permisos | Rechazar | `PROJECT_FORBIDDEN` · 403 |
 | Drop de Viewer | Ignorar y mantener solo lectura | — |
 | Drop con archivos no admitidos | Subir los válidos y reportar error de los demás | `FILE_UNSUPPORTED_TYPE` · 415 |
+| Mover a carpeta con nombre duplicado | Rechazar el lote con sugerencia | `FILE_NAME_TAKEN` · 409 |
+| Copiar con nombre duplicado | Generar `(copia)` o `(copia N)` | `201` |
+| Copiar/mover entre proyectos | Rechazar | `PROJECT_FORBIDDEN` · 403 |
 | Fallo de S3 | Rechazar y no crear el recurso | `STORAGE_ERROR` · 502 |
 
 ## 9. Decisiones y preguntas abiertas
@@ -193,6 +238,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | D-03 | Límite en una variable de entorno | Límite duplicado en frontend y backend | Una sola fuente de verdad |
 | D-04 | `<input type="file" multiple>` + drop nativo | `react-dropzone` | Sin dependencia extra y control visual propio |
 | D-05 | Subida secuencial de varios archivos | Paralelismo sin límite | Evita saturar backend y permite mensajes claros |
+| D-06 | Copiar duplica objeto S3 y metadatos; mover solo cambia `folderId`. | Copiar moviendo el mismo objeto | Cada operación conserva semántica clara |
+| D-07 | Las copias resuelven colisiones con `(copia)`/`(copia N)`. | Rechazar duplicados al copiar | La copia debe ser una acción fluida |
 | Q-01 | ¿Se añadirá carga por trozos o reanudable? | Abierta (fuera de v1) |
 
 ## 10. Brechas conocidas
@@ -201,6 +248,7 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 |---|---|---|---|
 | G-01 | No hay tests automatizados de drag-and-drop y subida múltiple. | Regresiones no detectadas en CI. | `T-050` |
 | G-02 | No hay tests automatizados de límites, formatos y limpieza S3. | Regresiones no detectadas en CI. | `T-051` |
+| G-03 | No hay tests automatizados de mover/copiar y nombres duplicados. | Regresiones de integridad no detectadas. | `T-052` |
 
 ## 11. Evidencia de validación
 
@@ -212,3 +260,5 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | CA-06 | Revisión de `remove` con borrado S3. | 2026-11-11 |
 | CA-10 | Drop de `drag-drop.md` verificado en navegador; archivo subido y listado refrescado. | 2026-11-18 |
 | CA-11 | Condición `canEdit` revisada en el drop target. | 2026-11-18 |
+| CA-12–CA-15 | Selección múltiple, menú contextual, mover dos archivos y copiar uno verificados en navegador. | 2026-11-18 |
+| CA-14 | Copia `uno (copia).md` con contenido conservado y nombre único. | 2026-11-18 |
