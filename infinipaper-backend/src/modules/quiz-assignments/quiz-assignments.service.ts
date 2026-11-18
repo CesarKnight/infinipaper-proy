@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { AppException } from '../../common/errors/app.exception.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { PermissionsService } from '../../common/permissions/permissions.service.js';
+import { UsageService } from '../usage/usage.service.js';
 import type {
   CreateAssignmentDto,
   GradeAnswerDto,
@@ -13,6 +14,7 @@ export class QuizAssignmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
+    private readonly usage: UsageService,
   ) {}
 
   async create(quizId: string, userId: string, dto: CreateAssignmentDto) {
@@ -46,7 +48,7 @@ export class QuizAssignmentsService {
       );
     }
 
-    return this.prisma.quizAssignment.create({
+    const assignment = await this.prisma.quizAssignment.create({
       data: {
         quizId,
         projectId: quiz.resource.folder.projectId,
@@ -58,6 +60,8 @@ export class QuizAssignmentsService {
       },
       include: { quiz: true, students: true },
     });
+    void this.usage.recordQuizUse(quiz.resourceId, userId);
+    return assignment;
   }
 
   async publish(assignmentId: string, userId: string) {

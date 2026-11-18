@@ -60,6 +60,10 @@ var MODEL = {
     {
       "name": "Mailpit",
       "notes": "Sistema SMTP de desarrollo que captura los correos de confirmación y verificación."
+    },
+    {
+      "name": "Cliente MCP",
+      "notes": "Cliente externo compatible con MCP autorizado con token de solo lectura."
     }
   ],
   "useCases": [
@@ -297,6 +301,40 @@ var MODEL = {
         "Editor"
       ],
       "notes": "Job asíncrono que produce un QUIZ DRAFT con preguntas y fuentes para revisión humana."
+    },
+    {
+      "id": "UC-23",
+      "name": "Métricas de uso",
+      "spec": "023",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor"
+      ],
+      "notes": "Eventos de vista, descarga, búsqueda y uso en quiz; agregados por proyecto y CSV."
+    },
+    {
+      "id": "UC-24",
+      "name": "Búsqueda semántica",
+      "spec": "024",
+      "actors": [
+        "Usuario",
+        "Viewer",
+        "Estudiante"
+      ],
+      "notes": "Chunks, embeddings pgvector, búsqueda híbrida, filtros y fallback léxico."
+    },
+    {
+      "id": "UC-25",
+      "name": "MCP de desempeño",
+      "spec": "025",
+      "actors": [
+        "Docente",
+        "Owner",
+        "Editor",
+        "Cliente MCP"
+      ],
+      "notes": "Tokens scoped, FastMCP de solo lectura, rate limit, revocación y auditoría."
     }
   ],
   "packageModel": {
@@ -309,11 +347,11 @@ var MODEL = {
         "children": [
           {
             "name": "app",
-            "notes": "Rutas, layouts, páginas, panel docente y progreso (specs 001–012 y 015–022)."
+            "notes": "Rutas, layouts, panel, uso, búsqueda y MCP (specs 001–012 y 015–025)."
           },
           {
             "name": "components",
-            "notes": "UI y dominio, incluidos quiz, mindmap y procedencia (specs 002–012 y 015–022)."
+            "notes": "UI y dominio, incluidos quiz, mindmap, procedencia, uso y MCP (specs 002–012 y 015–025)."
           },
           {
             "name": "lib",
@@ -327,7 +365,7 @@ var MODEL = {
         "children": [
           {
             "name": "modules",
-            "notes": "auth, users, projects, folders, resources, members, transcriptions, note-structure, dashboard, teacher, quizzes, quiz-assignments, analytics, provenance y content-generation."
+            "notes": "auth, users, projects, folders, resources, members, transcriptions, note-structure, dashboard, teacher, quizzes, quiz-assignments, analytics, provenance, content-generation, usage, search y mcp."
           },
           {
             "name": "common",
@@ -363,7 +401,7 @@ var MODEL = {
         "children": [
           {
             "name": "PostgreSQL",
-            "notes": "Base de datos relacional (PostgreSQL 17)."
+            "notes": "Base de datos relacional con extensión pgvector."
           },
           {
             "name": "MinIO",
@@ -949,6 +987,36 @@ var MODEL = {
           "type": "Component",
           "stereotype": "component",
           "notes": "Jobs de mapas mentales y quiz IA."
+        },
+        {
+          "name": "Usage",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Eventos y agregados de uso."
+        },
+        {
+          "name": "Search",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Chunks, embeddings y búsqueda híbrida."
+        },
+        {
+          "name": "MCP",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Tokens y API de solo lectura."
+        },
+        {
+          "name": "Embeddings",
+          "type": "Component",
+          "stereotype": "external_system",
+          "notes": "Proveedor local u OpenAI-compatible."
+        },
+        {
+          "name": "FastMCP",
+          "type": "Component",
+          "stereotype": "component",
+          "notes": "Servidor MCP en agentes."
         }
       ],
       "relationships": [
@@ -1121,6 +1189,41 @@ var MODEL = {
           "from": "ContentGeneration",
           "to": "Resources",
           "label": "Guarda"
+        },
+        {
+          "from": "Usage",
+          "to": "Prisma",
+          "label": "Eventos"
+        },
+        {
+          "from": "Search",
+          "to": "Prisma",
+          "label": "Chunks"
+        },
+        {
+          "from": "Search",
+          "to": "Embeddings",
+          "label": "Embeddings"
+        },
+        {
+          "from": "Search",
+          "to": "Usage",
+          "label": "SEARCH_HIT"
+        },
+        {
+          "from": "MCP",
+          "to": "Prisma",
+          "label": "Tokens"
+        },
+        {
+          "from": "Agents",
+          "to": "FastMCP",
+          "label": "Expone"
+        },
+        {
+          "from": "FastMCP",
+          "to": "MCP",
+          "label": "API interna"
         }
       ]
     },
@@ -2126,6 +2229,162 @@ var MODEL = {
             "type": "DateTime"
           }
         ]
+      },
+      {
+        "name": "ResourceEvent",
+        "stereotype": "entity",
+        "notes": "resourceId y userId pueden quedar null si se elimina el recurso o usuario.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "projectId",
+            "type": "String"
+          },
+          {
+            "name": "resourceId",
+            "type": "String"
+          },
+          {
+            "name": "userId",
+            "type": "String"
+          },
+          {
+            "name": "type",
+            "type": "ResourceEventType"
+          },
+          {
+            "name": "metadata",
+            "type": "Json"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "ResourceChunk",
+        "stereotype": "entity",
+        "notes": "embedding es vector(1536); content no se usa en métricas.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "resourceId",
+            "type": "String"
+          },
+          {
+            "name": "chunkIndex",
+            "type": "Int"
+          },
+          {
+            "name": "content",
+            "type": "String"
+          },
+          {
+            "name": "embedding",
+            "type": "Unsupported(\"vector(1536)\")"
+          },
+          {
+            "name": "tokens",
+            "type": "Int"
+          },
+          {
+            "name": "metadata",
+            "type": "Json"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "ContentIndexJob",
+        "stereotype": "entity",
+        "notes": "resourceId puede ser null para reindexar un proyecto completo.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "projectId",
+            "type": "String"
+          },
+          {
+            "name": "resourceId",
+            "type": "String"
+          },
+          {
+            "name": "status",
+            "type": "AgentJobStatus"
+          },
+          {
+            "name": "error",
+            "type": "String"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "McpToken",
+        "stereotype": "entity",
+        "notes": "tokenHash es único; scopes y fechas son metadatos.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "ownerId",
+            "type": "String"
+          },
+          {
+            "name": "projectId",
+            "type": "String"
+          },
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "tokenHash",
+            "type": "String"
+          },
+          {
+            "name": "scopes",
+            "type": "Json"
+          },
+          {
+            "name": "expiresAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "revokedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "lastUsedAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          }
+        ]
       }
     ],
     "enums": [
@@ -2286,6 +2545,15 @@ var MODEL = {
         "values": [
           "MINDMAP",
           "QUIZ"
+        ]
+      },
+      {
+        "name": "ResourceEventType",
+        "values": [
+          "VIEW",
+          "DOWNLOAD",
+          "SEARCH_HIT",
+          "QUIZ_USE"
         ]
       }
     ],
@@ -2712,6 +2980,86 @@ var MODEL = {
       },
       {
         "from": "ContentGenerationJob",
+        "to": "AgentJobStatus",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "status"
+      },
+      {
+        "from": "Project",
+        "to": "ResourceEvent",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "resourceEvents"
+      },
+      {
+        "from": "Project",
+        "to": "ContentIndexJob",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "contentIndexJobs"
+      },
+      {
+        "from": "Project",
+        "to": "McpToken",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "mcpTokens"
+      },
+      {
+        "from": "Resource",
+        "to": "ResourceEvent",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "events"
+      },
+      {
+        "from": "Resource",
+        "to": "ResourceChunk",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "chunks"
+      },
+      {
+        "from": "Resource",
+        "to": "ContentIndexJob",
+        "type": "Composition",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "indexJobs"
+      },
+      {
+        "from": "User",
+        "to": "ResourceEvent",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "resourceEvents"
+      },
+      {
+        "from": "User",
+        "to": "McpToken",
+        "type": "Association",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*",
+        "label": "mcpTokens"
+      },
+      {
+        "from": "ResourceEvent",
+        "to": "ResourceEventType",
+        "type": "Dependency",
+        "fromMultiplicity": "",
+        "toMultiplicity": "",
+        "label": "type"
+      },
+      {
+        "from": "ContentIndexJob",
         "to": "AgentJobStatus",
         "type": "Dependency",
         "fromMultiplicity": "",
@@ -4991,6 +5339,305 @@ var MODEL = {
           "from": "FE",
           "to": "API",
           "name": "PUT /quizzes/:id/questions + POST /publish"
+        }
+      ]
+    },
+    {
+      "id": "023",
+      "name": "023 · Métricas de uso",
+      "participants": [
+        {
+          "alias": "U",
+          "name": "Usuario",
+          "type": "Actor"
+        },
+        {
+          "alias": "D",
+          "name": "Docente / Owner",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "U",
+          "to": "FE",
+          "name": "Abre un recurso"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /files/:id"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Registra VIEW"
+        },
+        {
+          "from": "U",
+          "to": "FE",
+          "name": "Descarga archivo"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /files/:id/content?download=1"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Registra DOWNLOAD"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Abre Uso de recursos"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /projects/:id/usage"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Agrega eventos"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Vistas, descargas y únicos",
+          "notes": "respuesta"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /projects/:id/usage/export"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "CSV",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "024",
+      "name": "024 · Búsqueda semántica",
+      "participants": [
+        {
+          "alias": "U",
+          "name": "Participante",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "Q",
+          "name": "pg-boss",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        },
+        {
+          "alias": "EMB",
+          "name": "Embeddings",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /projects/:id/search/reindex"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea ContentIndexJob"
+        },
+        {
+          "from": "API",
+          "to": "Q",
+          "name": "Encola"
+        },
+        {
+          "from": "Q",
+          "to": "API",
+          "name": "Worker PROCESSING"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Lee texto"
+        },
+        {
+          "from": "API",
+          "to": "EMB",
+          "name": "Embeddings"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "ResourceChunk vector(1536)"
+        },
+        {
+          "from": "U",
+          "to": "FE",
+          "name": "Busca en lenguaje natural"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /projects/:id/search?q=..."
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "pgvector + texto completo"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Resultados con fragmento",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Registra SEARCH_HIT"
+        }
+      ]
+    },
+    {
+      "id": "025",
+      "name": "025 · MCP de desempeño",
+      "participants": [
+        {
+          "alias": "D",
+          "name": "Docente / Owner",
+          "type": "Actor"
+        },
+        {
+          "alias": "C",
+          "name": "Cliente MCP",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "MCP",
+          "name": "FastMCP",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Crea token MCP"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /projects/:id/mcp-tokens"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Guarda hash y scopes"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Token en claro una vez",
+          "notes": "respuesta"
+        },
+        {
+          "from": "C",
+          "to": "MCP",
+          "name": "tools/call"
+        },
+        {
+          "from": "MCP",
+          "to": "API",
+          "name": "GET /mcp-tools/..."
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Valida token, scope y rate limit"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "AuditEvent"
+        },
+        {
+          "from": "API",
+          "to": "MCP",
+          "name": "Datos de solo lectura",
+          "notes": "respuesta"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Revoca token"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "DELETE /mcp-tokens/:id"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "revokedAt"
         }
       ]
     }

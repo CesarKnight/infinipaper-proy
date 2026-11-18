@@ -80,6 +80,10 @@ export function fileContentUrl(fileId: string): string {
   return `${API_BASE}/files/${fileId}/content`;
 }
 
+export function fileDownloadUrl(fileId: string): string {
+  return `${API_BASE}/files/${fileId}/content?download=1`;
+}
+
 export function userAvatarUrl(username: string): string {
   return `${API_BASE}/users/${username}/avatar`;
 }

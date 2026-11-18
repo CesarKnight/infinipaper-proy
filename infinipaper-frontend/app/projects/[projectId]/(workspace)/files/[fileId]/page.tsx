@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { apiFetch, ApiError, fileContentUrl } from "@/lib/api";
+import { apiFetch, ApiError, fileContentUrl, fileDownloadUrl } from "@/lib/api";
 import type { Resource, TranscriptionJob } from "@/lib/types";
 import { MarkdownView } from "@/components/project/markdown-view";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
@@ -62,7 +62,7 @@ export default function FileViewerPage() {
           <Button
             variant="outline"
             size="sm"
-            render={<a href={fileContentUrl(fileId)} download />}
+            render={<a href={fileDownloadUrl(fileId)} download />}
           >
             <DownloadIcon data-icon="inline-start" />
             Descargar

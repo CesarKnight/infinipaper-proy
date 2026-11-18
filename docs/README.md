@@ -74,7 +74,7 @@ docker compose ps
 
 **Configuración**
 
-Se lee desde `infinipaper-backend/.env` (mismo archivo que usa Compose). Claves habituales: `POSTGRES_*`, `S3_*`, `MINIO_IMAGE_TAG` (usa `latest-arm64` en equipos ARM), `MAX_UPLOAD_SIZE_MB`, `WHISPER_MODEL`, `ASR_*`, `AVISO_FILENAME`, `AGENT_*`, `MODEL_*`, `AWS_*`, `OPENCODE_*`, `SMTP_*`, `ADMIN_EMAILS`, `TEACHER_INSTITUTION_DOMAINS`, `PROJECT_ARCHIVE_ACCESS_DAYS`, `PROJECT_RISK_THRESHOLD`, `AGENT_CONTENT_ENABLED`. Los puertos de host se pueden cambiar con `BACKEND_PORT`, `FRONTEND_PORT`, `AGENT_PORT`, `POSTGRES_PORT`, `MINIO_*`.
+Se lee desde `infinipaper-backend/.env` (mismo archivo que usa Compose). Claves habituales: `POSTGRES_*`, `S3_*`, `MINIO_IMAGE_TAG` (usa `latest-arm64` en equipos ARM), `MAX_UPLOAD_SIZE_MB`, `WHISPER_MODEL`, `ASR_*`, `AVISO_FILENAME`, `AGENT_*`, `MODEL_*`, `AWS_*`, `OPENCODE_*`, `SMTP_*`, `ADMIN_EMAILS`, `TEACHER_INSTITUTION_DOMAINS`, `PROJECT_ARCHIVE_ACCESS_DAYS`, `PROJECT_RISK_THRESHOLD`, `AGENT_CONTENT_ENABLED`, `RESOURCE_EVENT_RETENTION_DAYS`, `EMBEDDING_*`, `SEARCH_TOP_K`. Los puertos de host se pueden cambiar con `BACKEND_PORT`, `FRONTEND_PORT`, `AGENT_PORT`, `POSTGRES_PORT`, `MINIO_*`.
 
 **Comandos útiles**
 

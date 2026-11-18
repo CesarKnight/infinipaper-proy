@@ -76,6 +76,7 @@ npx prisma generate
 - No guardar secretos en el repositorio; nuevas variables van en `.env.example`.
 - Migraciones de Prisma versionadas y con rollback documentado en el plan.
 - Sin colaboración en tiempo real en v1; conflictos *last-write-wins*.
+- La búsqueda semántica usa `pgvector`; el MCP de desempeño es de solo lectura y valida tokens por proyecto.
 
 ## Puertos de desarrollo
 

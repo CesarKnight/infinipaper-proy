@@ -22,7 +22,7 @@ services:
   # PostgreSQL database
   # ------------------------------------------------------------
   db:
-    image: postgres:17-alpine
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
     container_name: infinipaper-db
     restart: unless-stopped
     environment:
@@ -129,6 +129,7 @@ services:
       AGENT_TIMEOUT_SECONDS: ${AGENT_TIMEOUT_SECONDS:-300}
       AGENT_MAX_RETRIES: ${AGENT_MAX_RETRIES:-1}
       AGENT_PROMPT_VERSION: ${AGENT_PROMPT_VERSION:-note-structurer/v1}
+      BACKEND_INTERNAL_URL: http://backend:3000/api/v1
       OTEL_ENABLED: ${OTEL_ENABLED:-false}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
@@ -190,6 +191,13 @@ services:
       AGENT_SERVICE_TOKEN: ${AGENT_SERVICE_TOKEN:-dev-agent-token}
       AGENT_TIMEOUT_MS: ${AGENT_TIMEOUT_MS:-600000}
       AGENT_STRUCTURING_ENABLED: ${AGENT_STRUCTURING_ENABLED:-true}
+      RESOURCE_EVENT_RETENTION_DAYS: ${RESOURCE_EVENT_RETENTION_DAYS:-365}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-local-hash}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-1536}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      SEARCH_TOP_K: ${SEARCH_TOP_K:-10}
       AGENT_MAX_INPUT_CHARS: ${AGENT_MAX_INPUT_CHARS:-120000}
       S3_PRESIGN_TTL_SECONDS: ${S3_PRESIGN_TTL_SECONDS:-900}
     depends_on:

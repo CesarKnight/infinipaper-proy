@@ -9,8 +9,11 @@ from infinipaper_agents.api.routes.notes import router as notes_router
 from infinipaper_agents.config import get_settings
 from infinipaper_agents.errors import AgentError
 from infinipaper_agents.graph.builder import build_graph
+from infinipaper_agents.mcp_server import mcp
 from infinipaper_agents.model import create_model
 from infinipaper_agents.observability import configure_logging
+
+mcp_app = mcp.http_app(path="/")
 
 
 @asynccontextmanager
@@ -21,7 +24,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     model = create_model(settings)
     app.state.model = model
     app.state.graph = build_graph(settings, model)
-    yield
+    async with mcp_app.lifespan(app):
+        yield
 
 
 app = FastAPI(
@@ -33,6 +37,7 @@ app = FastAPI(
 
 app.include_router(notes_router)
 app.include_router(content_router)
+app.mount('/mcp', mcp_app)
 
 
 @app.exception_handler(AgentError)

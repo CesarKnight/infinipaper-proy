@@ -227,6 +227,7 @@ export interface NoteStructureJob {
 }
 
 export type ContentGenerationType = "MINDMAP" | "QUIZ";
+export type ResourceEventType = "VIEW" | "DOWNLOAD" | "SEARCH_HIT" | "QUIZ_USE";
 
 export interface ContentGenerationJob {
   id: string;
@@ -335,6 +336,61 @@ export interface MyProgress {
     latestAttempt: QuizAttempt | null;
     completed: boolean;
   }>;
+}
+
+export interface UsageRow {
+  resourceId: string | null;
+  name: string;
+  kind: string;
+  origin: string;
+  validationStatus: string;
+  view: number;
+  download: number;
+  searchHit: number;
+  quizUse: number;
+  uniqueUsers: number;
+  lastEventAt: string | null;
+}
+
+export interface UsagePanel {
+  filters: Record<string, string | null>;
+  summary: {
+    events: number;
+    byType: Record<string, number>;
+    uniqueUsers: number;
+    resources: number;
+    retentionDays: number;
+  };
+  resources: UsageRow[];
+}
+
+export interface SearchResult {
+  resourceId: string;
+  chunkId: string;
+  name: string;
+  kind: ResourceKind;
+  origin: ResourceOrigin;
+  validationStatus: ValidationStatus;
+  fragment: string;
+  score: number;
+}
+
+export interface SearchResponse {
+  mode: "hybrid" | "lexical";
+  warning: string | null;
+  query: string;
+  results: SearchResult[];
+}
+
+export interface McpToken {
+  id: string;
+  name: string;
+  scopes: string[];
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+  token?: string;
 }
 
 export interface Paged<T> {

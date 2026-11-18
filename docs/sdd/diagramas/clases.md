@@ -285,6 +285,54 @@ classDiagram
     +DateTime updatedAt
   }
 
+  class ResourceEvent {
+    <<entity>>
+    +String id
+    +String projectId
+    +String resourceId
+    +String userId
+    +ResourceEventType type
+    +Json metadata
+    +DateTime createdAt
+  }
+
+  class ResourceChunk {
+    <<entity>>
+    +String id
+    +String resourceId
+    +Int chunkIndex
+    +String content
+    +Unsupported embedding
+    +Int tokens
+    +Json metadata
+    +DateTime createdAt
+  }
+
+  class ContentIndexJob {
+    <<entity>>
+    +String id
+    +String projectId
+    +String resourceId
+    +AgentJobStatus status
+    +String error
+    +DateTime createdAt
+    +DateTime updatedAt
+  }
+
+  class McpToken {
+    <<entity>>
+    +String id
+    +String ownerId
+    +String projectId
+    +String name
+    +String tokenHash
+    +Json scopes
+    +DateTime expiresAt
+    +DateTime revokedAt
+    +DateTime lastUsedAt
+    +DateTime createdAt
+  }
+
   class UserStatus {
     <<enumeration>>
     ACTIVE
@@ -337,6 +385,14 @@ classDiagram
     DERIVED_FROM
     CITES
     USES
+  }
+
+  class ResourceEventType {
+    <<enumeration>>
+    VIEW
+    DOWNLOAD
+    SEARCH_HIT
+    QUIZ_USE
   }
 
   class ContentGenerationType {
@@ -446,7 +502,15 @@ classDiagram
   ResourceSource "0..1" --> "0..1" Resource : sourceResource
   Folder "1" *-- "0..*" ContentGenerationJob : generationJobs
   User "1" --> "0..*" ContentGenerationJob : requestedBy
+  User "1" --> "0..*" ResourceEvent : resourceEvents
+  User "1" --> "0..*" McpToken : mcpTokens
   ContentGenerationJob "0..1" --> "0..1" Resource : resultResource
+  Project "1" *-- "0..*" ResourceEvent : resourceEvents
+  Project "1" *-- "0..*" ContentIndexJob : contentIndexJobs
+  Project "1" *-- "0..*" McpToken : mcpTokens
+  Resource "1" *-- "0..*" ResourceEvent : events
+  Resource "1" *-- "0..*" ResourceChunk : chunks
+  Resource "1" *-- "0..*" ContentIndexJob : indexJobs
 
   User "1" *-- "0..*" EmailVerificationToken : emailVerificationTokens
   User "1" --> "0..1" TeacherProfile : teacherProfile
@@ -479,6 +543,8 @@ classDiagram
   ResourceSource --> ResourceSourceRelation
   ContentGenerationJob --> ContentGenerationType
   ContentGenerationJob --> AgentJobStatus
+  ResourceEvent --> ResourceEventType
+  ContentIndexJob --> AgentJobStatus
   TranscriptionJob --> TranscriptionStatus
   NoteStructureJob --> AgentJobStatus
   TeacherProfile --> TeacherStatus
@@ -494,6 +560,9 @@ classDiagram
   note for Resource "checksum es opcional; s3Key es único; QUIZ enlaza con Quiz; origin y validación son metadatos"
   note for ResourceSource "sourceResourceId se vuelve null si la fuente se elimina"
   note for ContentGenerationJob "sources, config, resultJson, warnings y usage son opcionales"
+  note for ResourceEvent "resourceId y userId pueden quedar null si el recurso o usuario se elimina"
+  note for ResourceChunk "embedding es vector(1536); content no se expone en claro en métricas"
+  note for McpToken "tokenHash es único; scopes, expiresAt, revokedAt y lastUsedAt son metadatos"
   note for TranscriptionJob "text y error son opcionales"
   note for NoteStructureJob "resultMarkdown, outline, warnings, error y usage son opcionales"
   note for EmailVerificationToken "usedAt es opcional; tokenHash es único"
@@ -567,12 +636,45 @@ classDiagram
     +retry()
     +process()
   }
+  class SearchIndexQueueService {
+    +enqueue()
+    +registerWorker()
+  }
   class ContentGenerationQueueService {
     +enqueue()
     +registerWorker()
   }
   class ContentAgentClient {
     +generate()
+  }
+  class UsageService {
+    +record()
+    +getProjectUsage()
+    +getFileUsage()
+    +exportCsv()
+    +purgeExpired()
+  }
+  class EmbeddingsService {
+    +embed()
+    +vectorLiteral()
+  }
+  class SearchService {
+    +enqueueResource()
+    +reindexProject()
+    +status()
+    +search()
+    +process()
+  }
+  class McpService {
+    +createToken()
+    +listTokens()
+    +revokeToken()
+    +authorize()
+    +listProjects()
+    +projectSummary()
+    +listTasks()
+    +taskResults()
+    +studentPerformance()
   }
   class RolesGuard {
     +canActivate()
@@ -751,6 +853,15 @@ classDiagram
   ContentGenerationService --> ProvenanceService
   ContentGenerationService --> ContentAgentClient
   ContentGenerationService --> ContentGenerationQueueService
+  UsageService --> PrismaService
+  UsageService --> PermissionsService
+  SearchService --> PrismaService
+  SearchService --> PermissionsService
+  SearchService --> EmbeddingsService
+  SearchService --> SearchIndexQueueService
+  SearchService --> UsageService
+  McpService --> PrismaService
+  McpService --> PermissionsService
 
   UsersController --> UsersService
   UsersService --> PasswordService
@@ -907,5 +1018,8 @@ classDiagram
 | `ResourceSource`, `ProvenanceService`, `Resource.origin/validationStatus` | 020 |
 | `ContentGenerationJob`, `ResourceKind.MINDMAP`, `ContentGenerationService` | 021 |
 | `ContentGenerationJob` tipo QUIZ, `QuizQuestion.sourceRefs` | 022 |
+| `ResourceEvent`, `UsageService` | 023 |
+| `ResourceChunk`, `ContentIndexJob`, `SearchService`, `EmbeddingsService` | 024 |
+| `McpToken`, `McpService`, FastMCP | 025 |
 
 > El diagrama formal equivalente se crea en Enterprise Architect desde [`docs/sdd/ea/modelo.json`](../ea/modelo.json).

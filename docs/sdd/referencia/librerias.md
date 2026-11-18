@@ -26,8 +26,13 @@ El proyecto usa ESM (`"type": "module"`), NestJS 12, Vitest, oxlint y Prettier.
 | `@nestjs/swagger` | Documentación OpenAPI |
 | `mime-types` | Inferencia y validación de tipo por extensión (spec 005) |
 | `nodemailer` | Envío SMTP de correos de confirmación y verificación docente (spec 015) |
+| `pgvector` | Extensión PostgreSQL para embeddings y búsqueda vectorial (spec 024) |
 
 > El cliente HTTP hacia el servicio ASR usa `fetch` nativo de Node, sin dependencias extra.
+>
+> **Búsqueda (spec 024):** la imagen de PostgreSQL es `pgvector/pgvector:pg17`; los embeddings usan `EMBEDDING_PROVIDER` (`local` por defecto) y se consultan con `pgvector`.
+>
+> **MCP (spec 025):** el servicio de agentes usa `fastmcp` para exponer herramientas de solo lectura en `/mcp`.
 >
 > **Correo (spec 015):** `nodemailer` apunta a Mailpit en desarrollo (`mailpit:1025`) y a un SMTP real en producción. La UI de Mailpit queda en `http://localhost:8025`.
 

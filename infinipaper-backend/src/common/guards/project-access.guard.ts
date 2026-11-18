@@ -24,6 +24,7 @@ interface RouteParams {
   assignmentId?: string;
   attemptId?: string;
   generationJobId?: string;
+  mcpTokenId?: string;
 }
 
 @Injectable()
@@ -130,6 +131,13 @@ export class ProjectAccessGuard implements CanActivate {
         select: { folder: { select: { projectId: true } } },
       });
       return job?.folder.projectId ?? null;
+    }
+    if (params.mcpTokenId) {
+      const token = await this.prisma.mcpToken.findUnique({
+        where: { id: params.mcpTokenId },
+        select: { projectId: true },
+      });
+      return token?.projectId ?? null;
     }
     return null;
   }

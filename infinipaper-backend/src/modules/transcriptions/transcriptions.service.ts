@@ -3,6 +3,7 @@ import { AppException } from '../../common/errors/app.exception.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { StorageService } from '../../common/storage/storage.service.js';
 import { ProvenanceService } from '../provenance/provenance.service.js';
+import { SearchService } from '../search/search.service.js';
 import { ResourcesService } from '../resources/resources.service.js';
 import type { Readable } from 'node:stream';
 import { AsrService } from './asr.service.js';
@@ -23,6 +24,7 @@ export class TranscriptionsService {
     private readonly queue: QueueService,
     private readonly resources: ResourcesService,
     private readonly provenance: ProvenanceService,
+    private readonly searchQueue: SearchService,
   ) {}
 
   async create(fileId: string, userId: string, dto: CreateTranscriptionDto) {
@@ -143,6 +145,7 @@ export class TranscriptionsService {
         where: { id: jobId },
         data: { status: 'DONE', text, error: null },
       });
+      void this.searchQueue.enqueueResource(job.resourceId);
     } catch (error) {
       const code =
         error instanceof AppException ? error.code : 'ASR_SERVICE_ERROR';

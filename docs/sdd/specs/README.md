@@ -26,15 +26,15 @@
 | `020` | [Trazabilidad y validación de recursos](./020-trazabilidad-recursos/spec.md) | Implementada con brechas | 005, 009, 010, 012, 017 |
 | `021` | [Mapas mentales a partir del contenido](./021-mapas-mentales/spec.md) | Implementada con brechas | 009, 012, 016, 020 |
 | `022` | [Generación de cuestionarios con IA](./022-cuestionarios-ia/spec.md) | Implementada con brechas | 012, 017, 020 |
-| `023` | [Métricas de uso de recursos](./023-metricas-recursos/spec.md) | Borrador | 005, 009, 010, 017, 018, 020 |
-| `024` | [Procesamiento semántico y búsqueda](./024-busqueda-semantica/spec.md) | Borrador | 005, 009, 010, 017, 020 |
-| `025` | [MCP para consulta de desempeño](./025-mcp-desempeno/spec.md) | Borrador | 016, 018, 019, 023 |
+| `023` | [Métricas de uso de recursos](./023-metricas-recursos/spec.md) | Implementada con brechas | 005, 009, 010, 017, 018, 020 |
+| `024` | [Procesamiento semántico y búsqueda](./024-busqueda-semantica/spec.md) | Implementada con brechas | 005, 009, 010, 017, 020 |
+| `025` | [MCP para consulta de desempeño](./025-mcp-desempeno/spec.md) | Implementada con brechas | 016, 018, 019, 023 |
 
 ## Deuda transversal
 
 La cobertura automatizada es parcial: la spec 012 incluye tests del grafo LangGraph, validadores y servicio NestJS. El resto de specs se apoya en `npm run build`, `npm run lint` y flujos manuales. Cada spec registra sus brechas funcionales en `G-*`; las tareas de pruebas automatizadas se añaden a medida que se abordan.
 
-Las specs `015`–`018` están implementadas con brechas documentadas. Las specs `019`–`022` también están implementadas con brechas. Las specs `023`–`025` siguen en `Borrador`: describen el alcance y los criterios, pero sus `plan.md` y `tasks.md` se crearán después de la aprobación explícita de cada una.
+Las specs `015`–`018` están implementadas con brechas documentadas. Las specs `019`–`022` también están implementadas con brechas. Las specs `023`–`025` están implementadas con brechas. No hay más historias planificadas en este alcance; la próxima spec será `026` cuando se apruebe.
 
 ## Cómo añadir una spec
 

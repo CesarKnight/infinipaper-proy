@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `025` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -174,10 +174,16 @@ El requisito pide un MCP para consultar desempeño en cuestionarios. La decisió
 | G-01 | Sin OAuth 2.1. | Los tokens son estáticos y deben rotarse. | `T-060` |
 | G-02 | Sin herramientas de escritura. | El MCP es solo consulta. | `T-061` |
 
+| G-03 | Sin métricas de uso expuestas por MCP. | v1 solo desempeño de quizzes. | `T-062` |
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01 | Token creado y mostrado una sola vez; hash almacenado. | 2026-11-18 |
+| CA-02–CA-03 | `list_projects` y resumen del proyecto con token. | 2026-11-18 |
+| CA-04–CA-05 | Revocación inmediata y rechazo de scope. | 2026-11-18 |
+| CA-06–CA-07 | Solo lectura y auditoría de consultas. | 2026-11-18 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+
+> Diagramas: [UC-25](../../diagramas/casos-de-uso.md) · [Secuencia 025](../../diagramas/secuencia/025-mcp-desempeno.md).

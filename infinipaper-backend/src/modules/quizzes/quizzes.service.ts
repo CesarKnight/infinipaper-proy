@@ -8,6 +8,7 @@ import type { Prisma } from '../../generated/prisma/client.js';
 import { AppException } from '../../common/errors/app.exception.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { PermissionsService } from '../../common/permissions/permissions.service.js';
+import { SearchService } from '../search/search.service.js';
 import { StorageService } from '../../common/storage/storage.service.js';
 import type { QuizQuestionInputDto } from './dto/quiz.dto.js';
 import type { CreateQuizDto, UpdateQuizDto } from './dto/quiz.dto.js';
@@ -22,6 +23,7 @@ export class QuizzesService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly permissions: PermissionsService,
+    private readonly searchQueue: SearchService,
   ) {}
 
   async create(folderId: string, authorId: string, dto: CreateQuizDto) {
@@ -67,6 +69,7 @@ export class QuizzesService {
       include: { questions: { include: { options: true } } },
     });
     await this.syncSnapshot(quiz.id);
+    void this.searchQueue.enqueueResource(resource.id);
     return { resource, quiz };
   }
 
@@ -138,6 +141,7 @@ export class QuizzesService {
       include: { questions: { include: { options: true } } },
     });
     await this.syncSnapshot(quizId);
+    void this.searchQueue.enqueueResource(quiz.resourceId);
     return quiz;
   }
 
@@ -175,6 +179,8 @@ export class QuizzesService {
     });
 
     await this.syncSnapshot(quizId);
+    const current = await this.prisma.quiz.findUniqueOrThrow({ where: { id: quizId }, select: { resourceId: true } });
+    void this.searchQueue.enqueueResource(current.resourceId);
     return this.prisma.quiz.findUniqueOrThrow({
       where: { id: quizId },
       include: { questions: { include: { options: true } } },
@@ -197,6 +203,7 @@ export class QuizzesService {
       include: { questions: { include: { options: true } } },
     });
     await this.syncSnapshot(quizId);
+    void this.searchQueue.enqueueResource(quiz.resourceId);
     return quiz;
   }
 
@@ -207,6 +214,7 @@ export class QuizzesService {
       data: { status: 'ARCHIVED' },
     });
     await this.syncSnapshot(quizId);
+    void this.searchQueue.enqueueResource(quiz.resourceId);
     return quiz;
   }
 
@@ -260,6 +268,7 @@ export class QuizzesService {
       include: { questions: { include: { options: true } } },
     });
     await this.syncSnapshot(quiz.id);
+    void this.searchQueue.enqueueResource(resource.id);
     return { resource, quiz };
   }
 

@@ -71,3 +71,6 @@
 | [020 Trazabilidad](../specs/020-trazabilidad-recursos/spec.md) | `/files/:id/provenance`, `/files/:id/validate`, filtros `origin` y `validationStatus` |
 | [021 Mapas mentales](../specs/021-mapas-mentales/spec.md) | `/folders/:id/mindmaps`, `/generation-jobs/:id`, `/generation-jobs/:id/retry` |
 | [022 Cuestionarios IA](../specs/022-cuestionarios-ia/spec.md) | `/folders/:id/quizzes/generate`, `/generation-jobs/:id` |
+| [023 Métricas de uso](../specs/023-metricas-recursos/spec.md) | `/projects/:id/usage`, `/projects/:id/usage/export`, `/files/:id/usage` |
+| [024 Búsqueda](../specs/024-busqueda-semantica/spec.md) | `/projects/:id/search`, `/projects/:id/search/reindex`, `/projects/:id/search/status` |
+| [025 MCP](../specs/025-mcp-desempeno/spec.md) | `/projects/:id/mcp-tokens`, `/mcp-tokens/:id`, `/mcp-tools/*`, `/mcp` |

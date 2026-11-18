@@ -9,6 +9,7 @@ import type { UploadedFileData } from '../../common/types/uploaded-file.js';
 import type { ListResourcesDto } from './dto/list-resources.dto.js';
 import type { Prisma, Resource } from '../../generated/prisma/client.js';
 import { PermissionsService } from '../../common/permissions/permissions.service.js';
+import { SearchService } from '../search/search.service.js';
 import { isMarkdown, resolveKind } from './resource-kind.util.js';
 import type { CreateNoteDto } from './dto/create-note.dto.js';
 import type { RenameResourceDto } from './dto/rename-resource.dto.js';
@@ -26,6 +27,7 @@ export class ResourcesService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly permissions: PermissionsService,
+    private readonly searchQueue: SearchService,
     config: ConfigService,
   ) {
     const maxMb = config.get<number>('MAX_UPLOAD_SIZE_MB') ?? 50;
@@ -157,7 +159,7 @@ export class ResourcesService {
 
     await this.storage.put(s3Key, file.buffer, info.mimeType);
 
-    return this.prisma.resource.create({
+    const created = await this.prisma.resource.create({
       data: {
         folderId,
         authorId,
@@ -171,6 +173,8 @@ export class ResourcesService {
       },
       include: { author: AUTHOR_SELECT },
     });
+    void this.searchQueue.enqueueResource(created.id);
+    return created;
   }
 
   async createNote(folderId: string, authorId: string, dto: CreateNoteDto) {
@@ -204,7 +208,7 @@ export class ResourcesService {
     const finalName = await this.ensureNameAvailable(folderId, input.name);
     const s3Key = `projects/${folder.projectId}/folders/${folderId}/${randomUUID()}/${finalName}`;
     await this.storage.put(s3Key, input.content, input.mimeType);
-    return this.prisma.resource.create({
+    const created = await this.prisma.resource.create({
       data: {
         folderId,
         authorId,
@@ -219,6 +223,8 @@ export class ResourcesService {
       },
       include: { author: AUTHOR_SELECT },
     });
+    void this.searchQueue.enqueueResource(created.id);
+    return created;
   }
 
   async readText(id: string): Promise<{ content: string }> {
@@ -232,11 +238,13 @@ export class ResourcesService {
     const resource = await this.getMarkdownOrFail(id);
     const buffer = Buffer.from(content, 'utf8');
     await this.storage.put(resource.s3Key, buffer, resource.mimeType);
-    return this.prisma.resource.update({
+    const updated = await this.prisma.resource.update({
       where: { id },
       data: { size: buffer.length, checksum: this.checksum(buffer) },
       include: { author: AUTHOR_SELECT },
     });
+    void this.searchQueue.enqueueResource(id);
+    return updated;
   }
 
   async getContent(
@@ -326,7 +334,7 @@ export class ResourcesService {
 
     await this.storage.put(s3Key, buffer, 'text/markdown');
 
-    return this.prisma.resource.create({
+    const created = await this.prisma.resource.create({
       data: {
         folderId,
         authorId,
@@ -340,6 +348,8 @@ export class ResourcesService {
       },
       include: { author: AUTHOR_SELECT },
     });
+    void this.searchQueue.enqueueResource(created.id);
+    return created;
   }
 
   private async getFolderOrFail(folderId: string) {

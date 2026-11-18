@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `023` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -160,10 +160,15 @@ El requisito pide métricas relacionadas con el uso de recursos académicos, res
 | G-01 | Sin tiempo de lectura. | Solo se mide apertura y descarga. | `T-060` |
 | G-02 | Sin analítica en tiempo real. | Los agregados se calculan al consultar. | `T-061` |
 
+| G-03 | Sin job automático de retención. | La purga debe invocarse explícitamente. | `T-062` |
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-02 | Vistas y descargas registradas en E2E. | 2026-11-18 |
+| CA-03–CA-05 | Agregados por recurso, filtros y CSV verificados. | 2026-11-18 |
+| CA-06–CA-07 | Acceso restringido y datos agregados sin emails. | 2026-11-18 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+
+> Diagramas: [UC-23](../../diagramas/casos-de-uso.md) · [Secuencia 023](../../diagramas/secuencia/023-metricas-recursos.md).

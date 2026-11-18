@@ -16,7 +16,7 @@ flowchart TB
   end
 
   subgraph Backend["infinipaper-backend"]
-    MOD["src/modules/<br/>auth · users · projects · folders<br/>resources · members · transcriptions<br/>note-structure · dashboard · teacher<br/>quizzes · quiz-assignments · analytics<br/>provenance · content-generation"]:::pkg
+    MOD["src/modules/<br/>auth · users · projects · folders<br/>resources · members · transcriptions<br/>note-structure · dashboard · teacher<br/>quizzes · quiz-assignments · analytics<br/>provenance · content-generation<br/>usage · search · mcp"]:::pkg
     COMMON["src/common/<br/>guards · permissions · email<br/>storage · prisma · config"]:::pkg
     PRISMA["prisma/<br/>schema + migraciones"]:::pkg
   end
@@ -62,13 +62,13 @@ flowchart TB
 | `app/` | Rutas, layouts, páginas y protección de navegación, panel y progreso | 001–012, 015–022 |
 | `components/` | Componentes de UI y dominio (proyecto, markdown, workspace, quiz, mindmap, procedencia) | 002–012, 015–022 |
 | `lib/` | Cliente API same-origin, hooks, tipos y utilidades | 001–012, 015–022 |
-| `src/modules/` | Módulos NestJS: auth, users, projects, folders, resources, members, transcriptions, note-structure, dashboard, teacher, quizzes, quiz-assignments, analytics, provenance, content-generation | 001–012, 015–022 |
-| `src/common/` | Guards, permisos, email/SMTP, storage S3, Prisma, configuración y errores | 001–012, 015–022 |
+| `src/modules/` | Módulos NestJS: auth, users, projects, folders, resources, members, transcriptions, note-structure, dashboard, teacher, quizzes, quiz-assignments, analytics, provenance, content-generation, usage, search, mcp | 001–012, 015–025 |
+| `src/common/` | Guards, permisos, email/SMTP, storage S3, Prisma, configuración y errores | 001–012, 015–025 |
 | `prisma/` | Esquema, migraciones y cliente generado | 001–012, 015–022 |
 | `infinipaper-agents/api/` | FastAPI: autenticación y endpoint de estructuración | 012 |
 | `infinipaper-agents/graph/` | Grafo LangGraph: router, extractores, structurer y validador | 012 |
 | `infinipaper-agents/tools/` | Descarga presignada y utilidades Markdown | 012 |
-| Infraestructura | PostgreSQL, MinIO, Whisper, Mailpit, proveedor LLM y cola `pg-boss` | 005, 009, 010, 012, 015–022 |
+| Infraestructura | PostgreSQL + pgvector, MinIO, Whisper, Mailpit, proveedor LLM, embeddings, FastMCP y cola `pg-boss` | 005, 009, 010, 012, 015–025 |
 
 ## Reglas de dependencia
 
@@ -82,6 +82,8 @@ flowchart TB
 - `AnalyticsService` agrega datos de evaluación solo para Owner/Editor; `my-progress` limita al estudiante.
 - `ProvenanceService` gestiona `ResourceSource` y la validación docente.
 - `ContentGenerationService` y su cola generan mapas mentales y quizzes IA a través de agentes.
+- `UsageService` registra y agrega eventos de uso; `SearchService` indexa chunks y consulta pgvector.
+- `McpService` valida tokens y expone datos de solo lectura; FastMCP vive en agentes.
 - `infinipaper-agents` no accede a la base de datos ni recibe credenciales S3; usa URLs presignadas.
 - `PermissionsService` y `StorageService` son servicios compartidos.
 - La infraestructura se consume a través de adaptadores (`PrismaService`, `StorageService`, `AsrService`, `QueueService`).

@@ -31,6 +31,7 @@ import { CreateNoticeDto } from './dto/create-notice.dto.js';
 import { RenameResourceDto } from './dto/rename-resource.dto.js';
 import { UpdateContentDto } from './dto/update-content.dto.js';
 import { ResourcesService } from './resources.service.js';
+import { UsageService } from '../usage/usage.service.js';
 
 const ABSOLUTE_MAX_BYTES = 200 * 1024 * 1024;
 
@@ -38,7 +39,10 @@ const ABSOLUTE_MAX_BYTES = 200 * 1024 * 1024;
 @Controller()
 @UseGuards(ProjectAccessGuard)
 export class ResourcesController {
-  constructor(private readonly resources: ResourcesService) {}
+  constructor(
+    private readonly resources: ResourcesService,
+    private readonly usage: UsageService,
+  ) {}
 
   @Get('folders/:folderId/files')
   @RequireProjectRole('viewer')
@@ -92,7 +96,8 @@ export class ResourcesController {
 
   @Get('files/:fileId')
   @RequireProjectRole('viewer')
-  getOne(@Param('fileId') fileId: string) {
+  getOne(@Param('fileId') fileId: string, @CurrentUser() user?: User) {
+    void this.usage.recordView(fileId, user?.id);
     return this.resources.getById(fileId);
   }
 
@@ -109,8 +114,12 @@ export class ResourcesController {
     @Res() res: Response,
     @CurrentUser() user?: User,
     @Headers('range') range?: string,
+    @Query('download') download?: string,
   ): Promise<void> {
     const { object } = await this.resources.getContent(fileId, range, user?.id);
+    if (download === '1') {
+      void this.usage.recordDownload(fileId, user?.id);
+    }
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader(
       'Content-Type',

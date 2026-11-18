@@ -104,6 +104,9 @@ C4Component
     Component(analytics, "Analytics", "NestJS", "Panel docente, riesgo y progreso personal")
     Component(provenance, "Provenance", "NestJS", "Origen, fuentes y validación de recursos")
     Component(contentGeneration, "ContentGeneration", "NestJS", "Jobs de mapas mentales y quiz IA")
+    Component(usage, "Usage", "NestJS", "Eventos y agregados de uso de recursos")
+    Component(search, "Search", "NestJS", "Chunks, embeddings y búsqueda híbrida")
+    Component(mcp, "MCP", "NestJS", "Tokens y API de solo lectura para MCP")
     Component(storage, "Storage", "S3 SDK", "Adaptador de MinIO")
     Component(prisma, "Prisma", "Prisma 7", "Acceso a PostgreSQL")
   }
@@ -148,6 +151,11 @@ C4Component
   Rel(contentGeneration, queue, "Encola", "SQL")
   Rel(contentGeneration, agents, "Genera contenido", "HTTP interno")
   Rel(contentGeneration, resources, "Guarda recurso", "interno")
+  Rel(usage, prisma, "Eventos y agregados", "Prisma")
+  Rel(search, prisma, "Chunks y búsqueda", "Prisma")
+  Rel(search, prisma, "pgvector", "SQL")
+  Rel(mcp, prisma, "Tokens y resultados", "Prisma")
+  Rel(search, usage, "Registra SEARCH_HIT", "interno")
   Rel(email, mailpit, "SMTP", "SMTP")
   Rel(prisma, db, "Lee y escribe", "SQL")
   Rel(storage, minio, "Objetos", "S3")
@@ -202,5 +210,8 @@ C4Component
 | Componentes | `AnalyticsService` agrega métricas solo para docentes/editores |
 | Componentes | `ProvenanceService` valida recursos y conserva fuentes |
 | Componentes | `ContentGenerationService` usa agentes para mapas y quizzes IA |
+| Componentes | `UsageService` registra eventos servidor sin contenido |
+| Componentes | `SearchService` usa pgvector y fallback léxico |
+| Componentes | `McpService` valida tokens y alimenta FastMCP |
 | Agentes | LangGraph orquesta router, extractor, planner, structurer y validator |
 | Agentes | v1 solo procesa Markdown; el contrato admite múltiples fuentes |

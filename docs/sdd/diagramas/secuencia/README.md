@@ -24,6 +24,9 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 | 020 Trazabilidad | [020-trazabilidad-recursos.md](./020-trazabilidad-recursos.md) | Editor, API, DB |
 | 021 Mapas mentales | [021-mapas-mentales.md](./021-mapas-mentales.md) | Editor, API, DB, pg-boss, Agents, LLM, MinIO |
 | 022 Cuestionarios IA | [022-cuestionarios-ia.md](./022-cuestionarios-ia.md) | Docente/Editor, API, DB, pg-boss, Agents, LLM, MinIO |
+| 023 Métricas de uso | [023-metricas-recursos.md](./023-metricas-recursos.md) | Usuario, Docente, API, DB |
+| 024 Búsqueda | [024-busqueda-semantica.md](./024-busqueda-semantica.md) | Participante, API, DB, pg-boss, MinIO, Embeddings |
+| 025 MCP | [025-mcp-desempeno.md](./025-mcp-desempeno.md) | Docente, Cliente MCP, API, FastMCP, DB |
 
 ## Convenciones
 

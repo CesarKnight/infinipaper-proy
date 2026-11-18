@@ -47,6 +47,7 @@ import {
 import { apiFetch, ApiError } from "@/lib/api";
 import type { Project, ProjectVisibility } from "@/lib/types";
 import { MembersManager } from "@/components/project/members-manager";
+import { McpTokensCard } from "@/components/project/mcp-tokens-card";
 
 export default function ProjectSettingsPage() {
   const params = useParams<{ projectId: string }>();
@@ -282,6 +283,8 @@ function ProjectSettingsForm({ project }: { project: Project }) {
           <MembersManager projectId={project.id} />
         </CardContent>
       </Card>
+
+      <McpTokensCard projectId={project.id} />
 
       <Card className="border-destructive/40">
         <CardHeader>

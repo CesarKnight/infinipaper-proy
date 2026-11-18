@@ -100,6 +100,13 @@ enum ContentGenerationType {
   QUIZ
 }
 
+enum ResourceEventType {
+  VIEW
+  DOWNLOAD
+  SEARCH_HIT
+  QUIZ_USE
+}
+
 enum TranscriptionStatus {
   QUEUED
   PROCESSING
@@ -173,6 +180,8 @@ model User {
   quizAttempts            QuizAttempt[]                 @relation("StudentQuizAttempts")
   validatedResources      Resource[]                    @relation("ResourceValidator")
   generationJobs          ContentGenerationJob[]        @relation("ContentGenerationRequester")
+  resourceEvents          ResourceEvent[]
+  mcpTokens               McpToken[]
 
   @@index([status])
   @@index([role])
@@ -268,6 +277,9 @@ model Project {
   folders          Folder[]
   members          ProjectMember[]
   quizAssignments  QuizAssignment[]
+  resourceEvents   ResourceEvent[]
+  contentIndexJobs ContentIndexJob[]
+  mcpTokens        McpToken[]
 
   @@index([ownerId])
   @@index([visibility])
@@ -342,6 +354,9 @@ model Resource {
   sources           ResourceSource[]      @relation("ResourceSources")
   sourceOf          ResourceSource[]      @relation("ResourceSourceTargets")
   generationResult  ContentGenerationJob? @relation("GenerationResult")
+  events            ResourceEvent[]
+  chunks            ResourceChunk[]
+  indexJobs         ContentIndexJob[]
 
   @@unique([folderId, name])
   @@index([folderId])
@@ -350,6 +365,76 @@ model Resource {
   @@index([validationStatus])
   @@index([validatedById])
 }
+
+model ResourceEvent {
+  id         String            @id @default(cuid())
+  projectId  String
+  resourceId String?
+  userId     String?
+  type       ResourceEventType
+  metadata   Json?
+  createdAt  DateTime          @default(now())
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  resource Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@index([resourceId, createdAt])
+  @@index([type])
+}
+
+model ResourceChunk {
+  id         String                       @id @default(cuid())
+  resourceId String
+  chunkIndex Int
+  content    String                       @db.Text
+  embedding  Unsupported("vector(1536)")?
+  tokens     Int                          @default(0)
+  metadata   Json?
+  createdAt  DateTime                     @default(now())
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, chunkIndex])
+  @@index([resourceId])
+}
+
+model ContentIndexJob {
+  id         String         @id @default(cuid())
+  projectId  String
+  resourceId String?
+  status     AgentJobStatus @default(QUEUED)
+  error      String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  resource Resource? @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status])
+  @@index([resourceId])
+}
+
+model McpToken {
+  id         String    @id @default(cuid())
+  ownerId    String
+  projectId  String
+  name       String
+  tokenHash  String    @unique
+  scopes     Json
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([projectId])
+}
+
 
 model ResourceSource {
   id               String                 @id @default(cuid())
@@ -596,3 +681,6 @@ model QuizAnswer {
 - **Tareas:** `QuizAssignment` asigna un quiz a estudiantes; `QuizAttempt` y `QuizAnswer` conservan intentos, puntajes y feedback.
 - **Procedencia:** `Resource.origin`, `validationStatus` y `ResourceSource` enlazan recursos derivados con sus fuentes y permiten validación docente.
 - **Generación IA:** `ContentGenerationJob` registra jobs de mapas mentales y cuestionarios, sus fuentes, configuración, usage y recurso resultante.
+- **Uso:** `ResourceEvent` guarda vistas, descargas, búsquedas y uso en quiz sin contenido del recurso.
+- **Búsqueda:** `ResourceChunk` almacena chunks y embeddings `vector(1536)`; `ContentIndexJob` controla la indexación.
+- **MCP:** `McpToken` guarda tokens hasheados, scopes, expiración y revocación por proyecto.

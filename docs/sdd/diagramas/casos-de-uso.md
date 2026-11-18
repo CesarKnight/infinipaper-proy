@@ -23,6 +23,7 @@ flowchart LR
     Whisper[Sistema ASR<br/>Whisper]:::external
     MinIO[(MinIO<br/>S3)]:::external
     Mailpit[Sistema SMTP<br/>Mailpit]:::external
+    ClienteMCP[Sistema externo<br/>Cliente MCP]:::external
     LLM[Proveedor LLM]:::external
   end
 
@@ -47,6 +48,9 @@ flowchart LR
     UC20([UC-20<br/>Trazabilidad y validación]):::usecase
     UC21([UC-21<br/>Mapas mentales con IA]):::usecase
     UC22([UC-22<br/>Cuestionarios con IA]):::usecase
+    UC23([UC-23<br/>Métricas de uso]):::usecase
+    UC24([UC-24<br/>Búsqueda semántica]):::usecase
+    UC25([UC-25<br/>MCP de desempeño]):::usecase
   end
 
   Visitante --> UC01
@@ -130,6 +134,16 @@ flowchart LR
   Owner --> UC22
   Editor --> UC22
   Docente --> UC22
+  Owner --> UC23
+  Editor --> UC23
+  Docente --> UC23
+  Usuario --> UC24
+  Viewer --> UC24
+  Estudiante --> UC24
+  Owner --> UC25
+  Editor --> UC25
+  Docente --> UC25
+  ClienteMCP --> UC25
 ```
 
 ## Trazabilidad
@@ -156,5 +170,8 @@ flowchart LR
 | UC-20 Trazabilidad y validación | [020](../specs/020-trazabilidad-recursos/spec.md) | Docente, Owner, Editor, Viewer, Estudiante |
 | UC-21 Mapas mentales con IA | [021](../specs/021-mapas-mentales/spec.md) | Docente, Owner, Editor |
 | UC-22 Cuestionarios con IA | [022](../specs/022-cuestionarios-ia/spec.md) | Docente, Owner, Editor |
+| UC-23 Métricas de uso | [023](../specs/023-metricas-recursos/spec.md) | Docente, Owner, Editor |
+| UC-24 Búsqueda semántica | [024](../specs/024-busqueda-semantica/spec.md) | Usuario, Viewer, Estudiante |
+| UC-25 MCP de desempeño | [025](../specs/025-mcp-desempeno/spec.md) | Docente, Owner, Editor, Cliente MCP |
 
 > `Visitante` solo accede a proyectos públicos en modo lectura y a las pantallas de registro/login. Las acciones de escritura requieren un rol de proyecto. Los roles globales `Administrador`, `Docente` y `Estudiante` no conceden acceso implícito a proyectos privados.

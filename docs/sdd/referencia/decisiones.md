@@ -39,5 +39,8 @@
 | Procedencia | `Resource.origin` + `ResourceSource` + validación docente auditada | [020](../specs/020-trazabilidad-recursos/spec.md) |
 | Mapas mentales | JSON canónico en `Resource(MINDMAP)`; render en frontend | [021](../specs/021-mapas-mentales/spec.md) |
 | Quiz IA | Job asíncrono que produce un `QUIZ` en `DRAFT` con fuentes por pregunta | [022](../specs/022-cuestionarios-ia/spec.md) |
+| Métricas de uso | Eventos servidor `VIEW/DOWNLOAD/SEARCH_HIT/QUIZ_USE` con agregados por proyecto | [023](../specs/023-metricas-recursos/spec.md) |
+| Búsqueda | `pgvector` + embeddings abstractos + fallback léxico | [024](../specs/024-busqueda-semantica/spec.md) |
+| MCP | FastMCP de solo lectura con tokens scoped por proyecto y auditoría | [025](../specs/025-mcp-desempeno/spec.md) |
 | Peticiones del navegador | Same-origin mediante rewrites de Next (`/api/*` → `API_URL`); cookie *first-party* | [referencia/api.md](./api.md) |
 | API | Prefijo `/api/v1`, errores uniformes, paginación por cursor | [referencia/api.md](./api.md) |

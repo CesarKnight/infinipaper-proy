@@ -4,7 +4,7 @@
 
 | Servicio | Imagen | Puerto host | Propósito |
 |---|---|---|---|
-| `db` | `postgres:17-alpine` | 5433 | Base de datos |
+| `db` | `pgvector/pgvector:pg17` | 5433 | Base de datos con extensión `vector` |
 | `backend` | build NestJS | 3001 | API |
 | `frontend` | build Next.js | 3000 | App web |
 | `minio` | `firstfinger/minio` | 9000 / 9001 / 9002 | Almacenamiento S3 + consola + Admin Console |
@@ -89,6 +89,13 @@ PROJECT_ARCHIVE_ACCESS_DAYS=30
 PROJECT_PURGE_CRON=0 * * * *
 PROJECT_RISK_THRESHOLD=70
 AGENT_CONTENT_ENABLED=true
+RESOURCE_EVENT_RETENTION_DAYS=365
+EMBEDDING_PROVIDER=local
+EMBEDDING_MODEL=local-hash
+EMBEDDING_DIMENSIONS=1536
+EMBEDDING_BASE_URL=
+EMBEDDING_API_KEY=
+SEARCH_TOP_K=10
 
 # Almacenamiento S3 / MinIO
 S3_ENDPOINT=http://localhost:9000

@@ -144,7 +144,14 @@ function ProjectWorkspaceLayoutInner({
             })}
           </BreadcrumbList>
         </Breadcrumb>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href={`/projects/${projectId}/search`} />}
+            >
+              Buscar
+            </Button>
             {project?.role === "owner" || project?.role === "editor" ? (
               <>
                 <Button
@@ -160,6 +167,13 @@ function ProjectWorkspaceLayoutInner({
                   render={<Link href={`/projects/${projectId}/assignments`} />}
                 >
                   Tareas
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={<Link href={`/projects/${projectId}/usage`} />}
+                >
+                  Uso
                 </Button>
               </>
             ) : null}

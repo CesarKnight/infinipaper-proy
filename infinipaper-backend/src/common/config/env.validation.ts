@@ -29,6 +29,13 @@ export const envValidationSchema = Joi.object({
   PROJECT_ARCHIVE_ACCESS_DAYS: Joi.number().min(1).default(30),
   PROJECT_RISK_THRESHOLD: Joi.number().min(0).max(100).default(70),
   AGENT_CONTENT_ENABLED: Joi.boolean().default(true),
+  RESOURCE_EVENT_RETENTION_DAYS: Joi.number().min(1).default(365),
+  EMBEDDING_PROVIDER: Joi.string().default('local'),
+  EMBEDDING_MODEL: Joi.string().default('local-hash'),
+  EMBEDDING_DIMENSIONS: Joi.number().valid(1536).default(1536),
+  EMBEDDING_BASE_URL: Joi.string().allow('').default(''),
+  EMBEDDING_API_KEY: Joi.string().allow('').default(''),
+  SEARCH_TOP_K: Joi.number().min(1).max(50).default(10),
   PROJECT_PURGE_CRON: Joi.string().default('0 * * * *'),
 
   S3_ENDPOINT: Joi.string().default('http://localhost:9000'),

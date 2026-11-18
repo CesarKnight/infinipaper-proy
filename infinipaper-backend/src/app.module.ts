@@ -13,6 +13,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { ContentGenerationModule } from './modules/content-generation/content-generation.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { FoldersModule } from './modules/folders/folders.module.js';
+import { McpModule } from './modules/mcp/mcp.module.js';
 import { MembersModule } from './modules/members/members.module.js';
 import { NoteStructureModule } from './modules/note-structure/note-structure.module.js';
 import { ProjectsModule } from './modules/projects/projects.module.js';
@@ -20,9 +21,11 @@ import { ProvenanceModule } from './modules/provenance/provenance.module.js';
 import { QuizAssignmentsModule } from './modules/quiz-assignments/quiz-assignments.module.js';
 import { QuizzesModule } from './modules/quizzes/quizzes.module.js';
 import { ResourcesModule } from './modules/resources/resources.module.js';
+import { SearchModule } from './modules/search/search.module.js';
 import { SystemModule } from './modules/system/system.module.js';
 import { TeacherModule } from './modules/teacher/teacher.module.js';
 import { TranscriptionsModule } from './modules/transcriptions/transcriptions.module.js';
+import { UsageModule } from './modules/usage/usage.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 
 @Module({
@@ -42,14 +45,17 @@ import { UsersModule } from './modules/users/users.module.js';
     ProjectsModule,
     FoldersModule,
     ResourcesModule,
+    SearchModule,
     ProvenanceModule,
     MembersModule,
+    McpModule,
     NoteStructureModule,
     QuizzesModule,
     QuizAssignmentsModule,
     ContentGenerationModule,
     TeacherModule,
     TranscriptionsModule,
+    UsageModule,
     SystemModule,
   ],
   providers: [

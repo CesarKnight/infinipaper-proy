@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | ID | `024` |
-| Estado | `Borrador` |
+| Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | `2026-11-15` |
 | Origen | Requisitos de alcance académico aprobados el 2026-11-15 |
@@ -165,10 +165,15 @@ El requisito pide procesamiento semántico y búsqueda dentro del material almac
 | G-01 | Sin extracción de PDFs. | Los PDFs no son buscables semánticamente. | `T-060` |
 | G-02 | Sin OCR. | Las imágenes no aportan texto. | `T-061` |
 
+| G-03 | Sin búsqueda generativa con citas. | Solo recuperación de fragmentos. | `T-062` |
 ## 11. Evidencia de validación
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| — | Pendiente de implementación. | — |
+| CA-01–CA-02 | Reindexación y búsqueda híbrida de “sprint” con fragmento y recurso. | 2026-11-18 |
+| CA-03–CA-04 | Permisos y filtros aplicados en servidor. | 2026-11-18 |
+| CA-05–CA-07 | Reindexación, fallback léxico y borrado por cascada implementados. | 2026-11-18 |
 
-> Plan y tareas: se crearán cuando esta spec pase a `Aprobada`.
+> Plan y tareas: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md).
+
+> Diagramas: [UC-24](../../diagramas/casos-de-uso.md) · [Secuencia 024](../../diagramas/secuencia/024-busqueda-semantica.md).
