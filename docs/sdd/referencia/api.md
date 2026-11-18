@@ -74,3 +74,4 @@
 | [023 Métricas de uso](../specs/023-metricas-recursos/spec.md) | `/projects/:id/usage`, `/projects/:id/usage/export`, `/files/:id/usage` |
 | [024 Búsqueda](../specs/024-busqueda-semantica/spec.md) | `/projects/:id/search`, `/projects/:id/search/reindex`, `/projects/:id/search/status` |
 | [025 MCP](../specs/025-mcp-desempeno/spec.md) | `/projects/:id/mcp-tokens`, `/mcp-tokens/:id`, `/mcp-tools/*`, `/mcp` |
+| [026 App móvil](../specs/026-app-movil/spec.md) | `/auth/mobile/register`, `/auth/mobile/login`, `/auth/mobile/logout`; resto con `X-Mobile-Session` |

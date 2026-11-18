@@ -30,6 +30,7 @@ Antes de implementar un cambio de producto:
 
 - `infinipaper-backend/`: NestJS 12 ESM, Prisma 7, PostgreSQL 17, MinIO, `pg-boss`.
 - `infinipaper-frontend/`: Next.js 16 App Router, React 19, shadcn/Base UI, Tailwind v4.
+- `infinipaper-mobile/`: app Expo/React Native; consumo móvil de la API con `X-Mobile-Session`.
 - `infinipaper-agents/`: FastAPI + LangGraph; servicio stateless de agentes IA.
 - `docs/`: especificaciones SDD. La fuente vigente es `docs/sdd/specs/`; la documentación transversal vive en `docs/sdd/referencia/`.
 - La raíz no contiene el código: cada app tiene su propio `package.json` y `AGENTS.md` cuando aplica.
@@ -47,6 +48,12 @@ npm run build
 cd infinipaper-frontend
 npm run lint
 npm run build
+
+# Mobile
+cd infinipaper-mobile
+npx tsc --noEmit
+npm run lint
+npx expo-doctor
 
 # Agentes IA
 cd infinipaper-agents

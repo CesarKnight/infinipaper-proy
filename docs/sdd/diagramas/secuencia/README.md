@@ -27,6 +27,7 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 | 023 Métricas de uso | [023-metricas-recursos.md](./023-metricas-recursos.md) | Usuario, Docente, API, DB |
 | 024 Búsqueda | [024-busqueda-semantica.md](./024-busqueda-semantica.md) | Participante, API, DB, pg-boss, MinIO, Embeddings |
 | 025 MCP | [025-mcp-desempeno.md](./025-mcp-desempeno.md) | Docente, Cliente MCP, API, FastMCP, DB |
+| 026 App móvil | [026-app-movil.md](./026-app-movil.md) | Usuario, App Expo, SecureStore, API, DB, MinIO |
 
 ## Convenciones
 

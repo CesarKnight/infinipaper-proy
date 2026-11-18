@@ -32,7 +32,7 @@ El script crea un paquete raíz llamado **`Infinipaper SDD`** con estas ramas:
 Infinipaper SDD
 ├── 01 · Casos de uso
 │   ├── Actores
-│   ├── UC-01 … UC-12 y UC-15 … UC-25
+│   ├── UC-01 … UC-12 y UC-15 … UC-26
 │   └── Diagrama "Casos de uso · Infinipaper"
 ├── 02 · Paquetes
 │   ├── Sistema
@@ -46,8 +46,8 @@ Infinipaper SDD
 │   ├── C4 · Componentes del backend
 │   └── C4 · Componentes de agentes
 ├── 04 · Secuencias
-│   ├── 001 · Usuarios … 025 · MCP de desempeño
-│   └── 23 diagramas de secuencia
+│   ├── 001 · Usuarios … 026 · App móvil
+│   └── 24 diagramas de secuencia
 └── 05 · Clases
     ├── User, Session, Project, ProjectMember, Folder, Resource
     ├── TranscriptionJob, NoteStructureJob
@@ -56,7 +56,7 @@ Infinipaper SDD
     └── Diagrama "Clases · Modelo de dominio"
 ```
 
-En total: **5 ramas, 30 diagramas** (1 casos de uso, 1 paquetes, 4 C4, 1 clases y 23 secuencias).
+En total: **5 ramas, 31 diagramas** (1 casos de uso, 1 paquetes, 4 C4, 1 clases y 24 secuencias).
 
 ### Idempotencia
 
@@ -92,7 +92,7 @@ El generador valida:
 - **Paquetes:** `infinipaper-frontend`, `infinipaper-backend` e `Infraestructura`.
 - **C4:** los elementos usan estereotipos `person`, `system`, `external_system`, `container`, `container_db` y `component`.
 - **Clases:** `User`, `Session`, `EmailVerificationToken`, `TeacherProfile`, `AuditEvent`, `Project`, `ProjectMember`, `Folder`, `Resource`, `TranscriptionJob`, `NoteStructureJob`, `Quiz`, `QuizQuestion`, `QuizOption`, `QuizAssignment`, `QuizAssignmentStudent`, `QuizAttempt`, `QuizAnswer`, `ResourceSource`, `ContentGenerationJob`, `ResourceEvent`, `ResourceChunk`, `ContentIndexJob` y `McpToken`, con atributos, enums y relaciones de composición, asociación y dependencia.
-- **Secuencias:** cada diagrama usa lifelines con prefijo `NNN · ` para evitar colisiones entre specs (001–012 y 015–025).
+- **Secuencias:** cada diagrama usa lifelines con prefijo `NNN · ` para evitar colisiones entre specs (001–012 y 015–026).
 - **Mensajes:** los conectores son de tipo `Sequence`; las respuestas se etiquetan en el nombre o en las notas.
 
 ## Limitaciones conocidas

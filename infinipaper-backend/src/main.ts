@@ -14,7 +14,11 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(helmet());
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    origin: [
+      process.env.FRONTEND_URL ?? 'http://localhost:3000',
+      'http://localhost:8081',
+      'http://localhost:19006',
+    ],
     credentials: true,
   });
   app.useGlobalPipes(

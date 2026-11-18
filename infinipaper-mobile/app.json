@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Infinipaper",
+    "slug": "infinipaper",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/icon.png",
+    "scheme": "infinipaper",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#FAF6EE",
+    "ios": {
+      "icon": "./assets/brand/icon.png",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.infinipaper.app"
+    },
+    "android": {
+      "package": "com.infinipaper.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FAF6EE",
+        "foregroundImage": "./assets/brand/android-foreground.png",
+        "backgroundImage": "./assets/brand/android-background.png",
+        "monochromeImage": "./assets/brand/android-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/brand/mark-fade.svg"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FAF6EE",
+          "image": "./assets/brand/splash.png",
+          "imageWidth": 140
+        }
+      ],
+      "expo-secure-store",
+      "expo-document-picker",
+      "expo-image-picker",
+      "expo-sharing",
+      "expo-video",
+      "expo-audio",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "apiUrl": "http://localhost:3001/api/v1"
+    }
+  }
+}

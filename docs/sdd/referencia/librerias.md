@@ -123,3 +123,20 @@ npm run dev
 cd infinipaper-backend
 docker compose up -d --build
 ```
+
+## Mobile (`infinipaper-mobile`)
+
+| Librería | Propósito |
+|---|---|
+| `expo` / `expo-router` | Runtime, rutas y desarrollo |
+| `@tanstack/react-query` | Datos y caché |
+| `expo-secure-store` | Token de sesión móvil |
+| `expo-document-picker` / `expo-image-picker` | Subida de archivos y fotos |
+| `expo-file-system` / `expo-sharing` | Descarga, apertura y compartir |
+| `expo-video` / `expo-audio` | Reproducción multimedia |
+| `react-native-webview` | PDF |
+| `react-native-markdown-display` | Apuntes Markdown |
+| `lucide-react-native` | Iconografía de interfaz |
+| `react-native-svg` | Marca Infinipaper |
+
+> La app móvil usa `X-Mobile-Session`; la web mantiene cookie `httpOnly`.

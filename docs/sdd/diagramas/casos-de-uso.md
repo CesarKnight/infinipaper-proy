@@ -51,6 +51,7 @@ flowchart LR
     UC23([UC-23<br/>Métricas de uso]):::usecase
     UC24([UC-24<br/>Búsqueda semántica]):::usecase
     UC25([UC-25<br/>MCP de desempeño]):::usecase
+    UC26([UC-26<br/>App móvil]):::usecase
   end
 
   Visitante --> UC01
@@ -151,6 +152,10 @@ flowchart LR
   Editor --> UC25
   Docente --> UC25
   ClienteMCP --> UC25
+  Usuario --> UC26
+  Docente --> UC26
+  Estudiante --> UC26
+  Administrador --> UC26
 ```
 
 ## Trazabilidad
@@ -180,5 +185,6 @@ flowchart LR
 | UC-23 Métricas de uso | [023](../specs/023-metricas-recursos/spec.md) | Docente, Owner, Editor |
 | UC-24 Búsqueda semántica | [024](../specs/024-busqueda-semantica/spec.md) | Usuario, Viewer, Estudiante |
 | UC-25 MCP de desempeño | [025](../specs/025-mcp-desempeno/spec.md) | Docente, Owner, Editor, Cliente MCP |
+| UC-26 App móvil | [026](../specs/026-app-movil/spec.md) | Usuario, Docente, Estudiante, Administrador |
 
 > `Visitante` solo accede a proyectos públicos en modo lectura y a las pantallas de registro/login. Las acciones de escritura requieren un rol de proyecto. Los roles globales `Administrador`, `Docente` y `Estudiante` no conceden acceso implícito a proyectos privados.

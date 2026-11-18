@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Headers,
   Post,
   Req,
   Res,
@@ -45,6 +46,30 @@ export class AuthController {
     const { user, session } = await this.auth.login(dto);
     this.setSessionCookie(res, session.token);
     return user;
+  }
+
+  @Public()
+  @Post('mobile/register')
+  @HttpCode(HttpStatus.CREATED)
+  async mobileRegister(@Body() dto: RegisterDto) {
+    const { user, session } = await this.auth.register(dto);
+    return { user, token: session.token, expiresAt: session.expiresAt };
+  }
+
+  @Public()
+  @Post('mobile/login')
+  @HttpCode(HttpStatus.OK)
+  async mobileLogin(@Body() dto: LoginDto) {
+    const { user, session } = await this.auth.login(dto);
+    return { user, token: session.token, expiresAt: session.expiresAt };
+  }
+
+  @Post('mobile/logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async mobileLogout(
+    @Headers('x-mobile-session') token?: string,
+  ): Promise<void> {
+    await this.auth.logout(token);
   }
 
   @Post('logout')

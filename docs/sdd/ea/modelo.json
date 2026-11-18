@@ -337,6 +337,18 @@
         "Cliente MCP"
       ],
       "notes": "Tokens scoped, FastMCP de solo lectura, rate limit, revocación y auditoría."
+    },
+    {
+      "id": "UC-26",
+      "name": "App móvil",
+      "spec": "026",
+      "actors": [
+        "Usuario",
+        "Docente",
+        "Estudiante",
+        "Administrador"
+      ],
+      "notes": "App Expo/React Native con sesión X-Mobile-Session, proyectos, visores, descarga y subida por rol; splash animado y design system."
     }
   ],
   "packageModel": {
@@ -736,6 +748,12 @@
           "type": "Component",
           "stereotype": "external_system",
           "notes": "Correo de confirmación y verificación."
+        },
+        {
+          "name": "App móvil",
+          "type": "Component",
+          "stereotype": "container",
+          "notes": "Expo SDK 58 · React Native. Sesión móvil y visores."
         }
       ],
       "relationships": [
@@ -828,6 +846,18 @@
           "to": "SMTP / Mailpit",
           "label": "Envía correos",
           "notes": "SMTP"
+        },
+        {
+          "from": "Usuario",
+          "to": "App móvil",
+          "label": "Usa",
+          "notes": "HTTPS"
+        },
+        {
+          "from": "App móvil",
+          "to": "Backend",
+          "label": "API móvil",
+          "notes": "X-Mobile-Session"
         }
       ]
     },
@@ -5791,6 +5821,143 @@
           "from": "API",
           "to": "DB",
           "name": "revokedAt"
+        }
+      ]
+    },
+    {
+      "id": "026",
+      "name": "026 · App móvil",
+      "participants": [
+        {
+          "alias": "U",
+          "name": "Usuario móvil",
+          "type": "Actor"
+        },
+        {
+          "alias": "APP",
+          "name": "App Expo",
+          "type": "Object"
+        },
+        {
+          "alias": "SEC",
+          "name": "SecureStore",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "U",
+          "to": "APP",
+          "name": "Abre la app"
+        },
+        {
+          "from": "APP",
+          "to": "APP",
+          "name": "Splash animado de marca"
+        },
+        {
+          "from": "APP",
+          "to": "SEC",
+          "name": "Recupera X-Mobile-Session"
+        },
+        {
+          "from": "APP",
+          "to": "API",
+          "name": "GET /auth/me"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Valida Session y User"
+        },
+        {
+          "from": "API",
+          "to": "APP",
+          "name": "Usuario + rol",
+          "notes": "respuesta"
+        },
+        {
+          "from": "APP",
+          "to": "API",
+          "name": "GET /projects?scope=all"
+        },
+        {
+          "from": "API",
+          "to": "APP",
+          "name": "Proyectos",
+          "notes": "respuesta"
+        },
+        {
+          "from": "U",
+          "to": "APP",
+          "name": "Abre proyecto"
+        },
+        {
+          "from": "APP",
+          "to": "API",
+          "name": "GET /projects/:id/folders y /folders/:id/files"
+        },
+        {
+          "from": "API",
+          "to": "APP",
+          "name": "Carpetas y recursos",
+          "notes": "respuesta"
+        },
+        {
+          "from": "U",
+          "to": "APP",
+          "name": "Abre recurso"
+        },
+        {
+          "from": "APP",
+          "to": "API",
+          "name": "GET /files/:id/content"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Lee objeto"
+        },
+        {
+          "from": "API",
+          "to": "APP",
+          "name": "Binario",
+          "notes": "respuesta"
+        },
+        {
+          "from": "APP",
+          "to": "API",
+          "name": "POST /folders/:id/files"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Guarda objeto"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea Resource"
+        },
+        {
+          "from": "APP",
+          "to": "API",
+          "name": "GET /files/:id/content?download=1"
         }
       ]
     }

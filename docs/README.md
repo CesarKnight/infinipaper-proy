@@ -124,6 +124,10 @@ infinipaper-proy/
 │   ├── app/               # rutas
 │   ├── components/        # UI (shadcn/Base UI) + dominio
 │   └── lib/               # cliente API, hooks, tipos
+├── infinipaper-mobile/    # Expo SDK 58 + React Native (Android/iOS)
+│   ├── src/app/           # rutas Expo Router
+│   ├── src/components/    # UI móvil
+│   └── src/lib/           # API, sesión móvil y archivos
 └── infinipaper-agents/    # FastAPI + LangGraph (agentes IA)
     ├── api/               # endpoints internos
     ├── graph/             # grafo y nodos LangGraph
@@ -135,6 +139,7 @@ infinipaper-proy/
 ```bash
 cd infinipaper-backend   && npm install
 cd ../infinipaper-frontend && npm install
+cd ../infinipaper-mobile   && npm install
 cd ../infinipaper-agents  && uv sync --all-groups
 ```
 
@@ -143,12 +148,26 @@ cd ../infinipaper-agents  && uv sync --all-groups
 ```bash
 cd infinipaper-backend   && cp .env.example .env
 cd ../infinipaper-frontend && cp .env.example .env
+cd ../infinipaper-mobile   && cp .env.example .env
 cd ../infinipaper-agents  && cp .env.example .env
 ```
 
 - Backend: `DATABASE_URL`, `S3_*`, `ASR_URL`, `PORT`, `AGENT_*`.
 - Frontend: `API_URL` (destino de los rewrites de `/api/*`) y `NEXT_PUBLIC_SITE_URL` (opcional, para metadatos sociales; fallback `http://localhost:3000`).
+- Mobile: `EXPO_PUBLIC_API_URL`.
 - Agents: `AGENT_SERVICE_TOKEN`, `MODEL_*`, `AGENT_*`.
+
+**Scripts de mobile** (`infinipaper-mobile/`)
+
+```bash
+npx expo start        # Metro / Expo
+npm run android       # development build Android
+npm run ios           # development build iOS
+npm run web           # vista web de desarrollo
+npx tsc --noEmit
+npm run lint
+npx expo-doctor
+```
 
 **Scripts del backend** (`infinipaper-backend/`)
 
