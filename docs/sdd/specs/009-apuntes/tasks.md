@@ -74,6 +74,21 @@
 - [ ] `T-064` Añadir tests automatizados de apuntes. <G-05>
 - [ ] `T-065` Evitar pérdida de la última edición al salir antes del *debounce*. <G-06>
 
+## Fase 7 · Refinamiento UX del editor (2026-11-18)
+
+- [x] `T-070` Extender `MarkdownEditor` y `MdxEditorInner` con `className` y `fill`; mantener skeleton con altura estable. <RF-16, RF-17, RNF-09>
+- [x] `T-071` Aplicar `mdxeditor-full-height` y altura acotada al editor dentro del diálogo “Nuevo apunte”. <RF-17, CA-11, CA-12>
+- [x] `T-072` Redimensionar el diálogo con `dvh`, grid de tres filas y `sm:max-w-3xl`. <RF-16, CA-11, CA-12>
+- [x] `T-073` Reorganizar la toolbar en grupos semánticos con separadores y `aria-label`. <RF-18, CA-13>
+- [x] `T-074` Añadir traducción española de tooltips, tipos de bloque, modos y diálogos de enlace/imagen/tabla. <RF-18, RNF-10, CA-13>
+- [x] `T-075` Ajustar CSS: wrap de grupos, touch targets de 2rem, foco visible, contraste y scroll interno. <RF-19, RNF-08, RNF-09, CA-13, CA-14>
+- [x] `T-076` Verificar 320, 375, 768, 1024 y 1440 px; tema claro/oscuro; teclado; `npm run lint && npm run build`. <CA-11, CA-12, CA-13, CA-14>
+- [x] `T-077` Registrar evidencias y actualizar el estado de la spec. <CA-11, CA-12, CA-13, CA-14>
+- [ ] `T-078` Corregir el overflow horizontal de la página de carpeta a 320 px (fuera del editor). <G-07, RNF-09>
+- [x] `T-079` Elevar `.mdxeditor-popup-container` a `z-index: 60` y delegar `pointer-events` a sus hijos. <RF-20, RNF-11, CA-15>
+- [x] `T-080` Verificar imagen, enlace y selector de tipo de bloque dentro del diálogo de apunte. <CA-15>
+- [x] `T-081` Registrar la causa, la decisión D-12 y la evidencia en la spec. <CA-15>
+
 ## Verificación final
 
 - [x] Los criterios CA-01, CA-02, CA-03 tienen evidencia manual.

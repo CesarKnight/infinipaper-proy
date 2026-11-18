@@ -6,7 +6,8 @@
 | Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
 | Fecha | 2026-11-11 |
-| Dependencias | `spec 001` (usuarios), `spec 003` (carpetas), `spec 005` (archivos), `spec 008` (permisos) |
+| Última revisión | 2026-11-18 · refinamiento UX del editor (propuesta) |
+| Dependencias | `spec 001` (usuarios), `spec 003` (carpetas), `spec 005` (archivos), `spec 008` (permisos), `spec 013` (sistema de diseño) |
 
 > **Diagramas:** [Secuencia](../../diagramas/secuencia/009-apuntes.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
 
@@ -29,6 +30,8 @@ El resultado esperado es un apunte persistente, visible en el listado de archivo
 - Crear apuntes `.md` dentro de una carpeta del proyecto.
 - Ver cualquier `.md` del proyecto como apunte editable.
 - Editor WYSIWYG con barra de herramientas y modo de código fuente.
+- Editor usable en el diálogo de creación de apunte, en el visor de archivo y en el aviso del proyecto, incluidos anchos móviles.
+- Toolbar agrupada por función y localizada en español.
 - Autoguardado con *debounce* y estado visible.
 - Vista de solo lectura sanitizada.
 - Permisos Owner/Editor (escritura) y Viewer (lectura).
@@ -62,6 +65,11 @@ El resultado esperado es un apunte persistente, visible en el listado de archivo
 | RF-13 | Renombrar un apunte conserva su contenido y actualiza su nombre en el listado. | Should |
 | RF-14 | Eliminar un apunte lo quita del listado, borra su registro y elimina el objeto de MinIO. | Must |
 | RF-15 | El apunte conserva su estructura Markdown al cerrarlo y reabrirlo. | Must |
+| RF-16 | El diálogo “Nuevo apunte” se adapta al viewport: ancho amplio en escritorio (hasta `sm:max-w-3xl`) y casi completo en móvil, con altura máxima limitada al alto dinámico de la pantalla. | Must |
+| RF-17 | Dentro del diálogo, el editor ocupa una altura acotada y desplaza su contenido internamente; la toolbar y las acciones del diálogo permanecen visibles sin que el editor empuje el botón “Crear” fuera del viewport. | Must |
+| RF-18 | La toolbar agrupa las acciones por función (historial, tipo de bloque, formato, listas, enlaces, insertar y modo de vista) y muestra tooltips y etiquetas en español. | Must |
+| RF-19 | En anchos estrechos la toolbar reorganiza sus grupos en varias filas y no oculta controles ni provoca scroll horizontal de la página. | Should |
+| RF-20 | Los diálogos, menús y popovers del editor (insertar imagen, insertar enlace, tipo de bloque, tablas y bloques de código) se muestran por encima del diálogo que contiene el editor y son interactuables. | Must |
 
 ## 5. Requisitos no funcionales
 
@@ -74,6 +82,10 @@ El resultado esperado es un apunte persistente, visible en el listado de archivo
 | RNF-05 | Los controles del editor son accesibles por teclado y tienen nombre accesible. | Navegación con Tab y revisión de la toolbar. |
 | RNF-06 | El contenido máximo aceptado es de 1.000.000 de caracteres. | Validación de DTO y prueba con contenido límite. |
 | RNF-07 | El guardado actualiza tamaño y checksum del recurso para mantener coherencia con la descarga. | Revisión de `updateContent` y verificación del recurso. |
+| RNF-08 | La toolbar usa objetivos táctiles de al menos 32×32 px y separación suficiente en pantallas táctiles. | Medición de botones a 320–430 px. |
+| RNF-09 | El diálogo del editor no provoca scroll horizontal entre 320 px y 1440 px; el contenido largo hace scroll dentro del editor cuando está en modal. Cualquier overflow de la página anfitriona se registra como brecha separada. | Prueba manual con anchos 320, 375, 768, 1024 y 1440 px. |
+| RNF-10 | Tooltips, etiquetas de bloque y modos de vista de la toolbar se muestran en español. | Revisión de la toolbar en modo redacción y modo fuente. |
+| RNF-11 | El contenedor de portales de MDXEditor queda por encima de los diálogos de la aplicación (`z-50`) y no intercepta clics cuando está vacío. | Inspección de `z-index` y `elementFromPoint` con el diálogo de apunte abierto. |
 
 ## 6. Criterios de aceptación
 
@@ -137,6 +149,37 @@ El resultado esperado es un apunte persistente, visible en el listado de archivo
 - **cuando** guarda un apunte vacío,
 - **entonces** se acepta; **cuando** supera 1.000.000 de caracteres, se rechaza con `VALIDATION_ERROR`.
 
+### CA-11 · Modal de apunte en móvil
+
+- **Dado** un usuario Editor en una pantalla de 320–430 px de ancho,
+- **cuando** abre “Nuevo apunte”,
+- **entonces** el diálogo cabe en el viewport, no genera scroll horizontal propio, el editor tiene altura acotada con scroll interno y el botón “Crear” permanece visible.
+
+### CA-12 · Modal de apunte en escritorio
+
+- **Dado** un usuario Editor en una pantalla de 768 px o más,
+- **cuando** abre “Nuevo apunte”,
+- **entonces** el diálogo usa un ancho amplio (hasta `sm:max-w-3xl`), el editor aprovecha el espacio disponible y el contenido del apunte no desborda la altura del diálogo.
+
+### CA-13 · Toolbar comprensible y alcanzable
+
+- **Dado** el editor abierto en cualquier vista,
+- **cuando** se recorre la toolbar con ratón, teclado o toque,
+- **entonces** las acciones están agrupadas por función, muestran tooltips en español y todas son alcanzables sin scroll horizontal oculto.
+
+### CA-14 · Tema y foco
+
+- **Dado** el editor en tema claro u oscuro,
+- **cuando** se enfoca la toolbar y se activan controles,
+- **entonces** el contraste se mantiene, el estado activo es visible y el foco por teclado se distingue.
+
+### CA-15 · Capas de los diálogos del editor
+
+- **Dado** el diálogo “Nuevo apunte” abierto,
+- **cuando** el usuario pulsa “Insertar imagen”, “Insertar enlace” o el selector de tipo de bloque,
+- **entonces** el diálogo, menú o popover se muestra por encima del modal, recibe foco y permite interactuar.
+- **Y** mientras el diálogo de imagen está abierto, el modal de apunte no recibe clics.
+
 ## 7. Contratos e interfaces
 
 ### API
@@ -174,9 +217,11 @@ Restricción existente: `@@unique([folderId, name])`.
 
 ### UI
 
-- **Listado de carpeta** (`resource-list.tsx`): botón “Nuevo apunte” para Editor+, diálogo con nombre y editor; el apunte aparece en la lista.
+- **Listado de carpeta** (`resource-list.tsx`): botón “Nuevo apunte” para Editor+, diálogo con nombre y editor; el apunte aparece en la lista. El diálogo limita su altura al viewport y el editor usa altura acotada con scroll interno (RF-16, RF-17).
 - **Visor de archivo** (`files/[fileId]/page.tsx`): para `MARKDOWN`, botón “Editar”, editor con autoguardado y estado, y vista de solo lectura al salir.
 - **Aviso** (`notice-panel.tsx`): reutiliza el mismo editor y autoguardado (spec 004).
+- **Toolbar** (`mdx-editor-inner.tsx`): grupos de historial, bloque, formato, listas, enlaces, insertar y modo de vista; tooltips en español y reorganización en varias filas en anchos estrechos (RF-18, RF-19).
+- **Capas del editor**: los portales de MDXEditor (imagen, enlace, tipo de bloque, tablas) se muestran por encima del diálogo contenedor y no bloquean la página cuando están vacíos (RF-20, RNF-11).
 - **Estados:** carga con skeleton, error de guardado con toast/indicador, lista vacía con mensaje.
 
 ## 8. Casos borde y errores
@@ -202,6 +247,10 @@ Restricción existente: `@@unique([folderId, name])`.
 | D-02 | Autoguardado *last-write-wins* sin colaboración en tiempo real; el alcance v1 no justifica CRDT/OT. | Cerrada |
 | D-03 | El servidor normaliza el nombre a `.md` en lugar de rechazar nombres sin extensión; es más tolerante y evita fricción. | Cerrada |
 | D-04 | Reutilizar el editor y el hook de autoguardado en el aviso del proyecto para no duplicar comportamiento. | Cerrada |
+| D-09 | Usar `mdxeditor-full-height` con una altura acotada por `dvh` en el modal, en lugar de dejar que el editor crezca sin límite. | Cerrada |
+| D-10 | Localizar la toolbar con la prop `translation` de MDXEditor en lugar de reemplazar sus controles por botones propios. | Cerrada |
+| D-11 | Permitir que la toolbar reorganice sus grupos en varias filas en anchos estrechos; se descarta el scroll horizontal porque oculta acciones. | Cerrada |
+| D-12 | Elevar el contenedor de portales de MDXEditor a `z-index: 60` y delegar `pointer-events` a sus hijos, para que sus diálogos queden sobre los modales de la app sin bloquear clics cuando está vacío. | Cerrada |
 | Q-01 | ¿Se mantienen los códigos actuales o se alinean con un contrato más específico (`NOTE_LOCATION_REQUIRED` 422, `CONTENT_TOO_LARGE` 413)? | Abierta |
 | Q-02 | ¿El límite debe ser 1 MB binario o 1.000.000 de caracteres? En UTF-8 un texto de 1.000.000 de caracteres puede superar 1 MB. | Abierta |
 | Q-03 | ¿Se añade historial de versiones en una spec futura? | Abierta (fuera de v1) |
@@ -216,6 +265,7 @@ Restricción existente: `@@unique([folderId, name])`.
 | G-04 | El límite es de 1.000.000 de caracteres, no de 1 MB binario. | Un contenido UTF-8 puede pesar más de 1 MB. | `T-053` |
 | G-05 | No hay tests automatizados específicos de apuntes (solo el test base del backend). | Regresiones en autoguardado, permisos o sanitización no se detectan en CI. | `T-054` |
 | G-06 | No hay confirmación visual de “cambios sin guardar” al salir del editor antes del *debounce*. | El autoguardado cubre el caso normal, pero una salida inmediata puede perder la última edición. | `T-055` |
+| G-07 | A 320 px la página de carpeta (cabecera y barra de filtros/acciones) desborda horizontalmente antes de abrir el editor. | El diálogo del editor sí cabe en el viewport, pero no se puede afirmar que toda la vista móvil esté libre de scroll horizontal. | `T-078` |
 
 ## 11. Evidencia de validación
 
@@ -230,3 +280,54 @@ Restricción existente: `@@unique([folderId, name])`.
 | CA-10 | Revisión de `CreateNoteDto`/`UpdateContentDto`; falta prueba de límite. | 2026-11-11 |
 | RNF-01 | Editor cargado con `next/dynamic` y `ssr: false`. | 2026-11-11 |
 | RNF-05, RNF-06 | Build y lint limpios; falta auditoría de accesibilidad y prueba de límite. | 2026-11-11 |
+| CA-11 | Verificación manual en Firefox a 320×568 y 375×667: diálogo de 304×511 px y 359×600 px, con 8 px de margen, footer visible (bottom 540/647) y editor con scroll interno; toolbar en 4 filas. | 2026-11-18 |
+| CA-12 | Verificación manual a 768×800, 1024×800 y 1440×900: diálogo de 752 px (768) y 768 px (1024/1440), altura 720–735 px, footer visible y editor con scroll interno. | 2026-11-18 |
+| CA-13 | Toolbar agrupada (Historial, Tipo de bloque, Formato de texto, Listas, Insertar contenido) con tooltips en español (`Negrita`, `Deshacer (Ctrl+Z)`) y selector `Redactar / Markdown` visible. | 2026-11-18 |
+| CA-14 | Revisión visual en tema claro y oscuro: foco con `--ring`, estado activo con `--secondary` y contraste legible. | 2026-11-18 |
+| RNF-08 | Botones de toolbar con `min-width`/`min-height` de 2rem (32 px), incluidos los controles sin `data-toolbar-item`. | 2026-11-18 |
+| RNF-09 | El diálogo no introduce overflow horizontal a 320/375 px y el contenido largo hace scroll interno. Persiste overflow de la página de carpeta a 320 px (G-07). | 2026-11-18 |
+| RNF-10 | Traducciones aplicadas a toolbar, tipos de bloque, modos y diálogos de enlace, imagen y tabla. | 2026-11-18 |
+| CA-15, RNF-11 | Con el diálogo “Nuevo apunte” abierto, “Insertar imagen” y “Insertar enlace” se muestran por encima y centrados; el selector de tipo de bloque lista y aplica opciones. `elementFromPoint` en la cabecera del modal devuelve el overlay del diálogo de imagen, que queda por encima del modal `z-50`. | 2026-11-18 |
+
+## 12. Iteración de refinamiento UX del editor (2026-11-18)
+
+**Estado:** Implementada (2026-11-18). Ver evidencia en la sección 11.
+
+### Problema observado
+
+El diálogo “Nuevo apunte” reutiliza un `DialogContent` de ancho pequeño (`sm:max-w-sm`) y sin límite de altura. El editor MDXEditor crece con el contenido y su toolbar completa no cabe en anchos móviles; el resultado es un modal que desborda el viewport, un botón “Crear” que puede quedar fuera de pantalla y controles que solo se alcanzan con scroll horizontal.
+
+Además, la toolbar actual usa iconos sin etiquetas localizadas y no separa visualmente los grupos de acciones, lo que dificulta reconocer qué hace cada control, sobre todo en pantallas táctiles.
+
+### Resultado esperado
+
+- El modal de creación se adapta a 320 px y a escritorio sin que el diálogo desborde el viewport.
+- El editor tiene altura acotada dentro del modal, con scroll interno y toolbar siempre visible.
+- La toolbar se agrupa por función y muestra tooltips en español.
+- Los controles tienen objetivos táctiles suficientes y estados de foco/activo visibles en ambos temas.
+- Los diálogos y menús del editor (imagen, enlace, tipo de bloque) quedan por encima del modal contenedor y son interactuables.
+
+### Fuera de alcance de esta iteración
+
+- Cambios en el backend, contratos de API, modelo de datos o autoguardado.
+- Colaboración en tiempo real, historial de versiones o nuevas capacidades del editor.
+- Rediseño del visor de solo lectura o de la app móvil (spec 026).
+
+### Corrección de capas de los diálogos del editor
+
+MDXEditor monta sus diálogos y popovers en `.mdxeditor-popup-container`, un contenedor al final del `body` con `z-index: 2`. El diálogo “Nuevo apunte” usa `z-index: 50`, por lo que los diálogos de imagen, enlace y los menús del editor quedaban detrás y no eran accesibles.
+
+La corrección eleva el contenedor de portales a `z-index: 60` y mueve `pointer-events` a sus hijos, de modo que los flotantes del editor quedan por encima de los modales sin que el contenedor vacío intercepte clics (D-12, RF-20, RNF-11, CA-15).
+
+### Archivos previstos
+
+| Archivo | Cambio |
+|---|---|
+| `infinipaper-frontend/components/markdown/mdx-editor-inner.tsx` | Props de altura/relleno, traducción y agrupación de la toolbar |
+| `infinipaper-frontend/components/markdown/markdown-editor.tsx` | Propagación de `className`, `fill` y skeleton con altura estable |
+| `infinipaper-frontend/components/project/resource-list.tsx` | Diálogo “Nuevo apunte” responsive y editor acotado |
+| `infinipaper-frontend/app/globals.css` | Estilos de toolbar, grupos, touch targets, scroll interno y foco |
+
+### Trazabilidad
+
+`RF-16`–`RF-20`, `RNF-08`–`RNF-11`, `CA-11`–`CA-15`; tareas `T-070`–`T-081` (con `T-078` pendiente, G-07) del [plan](./plan.md) y [tareas](./tasks.md).

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -671,17 +672,23 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
       </Dialog>
 
       <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-        <DialogContent>
+        <DialogContent className="grid h-[min(90dvh,46rem)] max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] max-w-[calc(100%-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Nuevo apunte</DialogTitle>
+            <DialogDescription>
+              Se guardará como Markdown en esta carpeta.
+            </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-3">
+          <div className="flex min-h-0 flex-col gap-3">
             <Input
+              aria-label="Nombre del apunte"
               placeholder="nombre.md"
               value={noteName}
               onChange={(event) => setNoteName(event.target.value)}
             />
             <MarkdownEditor
+              className="min-h-36 flex-1"
+              fill
               value={noteContent}
               onChange={setNoteContent}
               placeholder="# Apunte"
