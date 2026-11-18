@@ -68,6 +68,7 @@ npx expo export --platform android
 - Dashboard de proyectos y cursos.
 - Carpetas y recursos.
 - Imagen, PDF, audio, video y Markdown.
+- PDF embebido con `react-native-pdf`, zoom y paginación.
 - DOCX/XLSX/PPTX mediante descarga y app nativa.
 - Descarga/compartir.
 - Subida para Owner/Editor desde archivo, galería o cámara.

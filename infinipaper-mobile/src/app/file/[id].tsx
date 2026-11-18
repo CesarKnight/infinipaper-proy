@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import { WebView } from "react-native-webview";
+import Pdf from "react-native-pdf";
 import Markdown from "react-native-markdown-display";
 import {
   ArrowLeftIcon,
@@ -36,6 +36,8 @@ export default function FileScreen() {
   const { token } = useAuth();
   const { colors } = useAppTheme();
   const [failed, setFailed] = useState(false);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [pdfPages, setPdfPages] = useState(0);
   const resourceQuery = useQuery({
     queryKey: ["file", id, token],
     queryFn: () => apiFetch<Resource>(`/files/${id}`, { token }),
@@ -117,14 +119,31 @@ export default function FileScreen() {
         ) : null}
 
         {resource.mimeType === "application/pdf" ? (
-          <Card style={{ padding: 0, overflow: "hidden", height: 520 }}>
-            <WebView
-              source={{ uri: fileUrl(resource.id), headers: authHeaders(token) }}
-              style={{ backgroundColor: "#fff" }}
-              startInLoadingState
-              renderLoading={() => <Loading label="Cargando PDF…" />}
+          <Card style={{ padding: 0, overflow: "hidden" }}>
+            <Pdf
+              source={{
+                uri: fileUrl(resource.id),
+                headers: authHeaders(token),
+                cache: true,
+              }}
+              style={[styles.pdf, { backgroundColor: colors.background }]}
+              trustAllCerts={false}
+              enablePaging={false}
+              spacing={10}
+              fitPolicy={0}
+              onLoadComplete={(numberOfPages) => {
+                setPdfPages(numberOfPages);
+                setPdfPage(1);
+              }}
+              onPageChanged={(page) => setPdfPage(page)}
               onError={() => setFailed(true)}
+              renderActivityIndicator={() => <Loading label="Cargando PDF…" />}
             />
+            {pdfPages > 0 ? (
+              <Text style={[styles.pdfPager, { color: colors.mutedForeground }]}>
+                Página {pdfPage} de {pdfPages}
+              </Text>
+            ) : null}
           </Card>
         ) : null}
 
@@ -239,6 +258,13 @@ const styles = StyleSheet.create({
   meta: { fontFamily: fonts.regular, fontSize: 11 },
   content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: 120 },
   error: { fontFamily: fonts.regular, fontSize: 12, textAlign: "center" },
+  pdf: { width: "100%", height: 560 },
+  pdfPager: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
+    textAlign: "center",
+    paddingVertical: spacing.sm,
+  },
   documentIcon: { width: 68, height: 68, borderRadius: 34, alignItems: "center", justifyContent: "center" },
   documentTitle: { fontFamily: fonts.heading, fontSize: 21, textAlign: "center" },
   documentBody: { fontFamily: fonts.regular, fontSize: 13, lineHeight: 20, textAlign: "center", maxWidth: 300 },

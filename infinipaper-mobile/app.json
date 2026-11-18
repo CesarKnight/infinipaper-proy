@@ -43,7 +43,9 @@
       "expo-sharing",
       "expo-video",
       "expo-audio",
-      "expo-asset"
+      "expo-asset",
+      "react-native-blob-util",
+      "@config-plugins/react-native-pdf"
     ],
     "experiments": {
       "typedRoutes": true,

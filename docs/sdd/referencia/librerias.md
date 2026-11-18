@@ -134,9 +134,9 @@ docker compose up -d --build
 | `expo-document-picker` / `expo-image-picker` | Subida de archivos y fotos |
 | `expo-file-system` / `expo-sharing` | Descarga, apertura y compartir |
 | `expo-video` / `expo-audio` | Reproducción multimedia |
-| `react-native-webview` | PDF |
+| `react-native-pdf` + `react-native-blob-util` | Visor PDF nativo embebido con soporte de cabeceras autenticadas |
 | `react-native-markdown-display` | Apuntes Markdown |
 | `lucide-react-native` | Iconografía de interfaz |
 | `react-native-svg` | Marca Infinipaper |
 
-> La app móvil usa `X-Mobile-Session`; la web mantiene cookie `httpOnly`.
+> La app móvil usa `X-Mobile-Session`; la web mantiene cookie `httpOnly`. `react-native-pdf` requiere development build y el config plugin `@config-plugins/react-native-pdf`.

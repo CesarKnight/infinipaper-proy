@@ -22,6 +22,7 @@
 - [x] `T-035` Aplicar tema dinámico a login, registro, splash y barra de estado. <RF-16>
 - [x] `T-036` Eliminar el marco circular del logo en splash y acceso. <RF-17, CA-13>
 - [x] `T-037` Selector de tema en Perfil y verificación visual en Android. <CA-11, CA-12>
+- [x] `T-038` Sustituir el WebView por `react-native-pdf`, regenerar el proyecto nativo y validar un PDF real. <RF-18, RF-19, CA-14>
 
 ## Brechas
 

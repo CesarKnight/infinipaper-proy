@@ -25,6 +25,7 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 - Dashboard de proyectos.
 - Carpetas y recursos del proyecto.
 - Visores de imagen, PDF, audio, video y Markdown.
+- Visor PDF nativo embebido con paginación, zoom y cabeceras de sesión móvil.
 - Apertura de DOCX/XLSX/PPTX mediante descarga y app nativa.
 - Descarga y compartir archivos.
 - Subida de archivos con selector, galería y cámara para Owner/Editor.
@@ -63,6 +64,8 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | RF-15 | El usuario puede elegir tema claro, oscuro o del sistema; el cambio se aplica al instante y persiste. | Must |
 | RF-16 | Login, registro y splash usan los colores del tema activo. | Must |
 | RF-17 | El logo del splash y de acceso se muestra sin marco circular. | Must |
+| RF-18 | Los PDF se visualizan encapsulados en la app con un visor nativo, sin abrir el WebView del sistema ni forzar una descarga. | Must |
+| RF-19 | El visor PDF conserva la sesión móvil, permite desplazarse entre páginas y muestra el número de página actual. | Must |
 
 ## 5. Requisitos no funcionales
 
@@ -116,6 +119,9 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 ### CA-13 · Logo sin marco
 - **Dado** el splash o una pantalla de acceso, **entonces** el logo de Infinipaper aparece sin círculo ni marco de fondo.
 
+### CA-14 · Visor PDF nativo
+- **Dado** un PDF accesible, **cuando** el usuario lo abre desde el móvil, **entonces** se renderiza dentro de la app, permite cambiar de página y no muestra una descarga del sistema ni una pantalla en blanco.
+
 ## 7. Contratos e interfaces
 
 ### API móvil
@@ -167,6 +173,7 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | D-05 | EAS/development build para módulos nativos. | Cerrada |
 | D-06 | Preferencia de tema `light`, `dark` o `system` persistida en SecureStore (nativo) y localStorage (web). | Cerrada |
 | D-07 | El logo de marca no se encierra en un círculo ni en un contenedor con fondo. | Cerrada |
+| D-08 | PDF con `react-native-pdf` y `react-native-blob-util`; se descarta WebView porque en Android deriva en descarga y no renderiza. | Cerrada |
 | Q-01 | ¿Se añadirá colaboración CRDT móvil? | Abierta (futuro) |
 | Q-02 | ¿Se resolverán quizzes completos en móvil? | Abierta (futuro) |
 
@@ -192,6 +199,7 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | CA-11 | Cambio Claro/Oscuro/Sistema validado en Android; el tema oscuro se mantuvo tras cerrar y reabrir la app. | 2026-11-18 |
 | CA-12 | Login y registro oscuros validados en Android con el tema oscuro activo. | 2026-11-18 |
 | CA-13 | Login y splash usan el logo sin marco circular; login verificado visualmente en Android. | 2026-11-18 |
+| CA-14 | PDF de 93 páginas renderizado dentro de la app con `react-native-pdf`; desplazamiento de página 1 a 2 y contador visible. | 2026-11-18 |
 | RNF-01–RNF-02 | TypeScript, lint, expo-doctor, build nativo Android (`assembleDebug`) y `expo export` correctos. | 2026-11-18 |
 
 > Diagramas: [UC-26](../../diagramas/casos-de-uso.md) · [Secuencia 026](../../diagramas/secuencia/026-app-movil.md).

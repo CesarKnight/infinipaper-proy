@@ -18,11 +18,14 @@ Se crea `infinipaper-mobile` con Expo SDK 58, Expo Router, React Query, SecureSt
 - Office mediante descarga + app del sistema.
 - Splash animado con logo de marca, sin marco circular.
 - Tema de tres estados (`light`, `dark`, `system`) con contexto React y persistencia local.
+- PDF con visor nativo (`react-native-pdf` + `react-native-blob-util`) en lugar de WebView.
 
 ## 3. Cambios
 
 - Backend: endpoints `auth/mobile/*` y extracción de `X-Mobile-Session`.
 - Mobile: `ThemeProvider`, tokens en `theme/tokens.ts`, persistencia en `lib/theme-storage.ts`, login/registro/splash temáticos y selector en Perfil.
+- Mobile: visor PDF embebido, con cabeceras `X-Mobile-Session`, paginación y fallback a descarga.
+- Nativo: config plugin `@config-plugins/react-native-pdf` y prebuild Android.
 - Assets: iconos, fuentes y splash del design system.
 - Documentación y configuración `EXPO_PUBLIC_API_URL`.
 
@@ -35,6 +38,7 @@ Se crea `infinipaper-mobile` con Expo SDK 58, Expo Router, React Query, SecureSt
 - E2E web: registro, dashboard, proyecto, carpeta y visor Markdown.
 - API móvil: register, me, logout.
 - Verificación manual Android: cambio Claro/Oscuro/Sistema, persistencia al reabrir, login oscuro y splash sin marco.
+- Verificación manual Android del visor PDF: render, cambio de página y contador.
 
 ## 5. Rollback
 
