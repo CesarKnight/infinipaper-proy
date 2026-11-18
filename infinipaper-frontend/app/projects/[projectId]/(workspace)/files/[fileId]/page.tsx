@@ -16,6 +16,11 @@ import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import { QuizPanel } from "@/components/quiz/quiz-panel";
 import { MindmapViewer } from "@/components/mindmap/mindmap-viewer";
 import { ProvenancePanel } from "@/components/project/provenance-panel";
+import { ImageViewer } from "@/components/viewers/image-viewer";
+import { VideoViewer } from "@/components/viewers/video-viewer";
+import { PdfViewer } from "@/components/viewers/pdf-viewer";
+import { OfficeViewer } from "@/components/viewers/office-viewer";
+import { ViewerShell } from "@/components/viewers/viewer-shell";
 import { StructureNoteButton } from "@/components/markdown/structure-note-dialog";
 import { AutosaveStatusIndicator } from "@/components/markdown/autosave-status";
 import { useWorkspace } from "@/components/project/workspace-context";
@@ -100,24 +105,11 @@ function ResourceContent({
   projectId: string;
 }) {
   if (resource.kind === "IMAGE") {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={fileContentUrl(resource.id)}
-        alt={resource.name}
-        className="mx-auto max-h-[75vh] rounded-lg border object-contain"
-      />
-    );
+    return <ImageViewer key={resource.id} resource={resource} />;
   }
 
   if (resource.kind === "VIDEO") {
-    return (
-      <video
-        controls
-        src={fileContentUrl(resource.id)}
-        className="max-h-[75vh] w-full rounded-lg border bg-black"
-      />
-    );
+    return <VideoViewer resource={resource} />;
   }
 
   if (resource.kind === "AUDIO") {
@@ -150,13 +142,11 @@ function ResourceContent({
   }
 
   if (resource.mimeType === "application/pdf") {
-    return (
-      <iframe
-        src={fileContentUrl(resource.id)}
-        title={resource.name}
-        className="h-[78vh] w-full rounded-lg border"
-      />
-    );
+    return <PdfViewer resource={resource} />;
+  }
+
+  if (resource.kind === "DOCUMENT") {
+    return <OfficeViewer key={resource.id} resource={resource} />;
   }
 
   return (
@@ -307,8 +297,21 @@ function AudioViewer({
   const status = jobQuery.data?.status;
 
   return (
-    <div className="flex flex-col gap-4">
-      <audio controls src={fileContentUrl(resource.id)} className="w-full" />
+    <ViewerShell
+      title={resource.name}
+      badge="Audio"
+      subtitle="Reproducción con streaming"
+      actions={
+        <Button variant="outline" size="sm" render={<a href={fileDownloadUrl(resource.id)} download />}>
+          <DownloadIcon data-icon="inline-start" /> Descargar
+        </Button>
+      }
+      contentClassName="bg-paper-sunken/40 dark:bg-night/30"
+    >
+      <div className="flex flex-col gap-4">
+        <div className="rounded-xl border border-border/60 bg-card p-3 shadow-sm">
+          <audio controls src={fileContentUrl(resource.id)} className="w-full" />
+        </div>
 
       {canEdit ? (
         <div className="flex flex-col gap-3 rounded-lg border p-4">
@@ -363,6 +366,7 @@ function AudioViewer({
           ) : null}
         </div>
       ) : null}
-    </div>
+      </div>
+    </ViewerShell>
   );
 }

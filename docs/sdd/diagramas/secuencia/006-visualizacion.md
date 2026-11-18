@@ -5,30 +5,45 @@
 ```mermaid
 sequenceDiagram
   autonumber
-  actor V as Viewer
+  actor V as Participante
   participant FE as Frontend
   participant API as API NestJS
   participant DB as PostgreSQL
   participant S3 as MinIO
+  participant LIB as Render ofimático
 
   V->>FE: Abre un recurso
   FE->>API: GET /api/v1/files/:id
-  API->>DB: Consulta metadatos
-  API-->>FE: Resource (kind, mimeType)
+  API->>DB: Consulta metadatos y permisos
+  API-->>FE: Resource (kind, mimeType, name)
 
-  alt Imagen, PDF, audio o video
-    FE->>API: GET /api/v1/files/:id/content (Range)
-    API->>S3: Lee el objeto
-    API-->>FE: Binario o 206 Partial Content
-    FE-->>V: Visor nativo o reproductor
-  else Documento ofimático
-    FE-->>V: Ofrece descarga
-  else Formato sin visor
-    FE-->>V: Ofrece descarga
+  alt Imagen
+    FE->>API: GET /files/:id/content
+    API->>S3: Lee objeto
+    API-->>FE: Imagen
+    FE-->>V: ImageViewer con zoom/paneo
+  else PDF
+    FE->>API: GET /files/:id/content
+    API->>S3: Lee objeto
+    API-->>FE: PDF
+    FE-->>V: PdfViewer con iframe y acciones
+  else Audio o video
+    FE->>API: GET /files/:id/content (Range)
+    API->>S3: Lee el rango
+    API-->>FE: 206 Partial Content
+    FE-->>V: Reproductor con streaming
+  else DOCX / XLSX / PPTX
+    FE->>API: GET /files/:id/content
+    API-->>FE: Binario
+    FE->>LIB: dynamic import del visor
+    LIB-->>FE: Preview HTML/tabla/diapositivas
+    FE-->>V: OfficeViewer de solo lectura
+  else Legacy .doc/.xls/.ppt o formato sin visor
+    FE-->>V: Fallback de descarga
   end
 
   opt Markdown
-    FE->>API: GET /api/v1/files/:id/text
+    FE->>API: GET /files/:id/text
     API->>S3: Lee el contenido
     API-->>FE: { content }
     FE-->>V: Render sanitizado
@@ -42,6 +57,9 @@ sequenceDiagram
 
 ## Notas
 
-- PDF se muestra con el visor nativo del navegador en un `<iframe>`.
+- Todos los visores comparten `ViewerShell` y los tokens Paper & Ink / Midnight Study.
+- Las librerías ofimáticas se cargan con `dynamic import` solo cuando hacen falta.
+- La fuente binaria en MinIO sigue siendo la fuente de verdad; el render es de solo lectura y desacoplado para una futura capa colaborativa.
+- DOCX se renderiza con `docx-preview`, XLSX/CSV/ODS con `xlsx` y PPTX con `pptx-preview`.
+- Los formatos legacy y los códecs no soportados tienen fallback de descarga.
 - Audio y video usan `Range` para evitar descargar todo el archivo.
-- Los permisos se validan antes de servir el contenido.

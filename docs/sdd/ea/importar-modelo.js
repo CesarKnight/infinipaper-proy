@@ -138,7 +138,7 @@ var MODEL = {
         "Viewer",
         "MinIO"
       ],
-      "notes": "Visores de imagen, PDF, audio, video y Markdown; descarga para ofimáticos."
+      "notes": "Visores de imagen, PDF, audio, video y documentos DOCX/XLSX/PPTX; marco visual común y preparación para colaboración."
     },
     {
       "id": "UC-07",
@@ -3640,7 +3640,7 @@ var MODEL = {
       "participants": [
         {
           "alias": "V",
-          "name": "Viewer",
+          "name": "Participante",
           "type": "Actor"
         },
         {
@@ -3662,6 +3662,11 @@ var MODEL = {
           "alias": "S3",
           "name": "MinIO",
           "type": "Object"
+        },
+        {
+          "alias": "LIB",
+          "name": "Render ofimático",
+          "type": "Object"
         }
       ],
       "messages": [
@@ -3678,12 +3683,12 @@ var MODEL = {
         {
           "from": "API",
           "to": "DB",
-          "name": "Consulta metadatos"
+          "name": "Consulta metadatos y permisos"
         },
         {
           "from": "API",
           "to": "FE",
-          "name": "Resource (kind, mimeType)",
+          "name": "Resource",
           "notes": "respuesta"
         },
         {
@@ -3694,7 +3699,7 @@ var MODEL = {
         {
           "from": "API",
           "to": "S3",
-          "name": "Lee objeto"
+          "name": "Lee objeto/rango"
         },
         {
           "from": "API",
@@ -3704,13 +3709,29 @@ var MODEL = {
         },
         {
           "from": "FE",
+          "to": "LIB",
+          "name": "dynamic import DOCX/XLSX/PPTX"
+        },
+        {
+          "from": "LIB",
+          "to": "FE",
+          "name": "Preview de solo lectura",
+          "notes": "respuesta"
+        },
+        {
+          "from": "FE",
           "to": "V",
-          "name": "Visor nativo o descarga"
+          "name": "Visor con marco de marca"
         },
         {
           "from": "V",
           "to": "FE",
-          "name": "Vuelve a la carpeta"
+          "name": "Pulsa volver"
+        },
+        {
+          "from": "FE",
+          "to": "V",
+          "name": "Navega a la carpeta"
         }
       ]
     },

@@ -30,6 +30,8 @@ El proyecto usa ESM (`"type": "module"`), NestJS 12, Vitest, oxlint y Prettier.
 
 > El cliente HTTP hacia el servicio ASR usa `fetch` nativo de Node, sin dependencias extra.
 >
+> **Visores ofimáticos (spec 006):** `docx-preview`, `xlsx` y `pptx-preview` se cargan con `dynamic import` solo al abrir el recurso correspondiente; no se envían archivos a servicios externos.
+>
 > **Búsqueda (spec 024):** la imagen de PostgreSQL es `pgvector/pgvector:pg17`; los embeddings usan `EMBEDDING_PROVIDER` (`local` por defecto) y se consultan con `pgvector`.
 >
 > **MCP (spec 025):** el servicio de agentes usa `fastmcp` para exponer herramientas de solo lectura en `/mcp`.
@@ -67,6 +69,9 @@ Usa Next.js 16, React 19, shadcn/ui sobre Base UI, Tailwind v4, `lucide-react`, 
 | `date-fns` | Formato de fechas |
 | `diff` | Diff de líneas para el preview de estructuración IA (spec 012) |
 | Componentes de quiz | Editor y visor construidos con shadcn/Base UI existentes (spec 017) |
+| `docx-preview` | Vista previa HTML de DOCX en cliente (spec 006) |
+| `xlsx` | Lectura y vista tabular de XLSX/CSV/ODS (spec 006) |
+| `pptx-preview` | Vista previa de diapositivas PPTX en cliente (spec 006) |
 
 > **PDF (spec 006):** se usa el visor nativo del navegador mediante `<iframe src="/api/v1/files/:id/content">`, que evita configurar un worker de PDF.js y mantiene el proxy same-origin.
 
