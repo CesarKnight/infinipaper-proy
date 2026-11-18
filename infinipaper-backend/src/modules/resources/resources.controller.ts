@@ -32,6 +32,7 @@ import { CreateNoticeDto } from './dto/create-notice.dto.js';
 import { RenameResourceDto } from './dto/rename-resource.dto.js';
 import { UpdateContentDto } from './dto/update-content.dto.js';
 import { ResourcesService } from './resources.service.js';
+import { decodeMobileFilename } from './resource-kind.util.js';
 import { UsageService } from '../usage/usage.service.js';
 
 const ABSOLUTE_MAX_BYTES = 200 * 1024 * 1024;
@@ -64,6 +65,7 @@ export class ResourcesController {
     @Param('folderId') folderId: string,
     @CurrentUser() user: User,
     @UploadedFile() file?: UploadedFileData,
+    @Headers('x-mobile-session') mobileSession?: string,
   ) {
     if (!file) {
       throw new AppException(
@@ -72,7 +74,13 @@ export class ResourcesController {
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-    return this.resources.createFromUpload(folderId, user.id, file);
+    const originalname = mobileSession
+      ? decodeMobileFilename(file.originalname)
+      : file.originalname;
+    return this.resources.createFromUpload(folderId, user.id, {
+      ...file,
+      originalname,
+    });
   }
 
   @Post('folders/:folderId/files/move')

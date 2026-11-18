@@ -79,6 +79,19 @@ export function resolveKind(filename: string): KindInfo | null {
   return EXTENSION_MAP[extname(filename).toLowerCase()] ?? null;
 }
 
+/**
+ * Expo convierte el nombre del archivo a URI component antes de enviarlo en
+ * multipart/form-data. La web envía el nombre original, por lo que esta
+ * normalización solo se aplica cuando la petición llega con sesión móvil.
+ */
+export function decodeMobileFilename(filename: string): string {
+  try {
+    return decodeURIComponent(filename).replace(/[\\/]/g, "_");
+  } catch {
+    return filename.replace(/[\\/]/g, "_");
+  }
+}
+
 export function isMarkdown(filename: string): boolean {
   return extname(filename).toLowerCase() === '.md';
 }

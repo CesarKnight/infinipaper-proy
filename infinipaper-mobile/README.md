@@ -8,6 +8,7 @@ App Android/iOS en React Native + Expo SDK 58 para consultar proyectos, abrir re
 - Expo CLI (`npx expo`)
 - Backend de Infinipaper en ejecución
 - Para builds nativos: EAS o Android Studio/Xcode
+- Android local: JDK 17+ con `javac` (no basta `jre17-openjdk`), Android SDK Platform 37.0, Build-Tools 37.0.0 y NDK 27.1.12297006. Gradle toma el SDK de `android/local.properties` (`sdk.dir=$HOME/Android/Sdk`).
 
 ## Configuración
 
@@ -22,6 +23,15 @@ npm install
 | iOS simulator / web | `http://localhost:3001/api/v1` |
 | Android emulator | `http://10.0.2.2:3001/api/v1` |
 | Dispositivo físico | `http://<IP-LAN>:3001/api/v1` |
+
+Si el dispositivo físico no alcanza la API o Metro, abre los puertos en firewalld:
+
+```bash
+sudo firewall-cmd --zone=home --add-port=3001/tcp --add-port=8081/tcp
+sudo firewall-cmd --zone=home --add-port=3001/tcp --add-port=8081/tcp --permanent
+```
+
+Como alternativa por USB puedes usar `adb reverse tcp:3001 tcp:3001` y configurar `EXPO_PUBLIC_API_URL=http://localhost:3001/api/v1`.
 
 La autenticación móvil usa `POST /auth/mobile/login` o `/register` y guarda el token en SecureStore. Las peticiones envían `X-Mobile-Session`; la web sigue usando cookie `httpOnly`.
 

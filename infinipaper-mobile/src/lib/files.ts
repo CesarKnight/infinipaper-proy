@@ -59,11 +59,18 @@ export async function uploadAsset(
   token: string,
 ) {
   const form = new FormData();
-  form.append("file", {
-    uri: asset.uri,
-    name: asset.name,
-    type: asset.mimeType ?? "application/octet-stream",
-  } as unknown as Blob);
+  // Expo SDK 58 usa su propio fetch: no acepta el objeto { uri, name, type }
+  // de React Native y el Blob nativo no acepta ArrayBuffer. El File de
+  // expo-file-system implementa bytes() y sí es compatible con ExpoFormData.
+  const file = new File(asset.uri);
+  Object.defineProperties(file, {
+    name: { value: asset.name, configurable: true },
+    type: {
+      value: asset.mimeType ?? "application/octet-stream",
+      configurable: true,
+    },
+  });
+  form.append("file", file as unknown as Blob);
   return apiFetch(`/folders/${folderId}/files`, {
     method: "POST",
     token,

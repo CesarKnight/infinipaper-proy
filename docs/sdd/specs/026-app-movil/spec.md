@@ -140,6 +140,7 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | Cámara sin permiso | Mostrar aviso |
 | Red caída | Mensaje y reintento |
 | Office sin app nativa | Compartir archivo |
+| Nombre codificado por Expo | El backend decodifica el nombre solo si la subida trae `X-Mobile-Session`. |
 
 ## 9. Decisiones
 
@@ -161,16 +162,18 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | G-02 | Sin preview ofimática embebida. | Depende de apps externas. | `T-071` |
 | G-03 | Sin resolución completa de quizzes. | El estudiante usa la web para evaluaciones. | `T-072` |
 | G-04 | Sin tests E2E nativos automatizados. | Cobertura manual/web. | `T-073` |
+| G-05 | Cámara y galería no se validaron en un dispositivo físico. | El selector de documentos sí se validó; falta probar permisos y captura reales. | `T-074` |
 
 ## 11. Evidencia
 
 | CA | Evidencia | Fecha |
 |---|---|---|
-| CA-01–CA-03 | Registro móvil, login, dashboard, proyecto y carpeta validados en Expo Web. | 2026-11-18 |
-| CA-04 | Visor Markdown validado con `bienvenida.md`. | 2026-11-18 |
-| CA-06 | API de subida y UI de selector implementadas; E2E nativo pendiente. | 2026-11-18 |
+| CA-01–CA-03 | Registro móvil, login, dashboard, proyecto y carpeta validados en Expo Web y en Android con backend real. | 2026-11-18 |
+| CA-04 | Visores Markdown validados en Android; el resto de visores ya estaba validado en web. | 2026-11-18 |
+| CA-05 | Descarga, guardado en `Download` y compartir validados en Android. | 2026-11-18 |
+| CA-06 | Subida desde selector de documentos validada en Android (APK debug) con archivo Markdown; se corrigió la incompatibilidad de `FormData` de Expo SDK 58 y la decodificación del nombre móvil. | 2026-11-18 |
 | CA-09 | Splash animado y tokens de marca implementados. | 2026-11-18 |
-| RNF-01–RNF-02 | TypeScript, lint, expo-doctor y export Android correctos. | 2026-11-18 |
+| RNF-01–RNF-02 | TypeScript, lint, expo-doctor, build nativo Android (`assembleDebug`) y `expo export` correctos. | 2026-11-18 |
 
 > Diagramas: [UC-26](../../diagramas/casos-de-uso.md) · [Secuencia 026](../../diagramas/secuencia/026-app-movil.md).
 

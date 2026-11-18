@@ -16,6 +16,8 @@
 - [x] `T-025` Verificación docente para Admin. <RF-10>
 - [x] `T-030` `tsc`, lint, expo-doctor y export Android. <RNF-01, RNF-02>
 - [x] `T-031` E2E web de login, proyectos, carpeta y visor. <CA-01–CA-04>
+- [x] `T-032` Validación manual en Android: build, registro/login, proyecto, visor Markdown, descarga y subida. <CA-01–CA-06>
+- [x] `T-033` Corregir subida multipart con Expo SDK 58 y decodificar nombres móviles. <RF-09, CA-06>
 
 ## Brechas
 
@@ -23,3 +25,4 @@
 - [ ] `T-071` Preview ofimática embebida. <G-02>
 - [ ] `T-072` Resolución completa de quizzes. <G-03>
 - [ ] `T-073` E2E nativo automatizado. <G-04>
+- [ ] `T-074` Validar cámara y galería en dispositivo físico. <G-05>
