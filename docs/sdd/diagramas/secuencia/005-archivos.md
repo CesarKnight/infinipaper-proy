@@ -12,15 +12,16 @@ sequenceDiagram
   participant DB as PostgreSQL
   participant S3 as MinIO
 
-  E->>FE: Selecciona un archivo
-  FE->>API: POST /api/v1/folders/:id/files (multipart)
+  E->>FE: Arrastra uno o varios archivos sobre la carpeta
+  FE->>FE: Muestra overlay de drop y valida canEdit
+  FE->>API: POST /api/v1/folders/:id/files (multipart, secuencial)
   API->>API: Valida tamaño, extensión y nombre
 
   alt Archivo válido
     API->>S3: Guarda el objeto
     API->>DB: Crea Resource con metadatos y checksum
     API-->>FE: Resource creado
-    FE-->>E: Aparece en el listado
+    FE-->>E: Aparece en el listado y se notifica cuántos archivos subieron
   else Formato o tamaño inválido
     API-->>FE: 415 FILE_UNSUPPORTED_TYPE o 413 FILE_TOO_LARGE
     FE-->>E: Muestra el error
@@ -48,6 +49,8 @@ sequenceDiagram
 
 ## Notas
 
+- El drop target solo está activo para Owner/Editor.
+- Los archivos se suben secuencialmente para evitar saturar el backend.
 - El límite se aplica en el backend con `MAX_UPLOAD_SIZE_MB`.
 - El `kind` se deriva de la extensión.
 - MinIO nunca se expone al navegador.

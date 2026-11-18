@@ -5,7 +5,7 @@
 | ID | `005` |
 | Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
-| Fecha | 2026-11-11 |
+| Fecha | 2026-11-18 |
 | Dependencias | `spec 001` (usuarios), `spec 003` (carpetas), `spec 008` (permisos) |
 
 > **Diagramas:** [Secuencia](../../diagramas/secuencia/005-archivos.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
@@ -23,6 +23,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 ### Incluye
 
 - Subida por el backend hacia MinIO.
+- Arrastrar y soltar uno o varios archivos en la carpeta abierta.
+- Selección múltiple mediante `<input type="file" multiple>`.
 - Límite configurable `MAX_UPLOAD_SIZE_MB` (50 MB por defecto).
 - Validación por extensión/MIME y tamaño.
 - Metadatos: nombre, `kind`, `mimeType`, `size`, `s3Key`, `checksum`, autor y carpeta.
@@ -38,7 +40,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 - Cuotas por usuario.
 - Vista previa de documentos ofimáticos.
 - Deduplicación.
-- Arrastrar y soltar en v1 (se usa `<input type="file">`).
+- Subida por trozos o reanudable.
+- Progreso granular por archivo en v1.
 
 ## 4. Requisitos funcionales
 
@@ -54,6 +57,9 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | RF-08 | El archivo aparece en el listado de su carpeta tras una carga exitosa. | Must |
 | RF-09 | Eliminar un recurso borra también el objeto en S3. | Must |
 | RF-10 | El contenido se sirve por el backend con soporte de `Range`. | Must |
+| RF-11 | El Editor puede arrastrar y soltar archivos sobre la carpeta abierta. | Must |
+| RF-12 | El drop target muestra un overlay de marca y sube varios archivos secuencialmente. | Should |
+| RF-13 | Viewer no puede activar el drop target ni iniciar cargas. | Must |
 
 ## 5. Requisitos no funcionales
 
@@ -64,6 +70,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | RNF-03 | Los binarios no se guardan en la base de datos. | Revisión de `Resource`. |
 | RNF-04 | La UI muestra progreso/estado de subida y errores legibles. | Revisión visual. |
 | RNF-05 | El nombre no permite `/` ni rutas inseguras. | Validación de DTO y servicio. |
+| RNF-06 | El drop target solo se activa para Owner/Editor y no bloquea la navegación normal. | Revisión de UI y permisos. |
+| RNF-07 | La subida múltiple notifica cuántos archivos se subieron y refresca el listado una sola vez. | Revisión visual y E2E. |
 
 ## 6. Criterios de aceptación
 
@@ -115,6 +123,18 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 - **Dado** que el usuario no selecciona archivo,
 - **entonces** no se inicia la carga y se informa.
 
+### CA-10 · Arrastrar y soltar
+
+- **Dado** un Editor con una carpeta abierta,
+- **cuando** arrastra uno o varios archivos sobre la sección de archivos,
+- **entonces** aparece el overlay de carga, se suben y se refresca el listado.
+
+### CA-11 · Viewer sin drop
+
+- **Dado** un Viewer,
+- **cuando** arrastra un archivo sobre la carpeta,
+- **entonces** no se inicia ninguna carga.
+
 ## 7. Contratos e interfaces
 
 ### API
@@ -132,10 +152,10 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 
 | Kind | Formatos |
 |---|---|
-| `DOCUMENT` | pdf, docx, xlsx, pptx, odt |
+| `DOCUMENT` | pdf, docx/docm/dotx, xlsx/xlsm/csv/ods, pptx/pptm/ppsx/odp, doc/xls/ppt, odt |
 | `IMAGE` | jpg, jpeg, png, webp, gif |
 | `AUDIO` | mp3, wav, ogg, m4a |
-| `VIDEO` | mp4, webm |
+| `VIDEO` | mp4, m4v, mov, webm, ogv |
 | `MARKDOWN` | md |
 
 ### Datos
@@ -146,7 +166,7 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 
 ### UI
 
-- `resource-list.tsx`: botón de subida, input de archivo, orden, listado y eliminación.
+- `resource-list.tsx`: botón de subida, input `multiple`, drop target con overlay, orden, listado y eliminación.
 - El listado muestra icono por `kind`, autor, tamaño y acciones.
 - Los errores se muestran con toast.
 
@@ -160,6 +180,8 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | Recurso inexistente | Rechazar | `FILE_NOT_FOUND` · 404 |
 | Carpeta inexistente | Rechazar | `FOLDER_NOT_FOUND` · 404 |
 | Sin permisos | Rechazar | `PROJECT_FORBIDDEN` · 403 |
+| Drop de Viewer | Ignorar y mantener solo lectura | — |
+| Drop con archivos no admitidos | Subir los válidos y reportar error de los demás | `FILE_UNSUPPORTED_TYPE` · 415 |
 | Fallo de S3 | Rechazar y no crear el recurso | `STORAGE_ERROR` · 502 |
 
 ## 9. Decisiones y preguntas abiertas
@@ -169,14 +191,15 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | D-01 | Subida proxeada por el backend | Subida directa a MinIO | Evita CORS y permite validar |
 | D-02 | `kind` derivado de la extensión | MIME del navegador | Más determinista |
 | D-03 | Límite en una variable de entorno | Límite duplicado en frontend y backend | Una sola fuente de verdad |
-| D-04 | v1 usa `<input type="file">` | `react-dropzone` | Menos complejidad; la dependencia queda disponible |
+| D-04 | `<input type="file" multiple>` + drop nativo | `react-dropzone` | Sin dependencia extra y control visual propio |
+| D-05 | Subida secuencial de varios archivos | Paralelismo sin límite | Evita saturar backend y permite mensajes claros |
 | Q-01 | ¿Se añadirá carga por trozos o reanudable? | Abierta (fuera de v1) |
 
 ## 10. Brechas conocidas
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
-| G-01 | No hay arrastrar y soltar en la UI; solo selección de archivo. | Flujo menos cómodo, pero funcional. | `T-050` |
+| G-01 | No hay tests automatizados de drag-and-drop y subida múltiple. | Regresiones no detectadas en CI. | `T-050` |
 | G-02 | No hay tests automatizados de límites, formatos y limpieza S3. | Regresiones no detectadas en CI. | `T-051` |
 
 ## 11. Evidencia de validación
@@ -187,3 +210,5 @@ Los proyectos necesitan incorporar material de estudio en múltiples formatos: d
 | CA-02, CA-03, CA-07 | Revisión de `ResourcesService.createFromUpload` y `ensureNameAvailable`. | 2026-11-11 |
 | CA-04 | Revisión de `@RequireProjectRole('editor')`. | 2026-11-11 |
 | CA-06 | Revisión de `remove` con borrado S3. | 2026-11-11 |
+| CA-10 | Drop de `drag-drop.md` verificado en navegador; archivo subido y listado refrescado. | 2026-11-18 |
+| CA-11 | Condición `canEdit` revisada en el drop target. | 2026-11-18 |

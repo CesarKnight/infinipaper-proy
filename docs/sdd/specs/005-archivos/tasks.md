@@ -29,23 +29,26 @@
 ## Fase 3 · Frontend
 
 - [x] `T-020` Implementar listado con icono, autor y tamaño. <RF-08>
-- [x] `T-021` Implementar subida con input, estado y errores. <RF-01, RF-07>
+- [x] `T-021` Implementar subida con input múltiple, estado y errores. <RF-01, RF-07>
+- [x] `T-024` Implementar drop target, overlay y subida secuencial. <RF-11–RF-13>
 - [x] `T-022` Implementar renombrado y eliminación para Editor+. <RF-07, RF-09>
 - [x] `T-023` Implementar orden por nombre, fecha y tipo. <RNF-04>
 
 ## Fase 4 · Verificación
 
 - [x] `T-030` Verificar subida, listado y descarga. <CA-01, CA-05>
+- [x] `T-035` Verificar drag-and-drop en navegador. <CA-10, CA-11>
 - [x] `T-031` Verificar formatos no admitidos y límite. <CA-02, CA-03>
 - [x] `T-032` Verificar duplicados y sugerencia. <CA-07>
 - [x] `T-033` Backend: `npm run lint && npm run build`. <RNF>
 - [x] `T-034` Frontend: `npm run lint && npm run build`. <RNF>
-- [ ] `T-050` Evaluar arrastrar y soltar en la UI. <G-01>
+- [ ] `T-050` Añadir tests de drag-and-drop y subida múltiple. <G-01>
 - [ ] `T-051` Añadir tests automatizados de límites, formatos y S3. <G-02>
 
 ## Verificación final
 
 - [x] Criterios funcionales cubiertos por flujo manual y revisión.
 - [x] Sin migraciones pendientes.
-- [ ] Drag & drop disponible (G-01).
+- [x] Drag & drop disponible.
+- [ ] Tests de drag & drop (G-01).
 - [ ] Cobertura automatizada de archivos (G-02).

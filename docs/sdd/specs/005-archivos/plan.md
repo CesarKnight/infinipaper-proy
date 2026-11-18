@@ -4,7 +4,7 @@
 |---|---|
 | Spec | [`spec.md`](./spec.md) |
 | Estado | `Completado con brechas` |
-| Fecha | 2026-11-11 |
+| Fecha | 2026-11-18 |
 
 ## 1. Resumen de la solución
 

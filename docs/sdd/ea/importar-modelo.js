@@ -126,7 +126,7 @@ var MODEL = {
         "Viewer",
         "MinIO"
       ],
-      "notes": "Subida, listado, descarga, renombrado y borrado de archivos con límite configurable."
+      "notes": "Subida con selección múltiple y drag-and-drop, listado, descarga, renombrado y borrado con límite configurable."
     },
     {
       "id": "UC-06",
@@ -3563,17 +3563,22 @@ var MODEL = {
         {
           "from": "E",
           "to": "FE",
-          "name": "Selecciona un archivo"
+          "name": "Arrastra uno o varios archivos sobre la carpeta"
+        },
+        {
+          "from": "FE",
+          "to": "FE",
+          "name": "Overlay de drop + canEdit"
         },
         {
           "from": "FE",
           "to": "API",
-          "name": "POST /folders/:id/files"
+          "name": "POST /folders/:id/files (multipart, secuencial)"
         },
         {
           "from": "API",
-          "to": "DB",
-          "name": "Valida nombre y metadatos"
+          "to": "API",
+          "name": "Valida tamaño, extensión y nombre"
         },
         {
           "from": "API",
@@ -3588,7 +3593,7 @@ var MODEL = {
         {
           "from": "API",
           "to": "FE",
-          "name": "Resource o error",
+          "name": "Resource creado",
           "notes": "respuesta"
         },
         {

@@ -44,6 +44,7 @@ import {
   Trash2Icon,
   SparklesIcon,
   UploadIcon,
+  UploadCloudIcon,
   VideoIcon,
 } from "lucide-react";
 
@@ -109,6 +110,8 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
   const router = useRouter();
   const queryClient = useQueryClient();
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const dragDepth = React.useRef(0);
+  const [dragActive, setDragActive] = React.useState(false);
   const [noteOpen, setNoteOpen] = React.useState(false);
   const [noteName, setNoteName] = React.useState("");
   const [noteContent, setNoteContent] = React.useState("");
@@ -161,16 +164,23 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
   };
 
   const upload = useMutation({
-    mutationFn: (file: File) => {
-      const form = new FormData();
-      form.append("file", file);
-      return apiFetch(`/folders/${folderId}/files`, {
-        method: "POST",
-        body: form,
-      });
+    mutationFn: async (files: File[]) => {
+      for (const file of files) {
+        const form = new FormData();
+        form.append("file", file);
+        await apiFetch(`/folders/${folderId}/files`, {
+          method: "POST",
+          body: form,
+        });
+      }
+      return files;
     },
-    onSuccess: () => {
-      toast.success("Archivo subido");
+    onSuccess: (files) => {
+      toast.success(
+        files.length === 1
+          ? "Archivo subido"
+          : `${files.length} archivos subidos`,
+      );
       invalidate();
     },
     onError: (error) =>
@@ -227,8 +237,57 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
       toast.error(error instanceof ApiError ? error.message : "Error"),
   });
 
+  const handleDragEnter = (event: React.DragEvent<HTMLElement>) => {
+    if (!canEdit) return;
+    event.preventDefault();
+    dragDepth.current += 1;
+    setDragActive(true);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLElement>) => {
+    if (!canEdit) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLElement>) => {
+    if (!canEdit) return;
+    event.preventDefault();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragActive(false);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLElement>) => {
+    if (!canEdit) return;
+    event.preventDefault();
+    dragDepth.current = 0;
+    setDragActive(false);
+    const files = Array.from(event.dataTransfer.files);
+    if (files.length) upload.mutate(files);
+  };
+
   return (
-    <section className="flex flex-col gap-3">
+    <section
+      className="relative flex flex-col gap-3"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      aria-label="Archivos de la carpeta"
+    >
+      {canEdit && dragActive ? (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-background/85 p-6 text-center shadow-lg backdrop-blur-sm">
+          <div>
+            <UploadCloudIcon className="mx-auto mb-2 size-8 text-primary" />
+            <p className="font-heading text-lg font-semibold">
+              Suelta para subir a esta carpeta
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Puedes arrastrar varios archivos a la vez.
+            </p>
+          </div>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-medium text-muted-foreground">Archivos</h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -303,10 +362,11 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
               <input
                 ref={inputRef}
                 type="file"
+                multiple
                 className="hidden"
                 onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) upload.mutate(file);
+                  const files = Array.from(event.target.files ?? []);
+                  if (files.length) upload.mutate(files);
                   event.target.value = "";
                 }}
               />
@@ -348,7 +408,7 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
                 disabled={upload.isPending}
               >
                 <UploadIcon data-icon="inline-start" />
-                {upload.isPending ? "Subiendo…" : "Subir archivo"}
+                {upload.isPending ? "Subiendo…" : "Subir archivos"}
               </Button>
             </div>
           ) : null}
@@ -425,9 +485,14 @@ export function ResourceList({ projectId, folderId, canEdit }: ResourceListProps
           ))}
         </ul>
       ) : (
-        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          No hay archivos en esta carpeta.
-        </p>
+        <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          <p>No hay archivos en esta carpeta.</p>
+          {canEdit ? (
+            <p className="mt-1 text-xs">
+              Arrastra archivos aquí o usa “Subir archivos”.
+            </p>
+          ) : null}
+        </div>
       )}
 
       <Dialog open={quizOpen} onOpenChange={setQuizOpen}>
