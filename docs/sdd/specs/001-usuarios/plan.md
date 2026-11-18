@@ -4,13 +4,15 @@
 |---|---|
 | Spec | [`spec.md`](./spec.md) |
 | Estado | `Completado con brechas` |
-| Fecha | 2026-11-11 |
+| Fecha | 2026-11-18 |
 
 ## 1. Resumen de la solución
 
 El módulo `auth` gestiona registro, login, logout y la sesión actual. La contraseña se hashea con argon2; el token de sesión se genera con 32 bytes aleatorios y solo se persiste su hash SHA-256 en `Session`. La sesión viaja en una cookie `httpOnly`, lo que evita exponerla a JavaScript y mantiene el flujo same-origin.
 
 El módulo `users` gestiona perfil, avatar, cambio de contraseña, búsqueda, perfil público y archivado. El avatar se guarda en MinIO. El archivado elimina los proyectos privados, las membresías, las sesiones y el avatar, y marca al usuario como `ARCHIVED`.
+
+La identidad incorpora el rol global (`ADMIN`, `TEACHER`, `STUDENT`) y la confirmación de email coordinados con la spec 015. El registro asigna `STUDENT`; el perfil público muestra el rol y el estado docente, nunca el email ni la evidencia.
 
 ## 2. Contexto técnico actual
 
@@ -30,18 +32,21 @@ El módulo `users` gestiona perfil, avatar, cambio de contraseña, búsqueda, pe
 | D-03 | Archivado lógico con cascada sobre proyectos privados | Borrado físico del usuario | Conserva proyectos públicos y contenido compartido |
 | D-04 | Avatar en MinIO servido por backend | Exponer MinIO o guardar el binario en la base | Coherencia con el resto de archivos |
 | D-05 | Login por email o username | Solo email | Mejora la experiencia sin coste adicional |
+| D-06 | Rol global coordinado con 015 y permisos de proyecto con 008. | Duplicar reglas de roles en 001. | Evita contradicciones entre identidad, verificación y autorización. |
+| D-07 | El archivado de cuenta no sustituye la revocación docente. | Archivar cursos automáticamente al archivar la cuenta. | Mantiene flujos y auditoría separados. |
 
 ## 4. Cambios por capa
 
 ### Datos
 
-- `User` con `status` y perfil.
+- `User` con `status`, `role` y `emailVerifiedAt`.
 - `Session` con `tokenHash` único y `expiresAt`.
+- `EmailVerificationToken` y `TeacherProfile` coordinados con 015.
 - Sin migración pendiente en esta spec.
 
 ### Backend
 
-- `auth.controller.ts`: register, login, logout, me.
+- `auth.controller.ts`: register, login, logout, me y confirmación de email.
 - `users.controller.ts`: perfil, contraseña, avatar, búsqueda, perfil público, archivado.
 - `SessionService` y `PasswordService`.
 - Validación de DTOs y errores uniformes.
@@ -49,7 +54,7 @@ El módulo `users` gestiona perfil, avatar, cambio de contraseña, búsqueda, pe
 
 ### Frontend
 
-- Páginas `/login`, `/register`, `/profile`, `/users`, `/users/[username]`.
+- Páginas `/login`, `/register`, `/verify-email`, `/profile`, `/users`, `/users/[username]`.
 - Cliente API same-origin y React Query.
 - Header con sesión y logout.
 - Redirección a login para rutas protegidas.
@@ -119,4 +124,6 @@ La respuesta de login/registro establece `Set-Cookie: session=...; HttpOnly; Sam
 | RF-09, RF-10, RF-11 | `T-022`, `T-023` |
 | RF-12, RF-14 | `T-024` |
 | RF-13 | `T-014` |
-| RF-15 | `T-001` |
+| RF-15, RF-16 | `T-001`, `T-025` |
+| RF-17, RF-18 | `T-026`, `T-035` |
+| RF-19 | `T-023` |

@@ -102,6 +102,13 @@ flowchart LR
   LLM --> UC12
 
   Usuario --> UC15
+  Administrador --> UC01
+  Docente --> UC01
+  Estudiante --> UC01
+  Mailpit --> UC01
+  Administrador --> UC08
+  Docente --> UC08
+  Estudiante --> UC08
   Administrador --> UC15
   Administrador --> UC16
   Docente --> UC15
@@ -150,14 +157,14 @@ flowchart LR
 
 | Caso de uso | Spec | Actores principales |
 |---|---|---|
-| UC-01 Gestión de usuarios | [001](../specs/001-usuarios/spec.md) | Visitante, Usuario |
+| UC-01 Gestión de usuarios | [001](../specs/001-usuarios/spec.md) | Visitante, Usuario, Administrador, Docente, Estudiante, Mailpit |
 | UC-02 Gestión de proyectos | [002](../specs/002-proyectos/spec.md) | Visitante, Usuario, Owner |
 | UC-03 Gestión de carpetas | [003](../specs/003-carpetas/spec.md) | Owner, Editor, Viewer |
 | UC-04 Aviso en carpeta | [004](../specs/004-aviso/spec.md) | Owner, Editor, Viewer, MinIO |
 | UC-05 Gestión de archivos | [005](../specs/005-archivos/spec.md) | Owner, Editor, Viewer, MinIO |
 | UC-06 Visualización multimedia | [006](../specs/006-visualizacion/spec.md) | Visitante, Usuario, Viewer, MinIO |
 | UC-07 Gestión de participantes | [007](../specs/007-participantes/spec.md) | Owner |
-| UC-08 Gestión de permisos | [008](../specs/008-permisos/spec.md) | Owner |
+| UC-08 Gestión de permisos | [008](../specs/008-permisos/spec.md) | Administrador, Docente, Owner, Editor, Viewer, Estudiante |
 | UC-09 Gestión de apuntes | [009](../specs/009-apuntes/spec.md) | Owner, Editor, Viewer, MinIO |
 | UC-10 Transcripción de audio | [010](../specs/010-transcripcion/spec.md) | Usuario, Editor, Owner, Whisper |
 | UC-11 Dashboard personal | [011](../specs/011-dashboard/spec.md) | Usuario, Owner, Editor, Viewer |

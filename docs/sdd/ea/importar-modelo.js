@@ -73,9 +73,13 @@ var MODEL = {
       "spec": "001",
       "actors": [
         "Visitante",
-        "Usuario"
+        "Usuario",
+        "Administrador",
+        "Docente",
+        "Estudiante",
+        "Mailpit"
       ],
-      "notes": "Registro, login, logout, perfil, avatar, cambio de contraseña y archivado de cuenta."
+      "notes": "Registro, login, logout, perfil, avatar, cambio de contraseña, confirmación de email, rol global y archivado de cuenta."
     },
     {
       "id": "UC-02",
@@ -152,9 +156,12 @@ var MODEL = {
       "actors": [
         "Owner",
         "Editor",
-        "Viewer"
+        "Viewer",
+        "Administrador",
+        "Docente",
+        "Estudiante"
       ],
-      "notes": "Roles Owner, Editor y Viewer; autorización en servidor y acceso público de lectura."
+      "notes": "Roles globales y de proyecto; admin verifica docentes; docente verificado crea cursos; Owner asigna Editor/Viewer/Student; autorización en servidor."
     },
     {
       "id": "UC-09",
@@ -3094,6 +3101,11 @@ var MODEL = {
           "type": "Object"
         },
         {
+          "alias": "MAIL",
+          "name": "Mailpit / SMTP",
+          "type": "Object"
+        },
+        {
           "alias": "S3",
           "name": "MinIO",
           "type": "Object"
@@ -3103,28 +3115,43 @@ var MODEL = {
         {
           "from": "U",
           "to": "FE",
-          "name": "Completa registro o login"
+          "name": "Completa registro"
         },
         {
           "from": "FE",
           "to": "API",
-          "name": "POST /auth/register o /auth/login"
+          "name": "POST /auth/register"
         },
         {
           "from": "API",
           "to": "DB",
-          "name": "Verifica y crea User + Session"
+          "name": "Crea User STUDENT + Session + token email"
+        },
+        {
+          "from": "API",
+          "to": "MAIL",
+          "name": "Envía confirmación"
         },
         {
           "from": "API",
           "to": "FE",
-          "name": "Set-Cookie httpOnly + User",
+          "name": "Set-Cookie + User",
           "notes": "respuesta"
         },
         {
+          "from": "U",
+          "to": "FE",
+          "name": "Abre /verify-email?token"
+        },
+        {
           "from": "FE",
-          "to": "U",
-          "name": "Redirige a /"
+          "to": "API",
+          "name": "POST /auth/email/verify/confirm"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Marca emailVerifiedAt"
         },
         {
           "from": "U",
@@ -3147,12 +3174,6 @@ var MODEL = {
           "name": "Actualiza perfil"
         },
         {
-          "from": "API",
-          "to": "FE",
-          "name": "Perfil actualizado",
-          "notes": "respuesta"
-        },
-        {
           "from": "U",
           "to": "FE",
           "name": "Archiva cuenta"
@@ -3170,7 +3191,7 @@ var MODEL = {
         {
           "from": "API",
           "to": "S3",
-          "name": "Borra avatar y objetos"
+          "name": "Borra avatar y objetos privados"
         },
         {
           "from": "API",
@@ -3804,13 +3825,28 @@ var MODEL = {
       "name": "008 · Permisos",
       "participants": [
         {
-          "alias": "E",
-          "name": "Editor",
+          "alias": "AD",
+          "name": "Administrador",
+          "type": "Actor"
+        },
+        {
+          "alias": "D",
+          "name": "Docente verificado",
           "type": "Actor"
         },
         {
           "alias": "O",
           "name": "Owner",
+          "type": "Actor"
+        },
+        {
+          "alias": "E",
+          "name": "Editor",
+          "type": "Actor"
+        },
+        {
+          "alias": "S",
+          "name": "Student",
           "type": "Actor"
         },
         {
@@ -3824,12 +3860,12 @@ var MODEL = {
           "type": "Object"
         },
         {
-          "alias": "Guard",
+          "alias": "GUARD",
           "name": "ProjectAccessGuard",
           "type": "Object"
         },
         {
-          "alias": "Perm",
+          "alias": "PERM",
           "name": "PermissionsService",
           "type": "Object"
         },
@@ -3841,9 +3877,54 @@ var MODEL = {
       ],
       "messages": [
         {
+          "from": "AD",
+          "to": "FE",
+          "name": "Revisa solicitud docente"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /admin/teacher-verifications/:id/approve"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "TeacherProfile VERIFIED + User.role TEACHER + AuditEvent"
+        },
+        {
+          "from": "D",
+          "to": "FE",
+          "name": "Crea proyecto de curso"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /projects (type=COURSE)"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Valida TeacherProfile y crea Project"
+        },
+        {
+          "from": "O",
+          "to": "FE",
+          "name": "Asigna Editor, Viewer o Student"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST/PATCH /projects/:id/members"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Actualiza ProjectMember.role"
+        },
+        {
           "from": "E",
           "to": "FE",
-          "name": "Solicita escritura"
+          "name": "Solicita operación de escritura"
         },
         {
           "from": "FE",
@@ -3852,51 +3933,66 @@ var MODEL = {
         },
         {
           "from": "API",
-          "to": "Guard",
-          "name": "Valida acceso"
+          "to": "GUARD",
+          "name": "Validar acceso"
         },
         {
-          "from": "Guard",
-          "to": "Perm",
+          "from": "GUARD",
+          "to": "PERM",
           "name": "resolveRole"
         },
         {
-          "from": "Perm",
+          "from": "PERM",
           "to": "DB",
-          "name": "Consulta owner/member/visibility"
+          "name": "Consulta owner, membresía y estado"
         },
         {
-          "from": "Perm",
-          "to": "Guard",
-          "name": "Rol",
+          "from": "PERM",
+          "to": "GUARD",
+          "name": "editor",
           "notes": "respuesta"
         },
         {
-          "from": "Guard",
+          "from": "GUARD",
           "to": "API",
-          "name": "Permitir o denegar",
-          "notes": "respuesta"
+          "name": "Acceso permitido"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Ejecuta operación"
         },
         {
           "from": "API",
           "to": "FE",
-          "name": "200 o 403",
+          "name": "200",
           "notes": "respuesta"
         },
         {
-          "from": "O",
+          "from": "S",
           "to": "FE",
-          "name": "Cambia rol"
+          "name": "Intenta editar contenido"
         },
         {
           "from": "FE",
           "to": "API",
-          "name": "PATCH /members/:userId"
+          "name": "PATCH /files/:id"
         },
         {
           "from": "API",
-          "to": "DB",
-          "name": "Actualiza role"
+          "to": "GUARD",
+          "name": "Valida rol Student"
+        },
+        {
+          "from": "GUARD",
+          "to": "API",
+          "name": "Solo lectura"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "403 PROJECT_FORBIDDEN",
+          "notes": "respuesta"
         }
       ]
     },

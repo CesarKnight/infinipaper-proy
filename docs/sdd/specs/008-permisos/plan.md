@@ -4,11 +4,13 @@
 |---|---|
 | Spec | [`spec.md`](./spec.md) |
 | Estado | `Completado con brechas` |
-| Fecha | 2026-11-11 |
+| Fecha | 2026-11-18 |
 
 ## 1. Resumen de la solución
 
 La autorización se centraliza en `PermissionsService`, que resuelve el rol efectivo de un usuario (o anónimo) en un proyecto. `ProjectAccessGuard` usa ese servicio y el decorador `@RequireProjectRole` para exigir un mínimo. El Owner se resuelve desde `Project.ownerId`; los demás desde `ProjectMember`. Los proyectos públicos permiten lectura anónima.
+
+La spec se amplía con roles globales: el `ADMIN` verifica/revoca docentes sin acceso implícito al contenido; el `TEACHER` verificado crea cursos y queda como Owner; el `STUDENT` puede ser miembro con lectura de contenido y acceso propio a evaluaciones. El Owner sigue siendo la única persona que asigna Editor/Viewer/Student dentro de su proyecto.
 
 ## 2. Contexto técnico actual
 
@@ -26,18 +28,22 @@ La autorización se centraliza en `PermissionsService`, que resuelve el rol efec
 | D-02 | Guard que resuelve el proyecto desde el parámetro | Guards específicos por recurso | Reutilización |
 | D-03 | Jerarquía owner > editor > viewer > público | Permisos aditivos complejos | Simplicidad |
 | D-04 | Ocultar acciones en UI solo como refuerzo | Confiar en la UI | La seguridad vive en servidor |
+| D-05 | Roles globales y roles de proyecto son capas separadas. | Usar el rol global como permiso de proyecto. | Evita que Admin o Teacher accedan a cursos ajenos. |
+| D-06 | Admin verifica docentes sin acceso al contenido. | Admin como superusuario del proyecto. | Privacidad y mínimo privilegio. |
+| D-07 | Docente verificado crea cursos como Owner. | Asignar un Owner separado. | El docente necesita administrar su curso. |
 
 ## 4. Cambios por capa
 
 ### Datos
 
-- `Project.ownerId`, `ProjectMember.role`, `Project.visibility`.
+- `User.role`, `TeacherProfile.status`, `Project.ownerId`, `ProjectMember.role`, `Project.visibility` y `Project.status`.
 - Índices por propietario, miembro y visibilidad.
 - Sin migración pendiente.
 
 ### Backend
 
-- `PermissionsService.resolveRole`.
+- `PermissionsService.resolveRole` con `STUDENT` y proyecto archivado.
+- `RolesGuard` para administración docente.
 - `ProjectAccessGuard`.
 - `@RequireProjectRole`.
 - Aplicación en todos los controladores restringidos.
@@ -45,7 +51,8 @@ La autorización se centraliza en `PermissionsService`, que resuelve el rol efec
 ### Frontend
 
 - `canEdit` en el workspace.
-- Selector de rol en configuración.
+- Selector `Editor`/`Viewer`/`Student` en configuración.
+- Cola admin y creación de cursos solo para roles habilitados.
 - Ocultación de acciones no permitidas.
 
 ### Infraestructura
@@ -105,3 +112,6 @@ El contrato de gestión es el de la spec 007. La autorización se expresa en el 
 | RF-05 | `T-015` |
 | RF-06 | `T-016` |
 | RF-08 | `T-017` |
+| RF-10, RF-11, RF-12 | `T-018` |
+| RF-13, RF-14 | `T-019`, `T-020` |
+| RF-15 | `T-021` |

@@ -5,8 +5,8 @@
 | ID | `001` |
 | Estado | `Implementada con brechas` |
 | Autor | Equipo Infinipaper |
-| Fecha | 2026-11-11 |
-| Dependencias | — (fundacional) |
+| Fecha | 2026-11-18 |
+| Dependencias | — (fundacional; coordina roles/email con 008 y 015) |
 
 > **Diagramas:** [Secuencia](../../diagramas/secuencia/001-usuarios.md) · [Casos de uso](../../diagramas/casos-de-uso.md) · [Clases](../../diagramas/clases.md) · [Paquetes](../../diagramas/paquetes.md) · [C4](../../diagramas/arquitectura-c4.md)
 
@@ -16,9 +16,13 @@ Todas las capacidades de Infinipaper dependen de una identidad de usuario y de u
 
 La autenticación debe funcionar con el frontend y el backend en orígenes distintos durante el desarrollo, sin exponer el token de sesión a JavaScript.
 
+Desde las specs 008 y 015, la identidad incorpora un rol global (`ADMIN`, `TEACHER`, `STUDENT`), una confirmación de email y una verificación docente. Esta spec define la cuenta, la sesión y su ciclo de vida; las reglas detalladas de permisos y verificación viven en 008 y 015.
+
 ## 2. Objetivo
 
-> Como **usuario**, quiero **crear mi cuenta, iniciar y cerrar sesión, editar mi información y archivar mi cuenta** para **acceder al sistema de estudio de forma segura**.
+> Como **usuario**, quiero **crear mi cuenta, confirmar mi email, iniciar y cerrar sesión, editar mi información y archivar mi cuenta** para **acceder al sistema de estudio de forma segura y con una identidad reconocible**.
+>
+> Como **administrador**, quiero **que las cuentas tengan un rol global y un estado de email verificable** para **poder habilitar la verificación docente sin romper la seguridad de la cuenta**.
 
 ## 3. Alcance
 
@@ -30,14 +34,17 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 - Cambio de contraseña con verificación de la actual.
 - Búsqueda de usuarios y perfil público.
 - Archivado de cuenta con cascada sobre proyectos privados.
+- Confirmación de email y estado `emailVerifiedAt`.
+- Rol global de la cuenta (`STUDENT` por defecto) y su exposición en el perfil público.
+- Coordinación con la verificación docente de la spec 015.
 - Configuración pública de límites.
 
 ### No incluye
 
-- Verificación de email.
+- La lógica de aprobación, rechazo o revocación docente; vive en la spec 015.
+- La matriz de permisos de proyecto; vive en la spec 008.
 - Recuperación de contraseña.
 - Segundo factor de autenticación.
-- Roles de plataforma.
 - Seguir/dejar de seguir usuarios.
 - Cambio de propietario de proyectos.
 
@@ -45,7 +52,7 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 
 | ID | Requisito | Prioridad |
 |---|---|---|
-| RF-01 | Registrar una cuenta con `username`, `email`, `displayName` y contraseña; la cuenta nace `ACTIVE` y emite sesión. | Must |
+| RF-01 | Registrar una cuenta con `username`, `email`, `displayName` y contraseña; la cuenta nace `ACTIVE`, con rol global `STUDENT`, y emite sesión. | Must |
 | RF-02 | `username` y `email` son únicos e insensibles a mayúsculas; se normalizan a minúsculas. | Must |
 | RF-03 | El login acepta email **o** username. | Must |
 | RF-04 | La contraseña se almacena con argon2 y nunca en texto plano. | Must |
@@ -54,12 +61,16 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 | RF-07 | El usuario puede subir un avatar jpg/png/webp de hasta 5 MB. | Must |
 | RF-08 | Cambiar contraseña exige la contraseña actual. | Must |
 | RF-09 | "Eliminar cuenta" archiva la cuenta (`ARCHIVED`) e invalida sus sesiones. | Must |
-| RF-10 | Al archivar, se eliminan en cascada los proyectos privados del usuario; los públicos permanecen. | Must |
+| RF-10 | Al archivar, se eliminan en cascada los proyectos privados del usuario; los públicos permanecen. Los proyectos de curso privados siguen esta regla; la revocación docente es un flujo aparte de 015. | Must |
 | RF-11 | Un usuario archivado no puede iniciar sesión y su perfil responde 404. | Must |
 | RF-12 | La búsqueda de usuarios requiere sesión y devuelve perfiles públicos. | Must |
 | RF-13 | El logout elimina la sesión y limpia la cookie. | Must |
 | RF-14 | El perfil público muestra información pública y proyectos públicos. | Must |
-| RF-15 | No existen roles de plataforma: todos los usuarios son iguales. | Must |
+| RF-15 | `User.role` admite `ADMIN`, `TEACHER` y `STUDENT`; el registro público asigna `STUDENT` y nunca crea administradores. | Must |
+| RF-16 | Al registrarse se emite un token de confirmación de email de un solo uso; el usuario puede iniciar sesión sin confirmar, pero no solicitar verificación docente hasta confirmar. | Must |
+| RF-17 | El perfil público muestra el rol global y el estado de verificación docente, pero nunca el email, la evidencia ni el motivo de rechazo. | Must |
+| RF-18 | Los roles globales no conceden acceso implícito a proyectos privados; el acceso se resuelve por la spec 008. | Must |
+| RF-19 | El archivado de cuenta no elimina el `TeacherProfile` ni los `AuditEvent`; la revocación docente se gestiona en 015. | Must |
 
 ## 5. Requisitos no funcionales
 
@@ -144,6 +155,30 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 - **cuando** cierra sesión,
 - **entonces** la cookie se invalida y `GET /auth/me` responde 401.
 
+### CA-13 · Rol inicial y confirmación de email
+
+- **Dado** un registro válido,
+- **cuando** se crea la cuenta,
+- **entonces** el rol es `STUDENT`, se envía un correo de confirmación y `emailVerifiedAt` queda nulo.
+
+### CA-14 · Confirmación de email
+
+- **Dado** un token válido,
+- **cuando** el usuario confirma el correo,
+- **entonces** `emailVerifiedAt` se establece y el token queda usado.
+
+### CA-15 · Perfil público con rol
+
+- **Dado** un usuario activo,
+- **cuando** se consulta su perfil público,
+- **entonces** se muestra su rol y estado docente, sin email ni evidencia.
+
+### CA-16 · Archivado y rol docente
+
+- **Dado** un docente con proyectos privados y públicos,
+- **cuando** archiva su cuenta,
+- **entonces** los privados se eliminan, los públicos permanecen y el perfil docente no se modifica automáticamente.
+
 ## 7. Contratos e interfaces
 
 ### API
@@ -152,6 +187,8 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 |---|---|---|---|
 | `POST` | `/api/v1/auth/register` | No | Crear cuenta |
 | `POST` | `/api/v1/auth/login` | No | Iniciar sesión |
+| `POST` | `/api/v1/auth/email/verify/request` | Sí | Reenviar confirmación de email |
+| `POST` | `/api/v1/auth/email/verify/confirm` | No | Confirmar email con token |
 | `POST` | `/api/v1/auth/logout` | Sí | Cerrar sesión |
 | `GET` | `/api/v1/auth/me` | Sí | Usuario actual |
 | `PATCH` | `/api/v1/users/me` | Sí | Editar perfil |
@@ -165,13 +202,14 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 
 ### Datos
 
-- `User`: `username`, `email`, `passwordHash`, `displayName`, `avatarUrl`, `bio`, `status`.
+- `User`: `username`, `email`, `passwordHash`, `displayName`, `avatarUrl`, `bio`, `role`, `emailVerifiedAt`, `status`.
+- `TeacherProfile` y `TeacherStatus` pertenecen a la spec 015; aquí solo se expone su estado en el perfil público.
 - `Session`: `userId`, `tokenHash`, `expiresAt`.
 - El avatar se guarda en MinIO con clave `avatars/{userId}`.
 
 ### UI
 
-- `/login`, `/register`, `/profile`, `/users`, `/users/[username]`.
+- `/login`, `/register`, `/verify-email`, `/profile`, `/users`, `/users/[username]`.
 - Formularios con validación, estados de carga y errores legibles.
 - El header muestra el usuario y permite cerrar sesión.
 
@@ -187,6 +225,8 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 | Perfil inexistente/archivado | Rechazar | `USER_NOT_FOUND` · 404 |
 | DTO inválido | Rechazar | `VALIDATION_ERROR` · 400 |
 | Avatar con formato no admitido | Rechazar | `FILE_UNSUPPORTED_TYPE` · 415 |
+| Token de email inválido/expirado | No confirmar y permitir reenvío | `EMAIL_TOKEN_INVALID` / `EMAIL_TOKEN_EXPIRED` · 400/410 |
+| Reenvío demasiado frecuente | Rechazar temporalmente | `EMAIL_RATE_LIMITED` · 429 |
 
 ## 9. Decisiones y preguntas abiertas
 
@@ -196,13 +236,16 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 | D-02 | "Eliminar cuenta" es un archivado lógico, no un borrado físico. | Cerrada |
 | D-03 | El avatar se almacena en S3 y se sirve por el backend para no exponer MinIO. | Cerrada |
 | D-04 | Normalizar username/email a minúsculas en lugar de aceptar variantes duplicadas. | Cerrada |
+| D-05 | Los roles globales y la verificación docente se coordinan con 015; 001 solo define el rol inicial y su exposición. | Cerrada |
+| D-06 | El archivado de cuenta no es la revocación docente: 015 conserva su propio flujo y auditoría. | Cerrada |
 | Q-01 | ¿Se añadirá recuperación de contraseña en una spec futura? | Abierta (fuera de v1) |
 
 ## 10. Brechas conocidas
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
-| G-01 | No hay tests automatizados específicos de auth, sesiones y archivado. | Regresiones de seguridad no detectadas en CI. | `T-050` |
+| G-01 | No hay tests automatizados específicos de auth, sesiones, email y archivado. | Regresiones de seguridad no detectadas en CI. | `T-050` |
+| G-02 | Sin recuperación de contraseña. | El usuario debe contactar soporte si la pierde. | `T-051` |
 
 ## 11. Evidencia de validación
 
@@ -211,4 +254,7 @@ La autenticación debe funcionar con el frontend y el backend en orígenes disti
 | CA-01, CA-02, CA-03 | Registro y duplicados verificados en el flujo end-to-end. | 2026-11-05 |
 | CA-04, CA-05, CA-06 | Login con email/username y errores de credenciales revisados. | 2026-11-05 |
 | CA-09, CA-10 | Revisión de `UsersService.archive` y cascada sobre proyectos privados. | 2026-11-11 |
+| CA-13, CA-14 | Confirmación de email y token de un solo uso verificados en E2E de 015. | 2026-11-18 |
+| CA-15 | Perfil público con rol y estado docente revisado en `UsersService`. | 2026-11-18 |
+| CA-16 | Archivado de cuenta y conservación de proyectos públicos revisados. | 2026-11-18 |
 | RNF-01, RNF-03 | Revisión de `SessionService` y cookie de sesión. | 2026-11-11 |
