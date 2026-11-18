@@ -73,6 +73,7 @@ npx expo export --platform android
 - Subida para Owner/Editor desde archivo, galería o cámara.
 - Verificación docente para Admin.
 - Tokens, fuentes, logo, iconos y splash del design system.
+- Tema claro, oscuro o del sistema, con cambio inmediato desde Perfil y persistencia local.
 
 ## Brechas
 

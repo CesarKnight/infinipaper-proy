@@ -16,12 +16,13 @@ Se crea `infinipaper-mobile` con Expo SDK 58, Expo Router, React Query, SecureSt
 - Development build/EAS para módulos nativos.
 - Token móvil opaco, no cookie web.
 - Office mediante descarga + app del sistema.
-- Splash animado con logo de marca.
+- Splash animado con logo de marca, sin marco circular.
+- Tema de tres estados (`light`, `dark`, `system`) con contexto React y persistencia local.
 
 ## 3. Cambios
 
 - Backend: endpoints `auth/mobile/*` y extracción de `X-Mobile-Session`.
-- Mobile: tema, componentes, auth, tabs, proyectos, detalle, visor y admin.
+- Mobile: `ThemeProvider`, tokens en `theme/tokens.ts`, persistencia en `lib/theme-storage.ts`, login/registro/splash temáticos y selector en Perfil.
 - Assets: iconos, fuentes y splash del design system.
 - Documentación y configuración `EXPO_PUBLIC_API_URL`.
 
@@ -33,7 +34,8 @@ Se crea `infinipaper-mobile` con Expo SDK 58, Expo Router, React Query, SecureSt
 - `npx expo export --platform android`.
 - E2E web: registro, dashboard, proyecto, carpeta y visor Markdown.
 - API móvil: register, me, logout.
+- Verificación manual Android: cambio Claro/Oscuro/Sistema, persistencia al reabrir, login oscuro y splash sin marco.
 
 ## 5. Rollback
 
-Eliminar `infinipaper-mobile` y los endpoints `auth/mobile/*`. La web no cambia.
+Eliminar `infinipaper-mobile` y los endpoints `auth/mobile/*`. La web no cambia. Para revertir solo el tema, restaurar el hook basado en `useColorScheme` y eliminar `ThemeProvider`/`theme-storage`.

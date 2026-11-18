@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useSegments, useRouter, Stack, Redirect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
+import * as SystemUI from "expo-system-ui";
 import { useFonts } from "expo-font";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AnimatedSplash } from "../components/animated-splash";
 import { AuthProvider, useAuth } from "../lib/auth";
+import { ThemeProvider, useAppTheme } from "../theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -23,26 +25,48 @@ export default function RootLayout() {
     InterSemiBold: require("../../assets/fonts/Inter-SemiBold.ttf"),
     Fraunces: require("../../assets/fonts/Fraunces-SemiBold.ttf"),
   });
-  const [showSplash, setShowSplash] = useState(true);
   const ready = fontsLoaded || Boolean(fontError);
-
-  useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {});
-  }, [ready]);
-
-  if (!ready) return null;
 
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <StatusBar style="auto" />
-          <AuthGate />
-          <Stack screenOptions={{ headerShown: false }} />
-          {showSplash ? <AnimatedSplash onFinish={() => setShowSplash(false)} /> : null}
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <AppBootstrap fontsReady={ready} />
+      </ThemeProvider>
     </SafeAreaProvider>
+  );
+}
+
+function AppBootstrap({ fontsReady }: { fontsReady: boolean }) {
+  const { ready: themeReady, colors, isDark } = useAppTheme();
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    if (!fontsReady || !themeReady) return;
+    SplashScreen.hideAsync().catch(() => {});
+  }, [fontsReady, themeReady]);
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(colors.background).catch(() => {});
+  }, [colors.background]);
+
+  if (!fontsReady || !themeReady) return null;
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <AuthGate />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        />
+        {showSplash ? (
+          <AnimatedSplash onFinish={() => setShowSplash(false)} />
+        ) : null}
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

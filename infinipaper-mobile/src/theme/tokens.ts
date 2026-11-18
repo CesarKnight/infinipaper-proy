@@ -1,5 +1,3 @@
-import { useColorScheme } from "react-native";
-
 export const primitives = {
   paper: "#FAF6EE",
   paperRaised: "#FFFFFF",
@@ -61,7 +59,14 @@ export const colors = {
   },
 } as const;
 
-export type ThemeColors = (typeof colors)["light"];
+export type ThemeColors = (typeof colors)["light"] | (typeof colors)["dark"];
+export type ThemePreference = "light" | "dark" | "system";
+export type ResolvedTheme = "light" | "dark";
+
+export const gradients = {
+  light: ["#FAF6EE", "#F3ECDD", "#FFFFFF"] as const,
+  dark: ["#0C052C", "#291054", "#1E0B46"] as const,
+};
 
 export const fonts = {
   regular: "Inter",
@@ -90,15 +95,3 @@ export const radius = {
   "2xl": 22,
   pill: 999,
 };
-
-export function useAppTheme() {
-  const scheme = useColorScheme();
-  const isDark = scheme === "dark";
-  return {
-    isDark,
-    colors: isDark ? colors.dark : colors.light,
-    gradients: isDark
-      ? (["#0C052C", "#291054", "#1E0B46"] as const)
-      : (["#FAF6EE", "#F3ECDD", "#FFFFFF"] as const),
-  };
-}

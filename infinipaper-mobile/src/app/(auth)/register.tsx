@@ -7,12 +7,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BrandMark } from "../../components/brand-mark";
 import { Field, PrimaryButton } from "../../components/ui";
 import { useAuth } from "../../lib/auth";
-import { fonts, primitives, radius, spacing, useAppTheme } from "../../theme";
+import { fonts, radius, spacing, useAppTheme } from "../../theme";
 
 export default function RegisterScreen() {
   const { register } = useAuth();
   const router = useRouter();
-  const { colors } = useAppTheme();
+  const { colors, gradients, isDark } = useAppTheme();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -44,7 +44,7 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <LinearGradient colors={["#FAF6EE", "#F3ECDD", "#FFFFFF"]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={gradients} style={StyleSheet.absoluteFill} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
@@ -57,7 +57,12 @@ export default function RegisterScreen() {
             </Text>
           </View>
 
-          <View style={[styles.panel, { backgroundColor: "rgba(255,255,255,0.78)", borderColor: colors.border }]}>
+          <View style={[styles.panel, {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            shadowColor: isDark ? "#000000" : colors.foreground,
+            shadowOpacity: isDark ? 0.35 : 0.1,
+          }]}>
             <Field label="Nombre visible" placeholder="Ana Torres" value={displayName} onChangeText={setDisplayName} />
             <Field
               label="Usuario"
@@ -88,7 +93,7 @@ export default function RegisterScreen() {
               label={loading ? "Creando cuenta…" : "Crear cuenta"}
               onPress={submit}
               loading={loading}
-              icon={<ArrowRightIcon size={18} color={primitives.white} />}
+              icon={<ArrowRightIcon size={18} color={colors.primaryForeground} />}
             />
             <View style={styles.links}>
               <Text style={[styles.helper, { color: colors.mutedForeground }]}>¿Ya tienes cuenta?</Text>
@@ -109,14 +114,6 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, justifyContent: "center", padding: spacing["2xl"], gap: spacing["2xl"] },
   hero: { alignItems: "center", gap: spacing.sm },
   mark: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
-    backgroundColor: "rgba(255,255,255,0.72)",
-    borderWidth: 1,
-    borderColor: "rgba(75,46,163,0.12)",
-    alignItems: "center",
-    justifyContent: "center",
     marginBottom: spacing.sm,
   },
   title: { fontFamily: fonts.heading, fontSize: 28, textAlign: "center", letterSpacing: -0.4 },
@@ -126,8 +123,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: spacing.xl,
     gap: spacing.md,
-    shadowColor: primitives.ink,
-    shadowOpacity: 0.1,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
   },

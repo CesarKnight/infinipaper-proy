@@ -7,12 +7,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BrandMark } from "../../components/brand-mark";
 import { Field, PrimaryButton } from "../../components/ui";
 import { useAuth } from "../../lib/auth";
-import { fonts, primitives, radius, spacing, useAppTheme } from "../../theme";
+import { fonts, radius, spacing, useAppTheme } from "../../theme";
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const router = useRouter();
-  const { colors } = useAppTheme();
+  const { colors, gradients, isDark } = useAppTheme();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <LinearGradient colors={["#FAF6EE", "#F3ECDD", "#FFFFFF"]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={gradients} style={StyleSheet.absoluteFill} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -53,7 +53,12 @@ export default function LoginScreen() {
             </Text>
           </View>
 
-          <View style={[styles.panel, { backgroundColor: "rgba(255,255,255,0.76)", borderColor: colors.border }]}>
+          <View style={[styles.panel, {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            shadowColor: isDark ? "#000000" : colors.foreground,
+            shadowOpacity: isDark ? 0.35 : 0.1,
+          }]}>
             <Field
               label="Correo o usuario"
               autoCapitalize="none"
@@ -75,7 +80,7 @@ export default function LoginScreen() {
               label={loading ? "Entrando…" : "Entrar"}
               onPress={submit}
               loading={loading}
-              icon={<ArrowRightIcon size={18} color={primitives.white} />}
+              icon={<ArrowRightIcon size={18} color={colors.primaryForeground} />}
             />
             <View style={styles.links}>
               <Text style={[styles.helper, { color: colors.mutedForeground }]}>¿Primera vez aquí?</Text>
@@ -104,19 +109,7 @@ const styles = StyleSheet.create({
   },
   hero: { alignItems: "center", gap: spacing.sm },
   mark: {
-    width: 108,
-    height: 108,
-    borderRadius: 54,
-    backgroundColor: "rgba(255,255,255,0.72)",
-    borderWidth: 1,
-    borderColor: "rgba(75,46,163,0.12)",
-    alignItems: "center",
-    justifyContent: "center",
     marginBottom: spacing.md,
-    shadowColor: primitives.indigo,
-    shadowOpacity: 0.15,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
   },
   title: { fontFamily: fonts.heading, fontSize: 30, textAlign: "center", letterSpacing: -0.5 },
   subtitle: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 21, textAlign: "center", maxWidth: 300 },
@@ -125,8 +118,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: spacing.xl,
     gap: spacing.lg,
-    shadowColor: primitives.ink,
-    shadowOpacity: 0.1,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
   },

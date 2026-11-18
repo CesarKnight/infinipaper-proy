@@ -1,11 +1,25 @@
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { ChevronRightIcon, LogOutIcon, MailCheckIcon, ShieldCheckIcon } from "lucide-react-native";
+import {
+  ChevronRightIcon,
+  LogOutIcon,
+  MailCheckIcon,
+  MonitorIcon,
+  MoonIcon,
+  ShieldCheckIcon,
+  SunIcon,
+} from "lucide-react-native";
 import { TopBar } from "../../components/top-bar";
 import { BrandMark } from "../../components/brand-mark";
 import { Card, Chip, PrimaryButton, SectionTitle } from "../../components/ui";
 import { useAuth } from "../../lib/auth";
-import { fonts, radius, spacing, useAppTheme } from "../../theme";
+import {
+  fonts,
+  radius,
+  spacing,
+  useAppTheme,
+  type ThemePreference,
+} from "../../theme";
 
 const ROLE_LABEL: Record<string, string> = {
   ADMIN: "Administrador",
@@ -13,10 +27,27 @@ const ROLE_LABEL: Record<string, string> = {
   STUDENT: "Estudiante",
 };
 
+const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
+  { value: "light", label: "Claro" },
+  { value: "dark", label: "Oscuro" },
+  { value: "system", label: "Sistema" },
+];
+
+function themeIcon(value: ThemePreference, color: string) {
+  switch (value) {
+    case "light":
+      return <SunIcon size={18} color={color} />;
+    case "dark":
+      return <MoonIcon size={18} color={color} />;
+    default:
+      return <MonitorIcon size={18} color={color} />;
+  }
+}
+
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const { colors } = useAppTheme();
+  const { colors, preference, setPreference } = useAppTheme();
 
   if (!user) return null;
   const initials = user.displayName
@@ -41,6 +72,38 @@ export default function ProfileScreen() {
           <View style={styles.chips}>
             <Chip label={ROLE_LABEL[user.role] ?? user.role} tone="accent" />
             <Chip label={user.emailVerifiedAt ? "Email confirmado" : "Email sin confirmar"} tone={user.emailVerifiedAt ? "success" : "default"} />
+          </View>
+        </Card>
+
+        <SectionTitle title="Apariencia" subtitle="Elige cómo se ve Infinipaper." />
+        <Card style={{ gap: spacing.sm }}>
+          <View style={styles.themeOptions}>
+            {THEME_OPTIONS.map((option) => {
+              const active = preference === option.value;
+              const foreground = active
+                ? colors.primaryForeground
+                : colors.foreground;
+              return (
+                <Pressable
+                  key={option.value}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  onPress={() => void setPreference(option.value)}
+                  style={[
+                    styles.themeOption,
+                    {
+                      backgroundColor: active ? colors.primary : colors.muted,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
+                  ]}
+                >
+                  {themeIcon(option.value, foreground)}
+                  <Text style={[styles.themeOptionLabel, { color: foreground }]}>
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </Card>
 
@@ -103,6 +166,17 @@ const styles = StyleSheet.create({
   name: { fontFamily: fonts.heading, fontSize: 25, letterSpacing: -0.4 },
   username: { fontFamily: fonts.regular, fontSize: 13 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, justifyContent: "center" },
+  themeOptions: { flexDirection: "row", gap: spacing.sm },
+  themeOption: {
+    flex: 1,
+    minHeight: 66,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  themeOptionLabel: { fontFamily: fonts.medium, fontSize: 12 },
   infoRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   infoIcon: { width: 38, height: 38, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
   infoLabel: { fontFamily: fonts.medium, fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase" },

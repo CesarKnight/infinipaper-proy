@@ -18,6 +18,10 @@
 - [x] `T-031` E2E web de login, proyectos, carpeta y visor. <CA-01–CA-04>
 - [x] `T-032` Validación manual en Android: build, registro/login, proyecto, visor Markdown, descarga y subida. <CA-01–CA-06>
 - [x] `T-033` Corregir subida multipart con Expo SDK 58 y decodificar nombres móviles. <RF-09, CA-06>
+- [x] `T-034` Proveedor de tema con preferencia `light`/`dark`/`system` y persistencia. <RF-15, RNF-06>
+- [x] `T-035` Aplicar tema dinámico a login, registro, splash y barra de estado. <RF-16>
+- [x] `T-036` Eliminar el marco circular del logo en splash y acceso. <RF-17, CA-13>
+- [x] `T-037` Selector de tema en Perfil y verificación visual en Android. <CA-11, CA-12>
 
 ## Brechas
 

@@ -30,7 +30,8 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 - Subida de archivos con selector, galería y cámara para Owner/Editor.
 - Verificación docente para Admin.
 - Tokens, tipografías, logos e iconos del sistema de diseño.
-- Splash con animación de marca.
+- Splash con animación de marca, sin marco circular alrededor del logo.
+- Tema claro, oscuro o del sistema, con cambio dinámico desde Perfil.
 
 ### No incluye
 
@@ -59,6 +60,9 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | RF-12 | Al abrir la app se muestra una animación de splash con la marca. | Should |
 | RF-13 | La app muestra estados de carga, vacío y error. | Must |
 | RF-14 | La app no usa la cookie web ni el proxy de Next. | Must |
+| RF-15 | El usuario puede elegir tema claro, oscuro o del sistema; el cambio se aplica al instante y persiste. | Must |
+| RF-16 | Login, registro y splash usan los colores del tema activo. | Must |
+| RF-17 | El logo del splash y de acceso se muestra sin marco circular. | Must |
 
 ## 5. Requisitos no funcionales
 
@@ -69,6 +73,7 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | RNF-03 | El token nunca se guarda en AsyncStorage sin cifrar. | SecureStore en nativo; localStorage solo en web de desarrollo. |
 | RNF-04 | La app respeta claro/oscuro y tamaños táctiles de 44 px. | Revisión visual. |
 | RNF-05 | La API móvil mantiene los permisos del servidor. | E2E de roles. |
+| RNF-06 | La preferencia de tema sobrevive al cierre y reapertura de la app. | SecureStore/localStorage + reapertura. |
 
 ## 6. Criterios de aceptación
 
@@ -101,6 +106,15 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 
 ### CA-10 · Error
 - **Dado** un fallo de red, **entonces** la app muestra un mensaje y permite reintentar.
+
+### CA-11 · Cambio de tema
+- **Dado** un usuario autenticado en Perfil, **cuando** elige Claro, Oscuro o Sistema, **entonces** toda la interfaz cambia al instante y la preferencia se conserva al reabrir.
+
+### CA-12 · Acceso con tema
+- **Dado** el tema oscuro activo, **cuando** el usuario cierra sesión, **entonces** login y registro se muestran oscuros, incluidos sus paneles y campos.
+
+### CA-13 · Logo sin marco
+- **Dado** el splash o una pantalla de acceso, **entonces** el logo de Infinipaper aparece sin círculo ni marco de fondo.
 
 ## 7. Contratos e interfaces
 
@@ -151,6 +165,8 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | D-03 | Office se abre con app nativa, no render embebido. | Cerrada |
 | D-04 | Design system compartido por assets y tokens. | Cerrada |
 | D-05 | EAS/development build para módulos nativos. | Cerrada |
+| D-06 | Preferencia de tema `light`, `dark` o `system` persistida en SecureStore (nativo) y localStorage (web). | Cerrada |
+| D-07 | El logo de marca no se encierra en un círculo ni en un contenedor con fondo. | Cerrada |
 | Q-01 | ¿Se añadirá colaboración CRDT móvil? | Abierta (futuro) |
 | Q-02 | ¿Se resolverán quizzes completos en móvil? | Abierta (futuro) |
 
@@ -173,6 +189,9 @@ La web ya cubre la gestión académica, pero el estudiante y el docente necesita
 | CA-05 | Descarga, guardado en `Download` y compartir validados en Android. | 2026-11-18 |
 | CA-06 | Subida desde selector de documentos validada en Android (APK debug) con archivo Markdown; se corrigió la incompatibilidad de `FormData` de Expo SDK 58 y la decodificación del nombre móvil. | 2026-11-18 |
 | CA-09 | Splash animado y tokens de marca implementados. | 2026-11-18 |
+| CA-11 | Cambio Claro/Oscuro/Sistema validado en Android; el tema oscuro se mantuvo tras cerrar y reabrir la app. | 2026-11-18 |
+| CA-12 | Login y registro oscuros validados en Android con el tema oscuro activo. | 2026-11-18 |
+| CA-13 | Login y splash usan el logo sin marco circular; login verificado visualmente en Android. | 2026-11-18 |
 | RNF-01–RNF-02 | TypeScript, lint, expo-doctor, build nativo Android (`assembleDebug`) y `expo export` correctos. | 2026-11-18 |
 
 > Diagramas: [UC-26](../../diagramas/casos-de-uso.md) · [Secuencia 026](../../diagramas/secuencia/026-app-movil.md).
