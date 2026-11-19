@@ -32,12 +32,13 @@
 | `026` | [App móvil Infinipaper](./026-app-movil/spec.md) | Implementada con brechas | 001, 005, 008, 015, 016, 017, 019, 020 |
 | `027` | [Fuentes multiformato para generación de material académico](./027-fuentes-multiformato/spec.md) | Implementada con brechas | 005, 009, 010, 012, 020, 021, 022 |
 | `028` | [Cola de generación y prevención de duplicados](./028-cola-generacion/spec.md) | Implementada con brechas | 017, 021, 022, 027 |
+| `029` | [Visor interactivo y exportable de mapas mentales](./029-visor-mapas-interactivo/spec.md) | Implementada con brechas | 013, 021 |
 
 ## Deuda transversal
 
 La cobertura automatizada es parcial: la spec 012 incluye tests del grafo LangGraph, validadores y servicio NestJS. El resto de specs se apoya en `npm run build`, `npm run lint` y flujos manuales. Cada spec registra sus brechas funcionales en `G-*`; las tareas de pruebas automatizadas se añaden a medida que se abordan.
 
-Las specs `015`–`018` están implementadas con brechas documentadas. Las specs `019`–`022` también están implementadas con brechas. Las specs `023`–`025` están implementadas con brechas. La spec `026` añade la app móvil. Las specs `027` y `028` están implementadas con brechas; las siguientes historias partirán de `029`.
+Las specs `015`–`018` están implementadas con brechas documentadas. Las specs `019`–`022` también están implementadas con brechas. Las specs `023`–`025` están implementadas con brechas. La spec `026` añade la app móvil. Las specs `027` y `028` están implementadas con brechas. La spec `029` está implementada con brechas; las siguientes historias partirán de `030`.
 
 ## Cómo añadir una spec
 

@@ -72,6 +72,9 @@ Usa Next.js 16, React 19, shadcn/ui sobre Base UI, Tailwind v4, `lucide-react`, 
 | `docx-preview` | Vista previa HTML de DOCX en cliente (spec 006) |
 | `xlsx` | Lectura y vista tabular de XLSX/CSV/ODS (spec 006) |
 | `pptx-preview` | Vista previa de diapositivas PPTX en cliente (spec 006) |
+| `@xyflow/react` | Canvas interactivo de mapas mentales con pan, zoom y minimapa (spec 029) |
+| `@dagrejs/dagre` | Layout automático del mapa mental (spec 029) |
+| `html-to-image` | Exportación PNG del diagrama (spec 029) |
 
 > **PDF (spec 006):** se usa el visor nativo del navegador mediante `<iframe src="/api/v1/files/:id/content">`, que evita configurar un worker de PDF.js y mantiene el proxy same-origin.
 

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist_Mono, Inter } from "next/font/google";
+import "@xyflow/react/dist/style.css";
 import "./globals.css";
 
 import { TooltipProvider } from "@/components/ui/tooltip";

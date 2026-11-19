@@ -146,17 +146,17 @@ El requisito pide mapas mentales generados desde el contenido almacenado, guarda
 | D-02 | Se guarda como `Resource(kind=MINDMAP)` en la jerarquía. | Cerrada |
 | D-03 | Trazabilidad mediante `ResourceSource` y estado `UNVERIFIED`. | Cerrada |
 | D-04 | Render con una librería de grafos interactiva; se propone `@xyflow/react`. | Cerrada |
-| Q-01 | ¿Exportación SVG/PNG en v1 o fase posterior? | Abierta (v1: posterior) |
+| Q-01 | ¿Exportación SVG/PNG en v1 o fase posterior? | Resuelta por spec 029 (PNG; SVG/PDF posterior) |
 | Q-02 | ¿Edición manual de nodos en v1? | Abierta (v1: no) |
 
 ## 10. Brechas conocidas
 
 | ID | Brecha | Impacto | Tarea |
 |---|---|---|---|
-| G-01 | Sin exportación de imagen. | El mapa solo se usa dentro de la app. | `T-060` |
+| G-01 | Sin exportación de imagen. | Resuelta por spec 029 (exportación PNG). | `T-060` |
 | G-02 | Sin edición manual. | El usuario debe regenerar para cambiar el resultado. | `T-061` |
 
-| G-03 | Layout avanzado y rendimiento para mapas muy grandes. | El visor usa un layout radial simple. | `T-062` |
+| G-03 | Layout avanzado y rendimiento para mapas muy grandes. | Resuelta por spec 029 (React Flow + dagre). | `T-062` |
 
 ## 11. Evidencia de validación
 
