@@ -53,6 +53,46 @@ npx expo run:ios
 npx eas-cli@latest build --profile development
 ```
 
+## Build de producción (APK)
+
+El APK de release se firma con un keystore propio (no con el keystore debug). La firma se
+declara con el config plugin `plugins/with-release-signing.js`, que se reaplica en cada
+`expo prebuild` leyendo `android/keystore.properties`.
+
+1. Configura la URL pública de la API en `.env.production`:
+
+   ```bash
+   EXPO_PUBLIC_API_URL=https://infinipaper.lat/api/v1
+   ```
+
+   Ese archivo se carga automáticamente en modo producción; `.env` (local) no se usa.
+
+2. Genera el keystore una sola vez y guárdalo fuera del repositorio:
+
+   ```bash
+   mkdir -p ~/.infinipaper-keys
+   keytool -genkeypair -v -storetype PKCS12 -keystore ~/.infinipaper-keys/infinipaper-release.keystore \
+     -alias infinipaper -keyalg RSA -keysize 2048 -validity 10000 \
+     -dname "CN=Infinipaper, OU=Mobile, O=Infinipaper, L=Quito, ST=Pichincha, C=EC"
+   ```
+
+   Crea `~/.infinipaper-keys/credenciales.properties` con `STORE_FILE`, `STORE_PASSWORD`,
+   `KEY_ALIAS` y `KEY_PASSWORD`. **Sin ese archivo no se pueden publicar actualizaciones**
+   de la app con la misma firma.
+
+3. Compila:
+
+   ```bash
+   ./scripts/build-android-release.sh
+   ```
+
+   Salida: `android/app/build/outputs/apk/release/app-release.apk`
+   (`-P...` extra se pasa directo a Gradle, por ejemplo
+   `./scripts/build-android-release.sh -PreactNativeArchitectures=arm64-v8a`).
+
+Si falta `keystore.properties`, el build release se firma con el keystore debug y Gradle
+emite una advertencia: ese APK no sirve para publicar.
+
 ## Verificación
 
 ```bash
