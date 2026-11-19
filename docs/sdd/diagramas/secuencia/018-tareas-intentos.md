@@ -35,7 +35,7 @@ sequenceDiagram
 
   S->>FE: Envía la tarea
   FE->>API: POST /attempts/:id/submit
-  API->>DB: Autocorrige MC/VF; short answer queda pendiente
+  API->>DB: Autocorrige MC/VF · short answer queda pendiente
   API-->>FE: Intento SUBMITTED o GRADED
 
   D->>FE: Revisa resultados

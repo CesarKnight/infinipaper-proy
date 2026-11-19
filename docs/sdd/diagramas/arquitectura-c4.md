@@ -1,6 +1,6 @@
 # Arquitectura C4
 
-Vistas C4 de Infinipaper: contexto, contenedores y componentes del backend. El detalle de despliegue y variables está en [`referencia/infraestructura.md`](../referencia/infraestructura.md).
+Vistas C4 de Infinipaper: contexto, contenedores y componentes del backend. El detalle de variables está en [`referencia/infraestructura.md`](../referencia/infraestructura.md) y el despliegue concreto de la demo en [`despliegue.md`](./despliegue.md).
 
 ## Nivel 1 · Contexto
 

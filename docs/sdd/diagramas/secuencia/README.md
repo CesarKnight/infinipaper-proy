@@ -28,6 +28,10 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 | 024 Búsqueda | [024-busqueda-semantica.md](./024-busqueda-semantica.md) | Participante, API, DB, pg-boss, MinIO, Embeddings |
 | 025 MCP | [025-mcp-desempeno.md](./025-mcp-desempeno.md) | Docente, Cliente MCP, API, FastMCP, DB |
 | 026 App móvil | [026-app-movil.md](./026-app-movil.md) | Usuario, App Expo, SecureStore, API, DB, MinIO |
+| 027 Fuentes multiformato | [027-fuentes-multiformato.md](./027-fuentes-multiformato.md) | Editor, API, DB, pg-boss, Agents, MinIO, ASR, LLM |
+| 028 Cola de generación | [028-cola-generacion.md](./028-cola-generacion.md) | Editor, Frontend, API, DB, pg-boss |
+| 029 Visor de mapas | [029-visor-mapas-interactivo.md](./029-visor-mapas-interactivo.md) | Usuario, Frontend, MindmapViewer, localStorage, API, DB, MinIO |
+| 030 Landing corporativa | [030-landing-corporativo.md](./030-landing-corporativo.md) | Visitante, Navegador, Proxy Next, Next App, API |
 
 ## Convenciones
 
@@ -36,4 +40,4 @@ Un diagrama por spec. Cada archivo incluye el flujo principal y los casos altern
 - Las respuestas usan flechas discontinuas (`-->>`).
 - El modelo formal equivalente está en `docs/sdd/ea/modelo.json`.
 
-> Las specs 013 (sistema de diseño) y 014 (tema de marca) no tienen diagrama de secuencia porque no introducen un flujo de backend o de usuario nuevo.
+> Las specs 013 (sistema de diseño) y 014 (tema de marca) no tienen diagrama de secuencia porque no introducen un flujo de backend o de usuario nuevo. El resto de specs implementadas, de 001 a 012 y de 015 a 030, tienen un diagrama.

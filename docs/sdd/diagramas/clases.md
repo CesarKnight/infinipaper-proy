@@ -1,527 +1,392 @@
-# Diagrama de clases
+# Diseño de datos y clases de implementación
 
-Dos vistas complementarias:
+El diseño de datos se organiza en cuatro vistas legibles: una vista general y tres vistas por módulo. Las clases usan el formato UML de la referencia: nombre, atributos principales con `+nombre: Tipo`, asociaciones con etiqueta y multiplicidades, y dependencias discontinuas para referencias débiles.
 
-1. **Modelo de dominio**: entidades y enums de Prisma, con sus relaciones y multiplicidades.
-2. **Clases de implementación**: controladores, servicios y dependencias del backend NestJS.
+> Esta vista lógica muestra los atributos principales; el detalle completo de columnas vive en [modelo.json](../ea/modelo.json). Los enums se documentan aparte y el modelo formal se mantiene en Enterprise Architect. Para EA existe un script independiente: [importar-diseno-datos.js](../ea/importar-diseno-datos.js).
 
-> Las entidades son clases de datos: el comportamiento vive en los servicios. Los atributos marcados como opcionales en Prisma (`String?`) se documentan en las notas de cada clase para no recargar el diagrama.
+## 1. Diseño de datos
 
-## 1. Modelo de dominio (Base de datos)
+### 1.1 Vista general
+
+Entidades centrales de identidad, proyectos, recursos y evaluación.
 
 ```mermaid
 classDiagram
   direction LR
 
   class User {
-    <<entity>>
-    +String id
-    +String username
-    +String email
-    +String passwordHash
-    +String displayName
-    +String avatarUrl
-    +String bio
-    +GlobalRole role
-    +DateTime emailVerifiedAt
-    +UserStatus status
-    +DateTime createdAt
-    +DateTime updatedAt
+    +id: String
+    +username: String
+    +email: String
+    +role: GlobalRole
+    +status: UserStatus
   }
 
   class Session {
-    <<entity>>
-    +String id
-    +String userId
-    +String tokenHash
-    +DateTime expiresAt
-    +DateTime createdAt
+    +id: String
+    +userId: String
+    +expiresAt: DateTime
   }
 
   class Project {
-    <<entity>>
-    +String id
-    +String ownerId
-    +String name
-    +String description
-    +ProjectVisibility visibility
-    +ProjectType type
-    +ProjectStatus status
-    +String institution
-    +String period
-    +String subject
-    +String code
-    +DateTime archivedAt
-    +DateTime archiveAccessUntil
-    +DateTime createdAt
-    +DateTime updatedAt
+    +id: String
+    +ownerId: String
+    +name: String
+    +visibility: ProjectVisibility
+    +type: ProjectType
+    +status: ProjectStatus
   }
 
   class ProjectMember {
-    <<entity>>
-    +String id
-    +String projectId
-    +String userId
-    +ProjectRole role
-    +DateTime createdAt
-    +DateTime updatedAt
+    +id: String
+    +projectId: String
+    +userId: String
+    +role: ProjectRole
   }
 
   class Folder {
-    <<entity>>
-    +String id
-    +String projectId
-    +String parentId
-    +String name
-    +Boolean isRoot
-    +DateTime createdAt
-    +DateTime updatedAt
+    +id: String
+    +projectId: String
+    +parentId: String
+    +name: String
+    +isRoot: Boolean
   }
 
   class Resource {
-    <<entity>>
-    +String id
-    +String folderId
-    +String authorId
-    +String name
-    +ResourceKind kind
-    +ResourceOrigin origin
-    +ValidationStatus validationStatus
-    +String validatedById
-    +DateTime validatedAt
-    +String validationNote
-    +String mimeType
-    +Int size
-    +String s3Key
-    +String checksum
-    +DateTime createdAt
-    +DateTime updatedAt
-  }
-
-  class TranscriptionJob {
-    <<entity>>
-    +String id
-    +String resourceId
-    +String requestedById
-    +TranscriptionStatus status
-    +String language
-    +String text
-    +String error
-    +DateTime createdAt
-    +DateTime updatedAt
-  }
-
-  class NoteStructureJob {
-    <<entity>>
-    +String id
-    +String resourceId
-    +String requestedById
-    +AgentJobStatus status
-    +String language
-    +String instructions
-    +String sourceChecksum
-    +String resultMarkdown
-    +String resultResourceId
-    +Json outline
-    +Json warnings
-    +String error
-    +String model
-    +String promptVersion
-    +Int inputTokens
-    +Int outputTokens
-    +DateTime createdAt
-    +DateTime updatedAt
-  }
-
-  class EmailVerificationToken {
-    <<entity>>
-    +String id
-    +String userId
-    +String tokenHash
-    +DateTime expiresAt
-    +DateTime usedAt
-    +DateTime createdAt
-  }
-
-  class TeacherProfile {
-    <<entity>>
-    +String id
-    +String userId
-    +TeacherStatus status
-    +TeacherVerificationMethod method
-    +String institution
-    +String area
-    +String position
-    +String evidenceUrl
-    +String reviewerId
-    +DateTime reviewedAt
-    +String rejectionReason
-    +DateTime createdAt
-    +DateTime updatedAt
-  }
-
-  class AuditEvent {
-    <<entity>>
-    +String id
-    +String actorId
-    +String action
-    +String entityType
-    +String entityId
-    +Json metadata
-    +DateTime createdAt
+    +id: String
+    +folderId: String
+    +authorId: String
+    +name: String
+    +kind: ResourceKind
+    +origin: ResourceOrigin
+    +validationStatus: ValidationStatus
   }
 
   class Quiz {
-    <<entity>>
-    +String id
-    +String resourceId
-    +String title
-    +String instructions
-    +QuizStatus status
-    +Json settings
-    +String createdById
-    +DateTime createdAt
-    +DateTime updatedAt
-  }
-
-  class QuizQuestion {
-    <<entity>>
-    +String id
-    +String quizId
-    +QuizQuestionType type
-    +String prompt
-    +Int points
-    +Int order
-    +String correctText
-    +Boolean caseSensitive
-    +Json sourceRefs
-    +DateTime createdAt
-    +DateTime updatedAt
-  }
-
-  class QuizOption {
-    <<entity>>
-    +String id
-    +String questionId
-    +String text
-    +Boolean isCorrect
-    +Int order
+    +id: String
+    +resourceId: String
+    +title: String
+    +status: QuizStatus
   }
 
   class QuizAssignment {
-    <<entity>>
-    +String id
-    +String quizId
-    +String projectId
-    +String createdById
-    +DateTime startsAt
-    +DateTime dueAt
-    +Int attemptsAllowed
-    +QuizAssignmentStatus status
-    +DateTime resultsPublishedAt
-    +DateTime createdAt
-    +DateTime updatedAt
-  }
-
-  class QuizAssignmentStudent {
-    <<entity>>
-    +String assignmentId
-    +String studentId
+    +id: String
+    +quizId: String
+    +projectId: String
+    +dueAt: DateTime
+    +status: QuizAssignmentStatus
   }
 
   class QuizAttempt {
-    <<entity>>
-    +String id
-    +String assignmentId
-    +String studentId
-    +Int attemptNumber
-    +QuizAttemptStatus status
-    +Float score
-    +Float maxScore
-    +DateTime startedAt
-    +DateTime submittedAt
-    +DateTime gradedAt
+    +id: String
+    +assignmentId: String
+    +studentId: String
+    +status: QuizAttemptStatus
+    +score: Float
   }
 
-  class QuizAnswer {
-    <<entity>>
-    +String id
-    +String attemptId
-    +String questionId
-    +String optionId
-    +String text
-    +Boolean isCorrect
-    +Float pointsAwarded
-    +String feedback
+  User "1" *-- "0..*" Session : sessions
+  User "1" --> "0..*" Project : owner
+  User "1" --> "0..*" ProjectMember : memberships
+  User "1" --> "0..*" Resource : author
+  Project "1" *-- "0..*" ProjectMember : members
+  Project "1" *-- "0..*" Folder : folders
+  Folder "1" --> "0..*" Folder : parent / children
+  Folder "1" *-- "0..*" Resource : resources
+  User "1" --> "0..*" Quiz : createdQuizzes
+  User "1" --> "0..*" QuizAssignment : createdQuizAssignments
+  User "1" --> "0..*" QuizAttempt : quizAttempts
+  Project "1" *-- "0..*" QuizAssignment : quizAssignments
+  Resource "1" *-- "0..1" Quiz : quiz
+  Quiz "1" *-- "0..*" QuizAssignment : assignments
+  QuizAssignment "1" *-- "0..*" QuizAttempt : attempts
+```
+
+### 1.2 Identidad y acceso
+
+Usuarios, sesiones, confirmación de email, perfil docente y auditoría.
+
+```mermaid
+classDiagram
+  direction LR
+
+  class User {
+    +id: String
+    +username: String
+    +email: String
+    +role: GlobalRole
+    +status: UserStatus
+  }
+
+  class Session {
+    +id: String
+    +userId: String
+    +expiresAt: DateTime
+  }
+
+  class EmailVerificationToken {
+    +id: String
+    +userId: String
+    +expiresAt: DateTime
+    +usedAt: DateTime
+  }
+
+  class TeacherProfile {
+    +id: String
+    +userId: String
+    +status: TeacherStatus
+    +method: TeacherVerificationMethod
+    +institution: String
+  }
+
+  class AuditEvent {
+    +id: String
+    +actorId: String
+    +action: String
+    +entityType: String
+    +createdAt: DateTime
+  }
+
+  User "1" *-- "0..*" Session : sessions
+  User "1" *-- "0..*" EmailVerificationToken : emailVerificationTokens
+  User "1" --> "0..1" TeacherProfile : teacherProfile
+  User "1" --> "0..*" AuditEvent : auditEvents
+```
+
+### 1.3 Proyectos y contenido
+
+Proyectos, carpetas, recursos, extracciones, trabajos y trazabilidad.
+
+```mermaid
+classDiagram
+  direction LR
+
+  class User {
+    +id: String
+    +username: String
+    +email: String
+    +role: GlobalRole
+    +status: UserStatus
+  }
+
+  class Project {
+    +id: String
+    +ownerId: String
+    +name: String
+    +visibility: ProjectVisibility
+    +type: ProjectType
+    +status: ProjectStatus
+  }
+
+  class ProjectMember {
+    +id: String
+    +projectId: String
+    +userId: String
+    +role: ProjectRole
+  }
+
+  class Folder {
+    +id: String
+    +projectId: String
+    +parentId: String
+    +name: String
+    +isRoot: Boolean
+  }
+
+  class Resource {
+    +id: String
+    +folderId: String
+    +authorId: String
+    +name: String
+    +kind: ResourceKind
+    +origin: ResourceOrigin
+    +validationStatus: ValidationStatus
   }
 
   class ResourceSource {
-    <<entity>>
-    +String id
-    +String resourceId
-    +String sourceResourceId
-    +ResourceSourceRelation relation
-    +DateTime createdAt
+    +id: String
+    +resourceId: String
+    +sourceResourceId: String
+    +relation: ResourceSourceRelation
+  }
+
+  class ResourceExtraction {
+    +id: String
+    +resourceId: String
+    +checksum: String
+    +extractor: String
+    +extractorVersion: String
+    +status: AgentJobStatus
+  }
+
+  class TranscriptionJob {
+    +id: String
+    +resourceId: String
+    +requestedById: String
+    +status: TranscriptionStatus
+    +language: String
+  }
+
+  class NoteStructureJob {
+    +id: String
+    +resourceId: String
+    +requestedById: String
+    +status: AgentJobStatus
+    +resultResourceId: String
   }
 
   class ContentGenerationJob {
-    <<entity>>
-    +String id
-    +ContentGenerationType type
-    +String folderId
-    +String requestedById
-    +AgentJobStatus status
-    +Json sources
-    +Json config
-    +Json resultJson
-    +String resultResourceId
-    +Json warnings
-    +String error
-    +String model
-    +String promptVersion
-    +Int inputTokens
-    +Int outputTokens
-    +DateTime createdAt
-    +DateTime updatedAt
+    +id: String
+    +type: ContentGenerationType
+    +folderId: String
+    +requestedById: String
+    +status: AgentJobStatus
+    +stage: String
   }
 
   class ResourceEvent {
-    <<entity>>
-    +String id
-    +String projectId
-    +String resourceId
-    +String userId
-    +ResourceEventType type
-    +Json metadata
-    +DateTime createdAt
+    +id: String
+    +projectId: String
+    +resourceId: String
+    +userId: String
+    +type: ResourceEventType
+    +createdAt: DateTime
   }
 
   class ResourceChunk {
-    <<entity>>
-    +String id
-    +String resourceId
-    +Int chunkIndex
-    +String content
-    +Unsupported embedding
-    +Int tokens
-    +Json metadata
-    +DateTime createdAt
+    +id: String
+    +resourceId: String
+    +chunkIndex: Int
+    +tokens: Int
   }
 
   class ContentIndexJob {
-    <<entity>>
-    +String id
-    +String projectId
-    +String resourceId
-    +AgentJobStatus status
-    +String error
-    +DateTime createdAt
-    +DateTime updatedAt
+    +id: String
+    +projectId: String
+    +resourceId: String
+    +status: AgentJobStatus
   }
 
   class McpToken {
-    <<entity>>
-    +String id
-    +String ownerId
-    +String projectId
-    +String name
-    +String tokenHash
-    +Json scopes
-    +DateTime expiresAt
-    +DateTime revokedAt
-    +DateTime lastUsedAt
-    +DateTime createdAt
+    +id: String
+    +ownerId: String
+    +projectId: String
+    +name: String
+    +expiresAt: DateTime
+    +revokedAt: DateTime
   }
 
-  class UserStatus {
-    <<enumeration>>
-    ACTIVE
-    ARCHIVED
-  }
-
-  class GlobalRole {
-    <<enumeration>>
-    ADMIN
-    TEACHER
-    STUDENT
-  }
-
-  class TeacherStatus {
-    <<enumeration>>
-    PENDING
-    VERIFIED
-    REJECTED
-    REVOKED
-  }
-
-  class TeacherVerificationMethod {
-    <<enumeration>>
-    INSTITUTIONAL_EMAIL
-    MANUAL
-  }
-
-  class ResourceOrigin {
-    <<enumeration>>
-    UPLOAD
-    NOTE
-    TRANSCRIPTION
-    AI_STRUCTURE
-    AI_MINDMAP
-    AI_QUIZ
-    QUIZ
-    IMPORT
-  }
-
-  class ValidationStatus {
-    <<enumeration>>
-    UNVERIFIED
-    PENDING
-    VERIFIED
-    REJECTED
-  }
-
-  class ResourceSourceRelation {
-    <<enumeration>>
-    DERIVED_FROM
-    CITES
-    USES
-  }
-
-  class ResourceEventType {
-    <<enumeration>>
-    VIEW
-    DOWNLOAD
-    SEARCH_HIT
-    QUIZ_USE
-  }
-
-  class ContentGenerationType {
-    <<enumeration>>
-    MINDMAP
-    QUIZ
-  }
-
-  class ProjectVisibility {
-    <<enumeration>>
-    PUBLIC
-    PRIVATE
-  }
-
-  class ProjectType {
-    <<enumeration>>
-    PERSONAL
-    COURSE
-  }
-
-  class ProjectStatus {
-    <<enumeration>>
-    ACTIVE
-    ARCHIVED
-  }
-
-  class ProjectRole {
-    <<enumeration>>
-    EDITOR
-    VIEWER
-    STUDENT
-  }
-
-  class ResourceKind {
-    <<enumeration>>
-    DOCUMENT
-    IMAGE
-    AUDIO
-    VIDEO
-    MARKDOWN
-    QUIZ
-  }
-
-  class QuizStatus {
-    <<enumeration>>
-    DRAFT
-    PUBLISHED
-    ARCHIVED
-  }
-
-  class QuizQuestionType {
-    <<enumeration>>
-    MULTIPLE_CHOICE
-    TRUE_FALSE
-    SHORT_ANSWER
-  }
-
-  class QuizAssignmentStatus {
-    <<enumeration>>
-    DRAFT
-    PUBLISHED
-    CLOSED
-  }
-
-  class QuizAttemptStatus {
-    <<enumeration>>
-    IN_PROGRESS
-    SUBMITTED
-    GRADED
-    EXPIRED
-  }
-
-  class TranscriptionStatus {
-    <<enumeration>>
-    QUEUED
-    PROCESSING
-    DONE
-    FAILED
-  }
-
-  class AgentJobStatus {
-    <<enumeration>>
-    QUEUED
-    PROCESSING
-    DONE
-    FAILED
-  }
-
-  User "1" --> "0..*" Session : sessions
   User "1" --> "0..*" Project : owner
   User "1" --> "0..*" ProjectMember : memberships
   User "1" --> "0..*" Resource : author
   User "1" --> "0..*" TranscriptionJob : requestedBy
   User "1" --> "0..*" NoteStructureJob : requestedBy
-
   Project "1" *-- "0..*" ProjectMember : members
   Project "1" *-- "0..*" Folder : folders
-
   Folder "1" --> "0..*" Folder : parent / children
   Folder "1" *-- "0..*" Resource : resources
-
   Resource "1" *-- "0..*" TranscriptionJob : transcriptions
   Resource "1" --> "0..*" NoteStructureJob : structureJobs
-  NoteStructureJob "0..1" --> "0..1" Resource : resultResource
-  Resource "1" *-- "0..1" Quiz : quiz
+  NoteStructureJob "0..1" ..> "0..1" Resource : resultResource
   Resource "1" *-- "0..*" ResourceSource : sources
-  ResourceSource "0..1" --> "0..1" Resource : sourceResource
+  ResourceSource "0..1" ..> "0..1" Resource : sourceResource
   Folder "1" *-- "0..*" ContentGenerationJob : generationJobs
   User "1" --> "0..*" ContentGenerationJob : requestedBy
-  User "1" --> "0..*" ResourceEvent : resourceEvents
-  User "1" --> "0..*" McpToken : mcpTokens
-  ContentGenerationJob "0..1" --> "0..1" Resource : resultResource
+  ContentGenerationJob "0..1" ..> "0..1" Resource : resultResource
   Project "1" *-- "0..*" ResourceEvent : resourceEvents
   Project "1" *-- "0..*" ContentIndexJob : contentIndexJobs
   Project "1" *-- "0..*" McpToken : mcpTokens
+  Resource "1" *-- "0..*" ResourceExtraction : extractions
   Resource "1" *-- "0..*" ResourceEvent : events
   Resource "1" *-- "0..*" ResourceChunk : chunks
   Resource "1" *-- "0..*" ContentIndexJob : indexJobs
+  User "1" --> "0..*" ResourceEvent : resourceEvents
+  User "1" --> "0..*" McpToken : mcpTokens
+```
 
-  User "1" *-- "0..*" EmailVerificationToken : emailVerificationTokens
-  User "1" --> "0..1" TeacherProfile : teacherProfile
-  User "1" --> "0..*" AuditEvent : auditEvents
-  User "1" --> "0..*" Quiz : createdQuizzes
-  User "1" --> "0..*" QuizAssignment : createdQuizAssignments
-  User "1" --> "0..*" QuizAssignmentStudent : quizAssignments
-  User "1" --> "0..*" QuizAttempt : quizAttempts
-  TeacherProfile "0..1" --> "0..*" User : reviewer
+### 1.4 Evaluación
+
+Cuestionarios, preguntas, asignaciones, intentos y respuestas.
+
+```mermaid
+classDiagram
+  direction LR
+
+  class Project {
+    +id: String
+    +ownerId: String
+    +name: String
+    +visibility: ProjectVisibility
+    +type: ProjectType
+    +status: ProjectStatus
+  }
+
+  class Resource {
+    +id: String
+    +folderId: String
+    +authorId: String
+    +name: String
+    +kind: ResourceKind
+    +origin: ResourceOrigin
+    +validationStatus: ValidationStatus
+  }
+
+  class Quiz {
+    +id: String
+    +resourceId: String
+    +title: String
+    +status: QuizStatus
+  }
+
+  class QuizQuestion {
+    +id: String
+    +quizId: String
+    +type: QuizQuestionType
+    +prompt: String
+    +points: Int
+    +order: Int
+  }
+
+  class QuizOption {
+    +id: String
+    +questionId: String
+    +text: String
+    +isCorrect: Boolean
+    +order: Int
+  }
+
+  class QuizAssignment {
+    +id: String
+    +quizId: String
+    +projectId: String
+    +dueAt: DateTime
+    +status: QuizAssignmentStatus
+  }
+
+  class QuizAssignmentStudent {
+    +assignmentId: String
+    +studentId: String
+  }
+
+  class QuizAttempt {
+    +id: String
+    +assignmentId: String
+    +studentId: String
+    +status: QuizAttemptStatus
+    +score: Float
+  }
+
+  class QuizAnswer {
+    +id: String
+    +attemptId: String
+    +questionId: String
+    +optionId: String
+    +isCorrect: Boolean
+    +pointsAwarded: Float
+  }
 
   Project "1" *-- "0..*" QuizAssignment : quizAssignments
+  Resource "1" *-- "0..1" Quiz : quiz
   Quiz "1" *-- "0..*" QuizQuestion : questions
   QuizQuestion "1" *-- "0..*" QuizOption : options
   Quiz "1" *-- "0..*" QuizAssignment : assignments
@@ -530,51 +395,36 @@ classDiagram
   QuizAttempt "1" *-- "0..*" QuizAnswer : answers
   QuizQuestion "1" --> "0..*" QuizAnswer : answers
   QuizOption "1" --> "0..*" QuizAnswer : selectedBy
-
-  User --> UserStatus
-  User --> GlobalRole
-  Project --> ProjectVisibility
-  Project --> ProjectType
-  Project --> ProjectStatus
-  ProjectMember --> ProjectRole
-  Resource --> ResourceKind
-  Resource --> ResourceOrigin
-  Resource --> ValidationStatus
-  ResourceSource --> ResourceSourceRelation
-  ContentGenerationJob --> ContentGenerationType
-  ContentGenerationJob --> AgentJobStatus
-  ResourceEvent --> ResourceEventType
-  ContentIndexJob --> AgentJobStatus
-  TranscriptionJob --> TranscriptionStatus
-  NoteStructureJob --> AgentJobStatus
-  TeacherProfile --> TeacherStatus
-  TeacherProfile --> TeacherVerificationMethod
-  Quiz --> QuizStatus
-  QuizQuestion --> QuizQuestionType
-  QuizAssignment --> QuizAssignmentStatus
-  QuizAttempt --> QuizAttemptStatus
-
-  note for User "avatarUrl, bio y emailVerifiedAt son opcionales"
-  note for Project "description, institution, period, subject, code, archivedAt y archiveAccessUntil son opcionales"
-  note for Folder "parentId es opcional; la raíz tiene isRoot=true"
-  note for Resource "checksum es opcional; s3Key es único; QUIZ enlaza con Quiz; origin y validación son metadatos"
-  note for ResourceSource "sourceResourceId se vuelve null si la fuente se elimina"
-  note for ContentGenerationJob "sources, config, resultJson, warnings y usage son opcionales"
-  note for ResourceEvent "resourceId y userId pueden quedar null si el recurso o usuario se elimina"
-  note for ResourceChunk "embedding es vector(1536); content no se expone en claro en métricas"
-  note for McpToken "tokenHash es único; scopes, expiresAt, revokedAt y lastUsedAt son metadatos"
-  note for TranscriptionJob "text y error son opcionales"
-  note for NoteStructureJob "resultMarkdown, outline, warnings, error y usage son opcionales"
-  note for EmailVerificationToken "usedAt es opcional; tokenHash es único"
-  note for TeacherProfile "reviewerId, reviewedAt, rejectionReason y campos académicos son opcionales"
-  note for AuditEvent "actorId, entityId y metadata son opcionales"
-  note for Quiz "instructions, settings y snapshot son opcionales"
-  note for QuizQuestion "correctText es opcional; las opciones solo aplican a MC/VF"
-  note for QuizAttempt "submittedAt y gradedAt son opcionales"
-  note for QuizAnswer "optionId, text, isCorrect, pointsAwarded y feedback son opcionales"
 ```
 
-### Reglas del modelo
+### 1.5 Enumeraciones
+
+Los enums tipan atributos, pero no se dibujan como clases para mantener el diseño de datos legible.
+
+| Enum | Valores |
+|---|---|
+| `UserStatus` | `ACTIVE`, `ARCHIVED` |
+| `ProjectVisibility` | `PUBLIC`, `PRIVATE` |
+| `ProjectRole` | `EDITOR`, `VIEWER`, `STUDENT` |
+| `ResourceKind` | `DOCUMENT`, `IMAGE`, `AUDIO`, `VIDEO`, `MARKDOWN`, `QUIZ` |
+| `TranscriptionStatus` | `QUEUED`, `PROCESSING`, `DONE`, `FAILED` |
+| `AgentJobStatus` | `QUEUED`, `PROCESSING`, `DONE`, `FAILED` |
+| `GlobalRole` | `ADMIN`, `TEACHER`, `STUDENT` |
+| `TeacherStatus` | `PENDING`, `VERIFIED`, `REJECTED`, `REVOKED` |
+| `TeacherVerificationMethod` | `INSTITUTIONAL_EMAIL`, `MANUAL` |
+| `ProjectType` | `PERSONAL`, `COURSE` |
+| `ProjectStatus` | `ACTIVE`, `ARCHIVED` |
+| `QuizStatus` | `DRAFT`, `PUBLISHED`, `ARCHIVED` |
+| `QuizQuestionType` | `MULTIPLE_CHOICE`, `TRUE_FALSE`, `SHORT_ANSWER` |
+| `QuizAssignmentStatus` | `DRAFT`, `PUBLISHED`, `CLOSED` |
+| `QuizAttemptStatus` | `IN_PROGRESS`, `SUBMITTED`, `GRADED`, `EXPIRED` |
+| `ResourceOrigin` | `UPLOAD`, `NOTE`, `TRANSCRIPTION`, `AI_STRUCTURE`, `AI_MINDMAP`, `AI_QUIZ`, `QUIZ`, `IMPORT` |
+| `ValidationStatus` | `UNVERIFIED`, `PENDING`, `VERIFIED`, `REJECTED` |
+| `ResourceSourceRelation` | `DERIVED_FROM`, `CITES`, `USES` |
+| `ContentGenerationType` | `MINDMAP`, `QUIZ` |
+| `ResourceEventType` | `VIEW`, `DOWNLOAD`, `SEARCH_HIT`, `QUIZ_USE` |
+
+### 1.6 Reglas del modelo
 
 - `Project.ownerId` es la única fuente del rol **Owner**; el Owner no se guarda en `ProjectMember`.
 - `ProjectMember.role` admite `EDITOR`, `VIEWER` y `STUDENT`; el rol `STUDENT` se resuelve como lectura en `PermissionsService`.
@@ -586,8 +436,13 @@ classDiagram
 - `Project` archivado bloquea escrituras a participantes que no son Owner; el Owner conserva la gestión.
 - El borrado de `Project`, `Folder`, `Resource`, `Quiz` y `Session` es en cascada según Prisma.
 - `Folder.parentId` es una auto-relación; la raíz tiene `isRoot = true`.
+- `ContentGenerationJob.activeKey` es único mientras el job está activo y se libera al terminar.
+- `ResourceExtraction` es única por `resourceId + checksum + extractorVersion`.
+- `McpToken` está acotado a un proyecto y se revoca con `revokedAt`.
 
 ## 2. Clases de implementación del backend
+
+> Esta sección es una referencia de lectura. **No se importa a Enterprise Architect**; el diseño de datos se importa con `importar-diseno-datos.js` y el modelo físico completo con `importar-modelo.js`.
 
 ```mermaid
 classDiagram
@@ -1021,5 +876,7 @@ classDiagram
 | `ResourceEvent`, `UsageService` | 023 |
 | `ResourceChunk`, `ContentIndexJob`, `SearchService`, `EmbeddingsService` | 024 |
 | `McpToken`, `McpService`, FastMCP | 025 |
+| `ResourceExtraction` | 027 |
+| `ContentGenerationJob.stage/progress/activeKey` | 027, 028 |
 
-> El diagrama formal equivalente se crea en Enterprise Architect desde [`docs/sdd/ea/modelo.json`](../ea/modelo.json).
+> El modelo físico completo se importa en Enterprise Architect desde [`docs/sdd/ea/modelo.json`](../ea/modelo.json) con `importar-modelo.js`. La vista de diseño de datos tiene un importador independiente: [`docs/sdd/ea/importar-diseno-datos.js`](../ea/importar-diseno-datos.js).

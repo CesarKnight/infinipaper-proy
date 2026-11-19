@@ -108,6 +108,27 @@ for (const rel of model.classModel.relations) {
   if (!classNames.has(rel.to)) fail(`relación de clase hacia un elemento inexistente: ${rel.to}`);
 }
 
+// El diagrama de despliegue es una vista de la demo desplegada en AWS.
+// Cada elemento debe existir antes que sus hijos y las relaciones usan ids.
+if (!model.deployment) fail("falta el modelo de despliegue");
+const deploymentIds = new Set();
+const deploymentPaths = new Set();
+for (const item of model.deployment.elements) {
+  if (!item.id || !item.name || !item.type) fail("elemento de despliegue sin id, nombre o tipo");
+  if (deploymentIds.has(item.id)) fail(`elemento de despliegue duplicado: ${item.id}`);
+  if (item.parent && !deploymentIds.has(item.parent)) {
+    fail(`el padre de ${item.id} debe aparecer antes en deployment.elements`);
+  }
+  const path = item.parent ? `${item.parent}/${item.name}` : item.name;
+  if (deploymentPaths.has(path)) fail(`elemento de despliegue duplicado en el mismo padre: ${path}`);
+  deploymentPaths.add(path);
+  deploymentIds.add(item.id);
+}
+for (const rel of model.deployment.relationships) {
+  if (!deploymentIds.has(rel.from)) fail(`relación de despliegue desde un elemento inexistente: ${rel.from}`);
+  if (!deploymentIds.has(rel.to)) fail(`relación de despliegue hacia un elemento inexistente: ${rel.to}`);
+}
+
 // ---------------------------------------------------------------
 // Runtime JScript para Enterprise Architect
 // ---------------------------------------------------------------
@@ -140,6 +161,17 @@ function ensureElement(pkg, name, type, stereotype, notes) {
   var element = findByName(pkg.Elements, name);
   if (!element) {
     element = pkg.Elements.AddNew(name, type);
+  }
+  if (stereotype) element.Stereotype = stereotype;
+  if (notes) element.Notes = notes;
+  element.Update();
+  return element;
+}
+
+function ensureChildElement(parent, name, type, stereotype, notes) {
+  var element = findByName(parent.Elements, name);
+  if (!element) {
+    element = parent.Elements.AddNew(name, type);
   }
   if (stereotype) element.Stereotype = stereotype;
   if (notes) element.Notes = notes;
@@ -298,7 +330,9 @@ function createC4Model(root) {
 }
 
 function createClassModel(root) {
-  var pkg = ensurePackage(root, MODEL.diagramPackages.classes, "Modelo de dominio y clases de implementación.");
+  // Solo el modelo de base de datos: entidades y enums de Prisma.
+  // Las clases de implementación del backend no se importan a EA.
+  var pkg = ensurePackage(root, MODEL.diagramPackages.classes, "Modelo de base de datos: solo clases/entidades y enums de Prisma.");
   var elements = {};
   var i;
   var j;
@@ -322,7 +356,7 @@ function createClassModel(root) {
     }
   }
 
-  var diagram = ensureDiagram(pkg, MODEL.classModel.name, "Logical", "Diagrama de clases del modelo de dominio.");
+  var diagram = ensureDiagram(pkg, MODEL.classModel.name, "Logical", "Diagrama de base de datos: solo clases/entidades y enums de Prisma.");
   var index = 0;
   for (var key in elements) {
     if (!elements.hasOwnProperty(key)) continue;
@@ -351,7 +385,47 @@ function createClassModel(root) {
 
   diagram.Update();
   Repository.ReloadDiagram(diagram.DiagramID);
-  out("Clases: " + MODEL.classModel.classes.length + " clases, " + MODEL.classModel.enums.length + " enums.");
+  out("Base de datos: " + MODEL.classModel.classes.length + " clases, " + MODEL.classModel.enums.length + " enums.");
+}
+
+function createDeploymentModel(root) {
+  var pkg = ensurePackage(root, MODEL.diagramPackages.deployment, "Nodos, artefactos y rutas de comunicación de la demo desplegada.");
+  var map = {};
+  var i;
+
+  for (i = 0; i < MODEL.deployment.elements.length; i++) {
+    var item = MODEL.deployment.elements[i];
+    var parent = item.parent ? map[item.parent] : null;
+    if (parent) {
+      map[item.id] = ensureChildElement(parent, item.name, item.type, item.stereotype, item.notes);
+    } else {
+      map[item.id] = ensureElement(pkg, item.name, item.type, item.stereotype, item.notes);
+    }
+  }
+
+  var diagram = ensureDiagram(pkg, MODEL.deployment.name, "Deployment", "Diagrama UML de despliegue de la demo en AWS.");
+  for (i = 0; i < MODEL.deployment.elements.length; i++) {
+    var layout = MODEL.deployment.elements[i];
+    addToDiagram(
+      diagram,
+      map[layout.id],
+      layout.x || 40,
+      layout.y || 40,
+      layout.w || 200,
+      layout.h || 80
+    );
+  }
+
+  for (i = 0; i < MODEL.deployment.relationships.length; i++) {
+    var rel = MODEL.deployment.relationships[i];
+    if (map[rel.from] && map[rel.to]) {
+      connect(map[rel.from], map[rel.to], "Association", rel.label, rel.notes);
+    }
+  }
+
+  diagram.Update();
+  Repository.ReloadDiagram(diagram.DiagramID);
+  out("Despliegue: " + MODEL.deployment.elements.length + " nodos/artefactos y " + MODEL.deployment.relationships.length + " rutas.");
 }
 
 function createSequenceModel(root) {
@@ -398,6 +472,7 @@ function main() {
   createPackageModel(root);
   createC4Model(root);
   createClassModel(root);
+  createDeploymentModel(root);
   createSequenceModel(root);
 
   out("Modelo importado correctamente en '" + MODEL.rootPackage + "'.");
@@ -420,5 +495,5 @@ const output = `${header}\nvar MODEL = ${JSON.stringify(model, null, 2)};\n${run
 fs.writeFileSync(outPath, output, "utf8");
 console.log(`Generado ${path.relative(process.cwd(), outPath)}`);
 console.log(
-  `actores=${model.actors.length} casos=${model.useCases.length} secuencias=${model.sequenceDiagrams.length}`
+  `actores=${model.actors.length} casos=${model.useCases.length} secuencias=${model.sequenceDiagrams.length} despliegue=${model.deployment.elements.length}`
 );

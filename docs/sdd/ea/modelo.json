@@ -5,7 +5,8 @@
     "packages": "02 · Paquetes",
     "c4": "03 · Arquitectura C4",
     "sequences": "04 · Secuencias",
-    "classes": "05 · Clases"
+    "classes": "05 · Base de datos",
+    "deployment": "06 · Despliegue"
   },
   "actors": [
     {
@@ -1326,7 +1327,7 @@
     }
   },
   "classModel": {
-    "name": "Clases · Modelo de dominio",
+    "name": "Base de datos · Modelo de clases",
     "classes": [
       {
         "name": "User",
@@ -1942,6 +1943,10 @@
             "type": "Boolean"
           },
           {
+            "name": "sourceRefs",
+            "type": "Json"
+          },
+          {
             "name": "createdAt",
             "type": "DateTime"
           },
@@ -2160,7 +2165,7 @@
       {
         "name": "ContentGenerationJob",
         "stereotype": "entity",
-        "notes": "sources, config, resultJson, warnings y usage son opcionales.",
+        "notes": "sources, config, resultJson, warnings, stage, progress y usage son opcionales; activeKey es único mientras el job está activo.",
         "attributes": [
           {
             "name": "id",
@@ -2181,6 +2186,26 @@
           {
             "name": "status",
             "type": "AgentJobStatus"
+          },
+          {
+            "name": "sourceType",
+            "type": "String"
+          },
+          {
+            "name": "sourceId",
+            "type": "String"
+          },
+          {
+            "name": "activeKey",
+            "type": "String"
+          },
+          {
+            "name": "stage",
+            "type": "String"
+          },
+          {
+            "name": "progress",
+            "type": "Json"
           },
           {
             "name": "sources",
@@ -2221,6 +2246,61 @@
           {
             "name": "outputTokens",
             "type": "Int"
+          },
+          {
+            "name": "createdAt",
+            "type": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "name": "ResourceExtraction",
+        "stereotype": "entity",
+        "notes": "content, metadata, warnings y error son opcionales; unique por resourceId + checksum + extractorVersion.",
+        "attributes": [
+          {
+            "name": "id",
+            "type": "String"
+          },
+          {
+            "name": "resourceId",
+            "type": "String"
+          },
+          {
+            "name": "checksum",
+            "type": "String"
+          },
+          {
+            "name": "extractor",
+            "type": "String"
+          },
+          {
+            "name": "extractorVersion",
+            "type": "String"
+          },
+          {
+            "name": "status",
+            "type": "AgentJobStatus"
+          },
+          {
+            "name": "content",
+            "type": "String"
+          },
+          {
+            "name": "metadata",
+            "type": "Json"
+          },
+          {
+            "name": "warnings",
+            "type": "Json"
+          },
+          {
+            "name": "error",
+            "type": "String"
           },
           {
             "name": "createdAt",
@@ -3014,6 +3094,14 @@
       },
       {
         "from": "Resource",
+        "to": "ResourceExtraction",
+        "type": "Composition",
+        "label": "extractions",
+        "fromMultiplicity": "1",
+        "toMultiplicity": "0..*"
+      },
+      {
+        "from": "Resource",
         "to": "ResourceEvent",
         "type": "Composition",
         "fromMultiplicity": "1",
@@ -3067,6 +3155,11 @@
         "fromMultiplicity": "",
         "toMultiplicity": "",
         "label": "status"
+      },
+      {
+        "from": "ResourceExtraction",
+        "to": "AgentJobStatus",
+        "type": "Dependency"
       }
     ]
   },
@@ -5278,16 +5371,26 @@
     },
     {
       "id": "021",
-      "name": "021 · Mapas mentales",
+      "name": "021 · Mapas mentales con IA",
       "participants": [
         {
           "alias": "E",
-          "name": "Editor",
+          "name": "Editor / Owner",
           "type": "Actor"
         },
         {
           "alias": "FE",
           "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "V",
+          "name": "MindmapViewer",
+          "type": "Object"
+        },
+        {
+          "alias": "LS",
+          "name": "localStorage",
           "type": "Object"
         },
         {
@@ -5325,7 +5428,7 @@
         {
           "from": "E",
           "to": "FE",
-          "name": "Genera mapa mental"
+          "name": "Genera desde recurso, carpeta o proyecto"
         },
         {
           "from": "FE",
@@ -5335,17 +5438,38 @@
         {
           "from": "API",
           "to": "DB",
-          "name": "Crea ContentGenerationJob MINDMAP"
+          "name": "Valida permisos, caché y activeKey"
         },
         {
           "from": "API",
           "to": "Q",
-          "name": "Encola job"
+          "name": "Encola ContentGenerationJob MINDMAP"
         },
         {
           "from": "Q",
           "to": "API",
-          "name": "Worker PROCESSING"
+          "name": "Worker stage EXTRACTING"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Marca PROCESSING y progreso"
+        },
+        {
+          "from": "API",
+          "to": "AG",
+          "name": "Extrae y normaliza fuentes (spec 027)"
+        },
+        {
+          "from": "AG",
+          "to": "API",
+          "name": "Documentos normalizados + warnings",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Guarda ResourceExtraction · stage GENERATING"
         },
         {
           "from": "API",
@@ -5355,23 +5479,29 @@
         {
           "from": "AG",
           "to": "LLM",
-          "name": "Prompt de mapa"
+          "name": "Prompt de mapa con contexto"
         },
         {
           "from": "AG",
           "to": "API",
-          "name": "JSON validado + usage",
+          "name": "JSON + usedSourceIds + warnings",
           "notes": "respuesta"
         },
         {
           "from": "API",
           "to": "S3",
-          "name": "Guarda JSON"
+          "name": "Guarda JSON canónico"
         },
         {
           "from": "API",
           "to": "DB",
           "name": "Resource MINDMAP + fuentes + DONE"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Estado, etapa y warnings",
+          "notes": "respuesta"
         },
         {
           "from": "FE",
@@ -5381,14 +5511,46 @@
         {
           "from": "API",
           "to": "FE",
-          "name": "Mapa renderizable",
+          "name": "{ nodes, edges }",
+          "notes": "respuesta"
+        },
+        {
+          "from": "FE",
+          "to": "V",
+          "name": "Monta React Flow + layout dagre"
+        },
+        {
+          "from": "V",
+          "to": "LS",
+          "name": "Lee posiciones manuales"
+        },
+        {
+          "from": "V",
+          "to": "E",
+          "name": "Canvas, minimapa y zoom",
+          "notes": "respuesta"
+        },
+        {
+          "from": "E",
+          "to": "V",
+          "name": "Pan, zoom, reordena o exporta PNG"
+        },
+        {
+          "from": "V",
+          "to": "LS",
+          "name": "Guarda posiciones manuales"
+        },
+        {
+          "from": "V",
+          "to": "E",
+          "name": "Descarga PNG del tema activo",
           "notes": "respuesta"
         }
       ]
     },
     {
       "id": "022",
-      "name": "022 · Cuestionarios IA",
+      "name": "022 · Cuestionarios con IA",
       "participants": [
         {
           "alias": "D",
@@ -5435,7 +5597,7 @@
         {
           "from": "D",
           "to": "FE",
-          "name": "Genera cuestionario IA"
+          "name": "Genera desde recurso, carpeta o proyecto"
         },
         {
           "from": "FE",
@@ -5445,17 +5607,38 @@
         {
           "from": "API",
           "to": "DB",
-          "name": "Crea ContentGenerationJob QUIZ"
+          "name": "Valida permisos, caché y activeKey"
         },
         {
           "from": "API",
           "to": "Q",
-          "name": "Encola job"
+          "name": "Encola ContentGenerationJob QUIZ"
         },
         {
           "from": "Q",
           "to": "API",
-          "name": "Worker PROCESSING"
+          "name": "Worker stage EXTRACTING"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Marca PROCESSING y progreso"
+        },
+        {
+          "from": "API",
+          "to": "AG",
+          "name": "Extrae y normaliza fuentes (spec 027)"
+        },
+        {
+          "from": "AG",
+          "to": "API",
+          "name": "Documentos normalizados + warnings",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Guarda ResourceExtraction · stage GENERATING"
         },
         {
           "from": "API",
@@ -5465,12 +5648,12 @@
         {
           "from": "AG",
           "to": "LLM",
-          "name": "Prompt de preguntas"
+          "name": "Prompt con cantidad, dificultad y tipos"
         },
         {
           "from": "AG",
           "to": "API",
-          "name": "JSON validado + usage",
+          "name": "JSON + usedSourceIds + warnings",
           "notes": "respuesta"
         },
         {
@@ -5482,6 +5665,12 @@
           "from": "API",
           "to": "DB",
           "name": "Job DONE"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Borrador + warnings",
+          "notes": "respuesta"
         },
         {
           "from": "D",
@@ -5930,6 +6119,983 @@
           "name": "GET /files/:id/content?download=1"
         }
       ]
+    },
+    {
+      "id": "027",
+      "name": "027 · Fuentes multiformato",
+      "participants": [
+        {
+          "alias": "E",
+          "name": "Editor / Owner",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "Q",
+          "name": "pg-boss",
+          "type": "Object"
+        },
+        {
+          "alias": "AG",
+          "name": "Agents",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        },
+        {
+          "alias": "ASR",
+          "name": "Whisper ASR",
+          "type": "Object"
+        },
+        {
+          "alias": "LLM",
+          "name": "LLM",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Genera desde recurso, carpeta o proyecto"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /folders/:id/mindmaps o /quizzes/generate"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Valida permisos y caché de extracción"
+        },
+        {
+          "from": "API",
+          "to": "Q",
+          "name": "Encola ContentGenerationJob"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Job QUEUED",
+          "notes": "respuesta"
+        },
+        {
+          "from": "Q",
+          "to": "API",
+          "name": "Worker stage EXTRACTING"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Marca PROCESSING y progreso"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "URLs presignadas de fuentes"
+        },
+        {
+          "from": "API",
+          "to": "AG",
+          "name": "POST /v1/sources/extract"
+        },
+        {
+          "from": "AG",
+          "to": "S3",
+          "name": "Descarga fuente"
+        },
+        {
+          "from": "AG",
+          "to": "ASR",
+          "name": "Transcribe audio o video (opt)"
+        },
+        {
+          "from": "ASR",
+          "to": "AG",
+          "name": "Texto y metadatos",
+          "notes": "respuesta"
+        },
+        {
+          "from": "AG",
+          "to": "LLM",
+          "name": "OCR o visión si aplica (opt)"
+        },
+        {
+          "from": "LLM",
+          "to": "AG",
+          "name": "Texto o descripción",
+          "notes": "respuesta"
+        },
+        {
+          "from": "AG",
+          "to": "API",
+          "name": "Documento normalizado + warnings",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Guarda ResourceExtraction"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "stage GENERATING"
+        },
+        {
+          "from": "API",
+          "to": "AG",
+          "name": "POST /v1/mindmaps/generate o /v1/quizzes/generate"
+        },
+        {
+          "from": "AG",
+          "to": "LLM",
+          "name": "Genera contenido con contexto normalizado"
+        },
+        {
+          "from": "LLM",
+          "to": "AG",
+          "name": "JSON validado",
+          "notes": "respuesta"
+        },
+        {
+          "from": "AG",
+          "to": "API",
+          "name": "resultJson + usedSourceIds + warnings",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Guarda JSON canónico"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea Resource + ResourceSource · job DONE"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Estado, etapa, warnings y fuentes usadas",
+          "notes": "respuesta"
+        },
+        {
+          "from": "FE",
+          "to": "E",
+          "name": "Muestra resultado y archivos omitidos",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "028",
+      "name": "028 · Cola de generación y duplicados",
+      "participants": [
+        {
+          "alias": "E",
+          "name": "Editor / Owner",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "Q",
+          "name": "pg-boss",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Abre el proyecto"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /projects/:id/generation-jobs?active=true"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Consulta jobs QUEUED y PROCESSING"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Items con etapa y progreso",
+          "notes": "respuesta"
+        },
+        {
+          "from": "FE",
+          "to": "E",
+          "name": "Render de la cola o estado vacío",
+          "notes": "respuesta"
+        },
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Solicita una generación"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /folders/:id/mindmaps o /quizzes/generate"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Calcula activeKey y busca duplicado"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "409 GENERATION_JOB_IN_PROGRESS",
+          "notes": "alt duplicado"
+        },
+        {
+          "from": "FE",
+          "to": "E",
+          "name": "Avisa y deshabilita la creación",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Crea job QUEUED + activeKey",
+          "notes": "alt sin duplicado"
+        },
+        {
+          "from": "API",
+          "to": "Q",
+          "name": "Encola el job"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Job creado",
+          "notes": "respuesta"
+        },
+        {
+          "from": "Q",
+          "to": "API",
+          "name": "Worker toma el job"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Actualiza stage y progress"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "Polling cada 3 s"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Estado actualizado",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Libera activeKey al terminar o fallar"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Job fuera de la cola activa",
+          "notes": "respuesta"
+        },
+        {
+          "from": "E",
+          "to": "FE",
+          "name": "Reintenta el job"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "POST /generation-jobs/:id/retry"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Recalcula activeKey y valida duplicados"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "Nuevo intento o 409 si sigue activo",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "029",
+      "name": "029 · Visor interactivo de mapas",
+      "participants": [
+        {
+          "alias": "U",
+          "name": "Usuario",
+          "type": "Actor"
+        },
+        {
+          "alias": "FE",
+          "name": "Frontend",
+          "type": "Object"
+        },
+        {
+          "alias": "V",
+          "name": "MindmapViewer",
+          "type": "Object"
+        },
+        {
+          "alias": "LS",
+          "name": "localStorage",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        },
+        {
+          "alias": "DB",
+          "name": "PostgreSQL",
+          "type": "Object"
+        },
+        {
+          "alias": "S3",
+          "name": "MinIO",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "U",
+          "to": "FE",
+          "name": "Abre un mapa mental"
+        },
+        {
+          "from": "FE",
+          "to": "API",
+          "name": "GET /files/:id/content"
+        },
+        {
+          "from": "API",
+          "to": "DB",
+          "name": "Valida Resource MINDMAP y permisos"
+        },
+        {
+          "from": "API",
+          "to": "S3",
+          "name": "Lee el JSON canónico"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "{ nodes, edges }",
+          "notes": "respuesta"
+        },
+        {
+          "from": "FE",
+          "to": "V",
+          "name": "Monta React Flow + layout dagre"
+        },
+        {
+          "from": "V",
+          "to": "LS",
+          "name": "Lee posiciones por resourceId"
+        },
+        {
+          "from": "V",
+          "to": "U",
+          "name": "Canvas, minimapa y zoom",
+          "notes": "respuesta"
+        },
+        {
+          "from": "U",
+          "to": "V",
+          "name": "Pan, zoom o arrastre de nodos"
+        },
+        {
+          "from": "V",
+          "to": "LS",
+          "name": "Guarda posiciones manuales"
+        },
+        {
+          "from": "U",
+          "to": "V",
+          "name": "Ajustar vista"
+        },
+        {
+          "from": "V",
+          "to": "V",
+          "name": "fitView del grafo completo"
+        },
+        {
+          "from": "U",
+          "to": "V",
+          "name": "Reorganizar"
+        },
+        {
+          "from": "V",
+          "to": "V",
+          "name": "Recalcula dagre y descarta posiciones"
+        },
+        {
+          "from": "U",
+          "to": "V",
+          "name": "Exportar PNG"
+        },
+        {
+          "from": "V",
+          "to": "V",
+          "name": "html-to-image del grafo completo"
+        },
+        {
+          "from": "V",
+          "to": "U",
+          "name": "Descarga PNG del tema activo",
+          "notes": "respuesta"
+        },
+        {
+          "from": "API",
+          "to": "FE",
+          "name": "403, 404 o error de lectura",
+          "notes": "alt error"
+        },
+        {
+          "from": "FE",
+          "to": "U",
+          "name": "Estado de error con reintento",
+          "notes": "respuesta"
+        }
+      ]
+    },
+    {
+      "id": "030",
+      "name": "030 · Landing y sitio corporativo",
+      "participants": [
+        {
+          "alias": "V",
+          "name": "Visitante",
+          "type": "Actor"
+        },
+        {
+          "alias": "B",
+          "name": "Navegador",
+          "type": "Object"
+        },
+        {
+          "alias": "P",
+          "name": "Proxy Next",
+          "type": "Object"
+        },
+        {
+          "alias": "N",
+          "name": "Next App",
+          "type": "Object"
+        },
+        {
+          "alias": "API",
+          "name": "API NestJS",
+          "type": "Object"
+        }
+      ],
+      "messages": [
+        {
+          "from": "V",
+          "to": "B",
+          "name": "GET /"
+        },
+        {
+          "from": "B",
+          "to": "P",
+          "name": "Solicita la home"
+        },
+        {
+          "from": "P",
+          "to": "P",
+          "name": "Comprueba cookie de sesión"
+        },
+        {
+          "from": "P",
+          "to": "N",
+          "name": "Rewrite a /landing",
+          "notes": "alt sin sesión"
+        },
+        {
+          "from": "N",
+          "to": "B",
+          "name": "HTML landing + metadata",
+          "notes": "respuesta"
+        },
+        {
+          "from": "B",
+          "to": "V",
+          "name": "Hero, capacidades y CTAs",
+          "notes": "respuesta"
+        },
+        {
+          "from": "P",
+          "to": "N",
+          "name": "Render de /",
+          "notes": "alt con sesión"
+        },
+        {
+          "from": "N",
+          "to": "API",
+          "name": "GET /dashboard"
+        },
+        {
+          "from": "API",
+          "to": "N",
+          "name": "Proyectos y actividad",
+          "notes": "respuesta"
+        },
+        {
+          "from": "N",
+          "to": "B",
+          "name": "Dashboard autenticado",
+          "notes": "respuesta"
+        },
+        {
+          "from": "B",
+          "to": "V",
+          "name": "Dashboard",
+          "notes": "respuesta"
+        },
+        {
+          "from": "V",
+          "to": "B",
+          "name": "Pulsa Crear cuenta o Iniciar sesión"
+        },
+        {
+          "from": "B",
+          "to": "N",
+          "name": "GET /register o /login"
+        },
+        {
+          "from": "N",
+          "to": "B",
+          "name": "Página de acceso",
+          "notes": "respuesta"
+        },
+        {
+          "from": "V",
+          "to": "B",
+          "name": "Abre /empresa"
+        },
+        {
+          "from": "B",
+          "to": "N",
+          "name": "GET /empresa"
+        },
+        {
+          "from": "N",
+          "to": "B",
+          "name": "Placeholder corporativo",
+          "notes": "respuesta"
+        }
+      ]
     }
-  ]
+  ],
+  "deployment": {
+    "name": "Despliegue · AWS EC2 + app móvil",
+    "notes": "Arquitectura desplegada para la demo: una EC2 en us-east-2 con Docker Compose, Caddy, Next.js, NestJS, PostgreSQL, MinIO, Whisper, agentes, Mailpit y la app móvil Expo.",
+    "elements": [
+      {
+        "id": "pc",
+        "name": "Computadora cliente",
+        "type": "Node",
+        "stereotype": "device",
+        "notes": "Equipo del visitante o usuario autenticado.",
+        "x": 40,
+        "y": 40,
+        "w": 260,
+        "h": 170
+      },
+      {
+        "id": "browser",
+        "name": "Navegador web",
+        "type": "Node",
+        "stereotype": "executionEnvironment",
+        "parent": "pc",
+        "notes": "HTML, CSS y JavaScript; consume HTTPS.",
+        "x": 60,
+        "y": 100,
+        "w": 220,
+        "h": 70
+      },
+      {
+        "id": "mobile",
+        "name": "Teléfono móvil",
+        "type": "Node",
+        "stereotype": "device",
+        "notes": "Android o iOS; consume la API con X-Mobile-Session.",
+        "x": 40,
+        "y": 250,
+        "w": 260,
+        "h": 230
+      },
+      {
+        "id": "expo",
+        "name": "Expo / React Native",
+        "type": "Node",
+        "stereotype": "executionEnvironment",
+        "parent": "mobile",
+        "notes": "Runtime de la app móvil.",
+        "x": 60,
+        "y": 310,
+        "w": 220,
+        "h": 120
+      },
+      {
+        "id": "mobileapp",
+        "name": "Infinipaper Mobile",
+        "type": "Component",
+        "stereotype": "artifact",
+        "parent": "expo",
+        "notes": "Cliente Expo que llama a https://infinipaper.lat/api/v1.",
+        "x": 80,
+        "y": 370,
+        "w": 180,
+        "h": 60
+      },
+      {
+        "id": "dns",
+        "name": "Namecheap DNS",
+        "type": "Node",
+        "stereotype": "externalSystem",
+        "notes": "Namecheap BasicDNS: A @ y www hacia la IP elástica.",
+        "x": 340,
+        "y": 40,
+        "w": 220,
+        "h": 100
+      },
+      {
+        "id": "ec2",
+        "name": "AWS EC2 · t3.large",
+        "type": "Node",
+        "stereotype": "device",
+        "notes": "Instancia Ubuntu 24.04 en us-east-2 con Docker Compose.",
+        "x": 340,
+        "y": 170,
+        "w": 620,
+        "h": 540
+      },
+      {
+        "id": "ubuntu",
+        "name": "Ubuntu 24.04 + Docker Compose",
+        "type": "Node",
+        "stereotype": "executionEnvironment",
+        "parent": "ec2",
+        "notes": "Host de los contenedores de la demo.",
+        "x": 360,
+        "y": 230,
+        "w": 580,
+        "h": 460
+      },
+      {
+        "id": "caddy",
+        "name": "Caddy · TLS",
+        "type": "Component",
+        "stereotype": "gateway",
+        "parent": "ubuntu",
+        "notes": "Expone 80/443, redirige www y obtiene el certificado Let’s Encrypt.",
+        "x": 380,
+        "y": 290,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "frontend",
+        "name": "Next.js 16",
+        "type": "Component",
+        "stereotype": "component",
+        "parent": "ubuntu",
+        "notes": "UI y rewrite same-origin /api/* hacia el backend.",
+        "x": 560,
+        "y": 290,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "backend",
+        "name": "NestJS API",
+        "type": "Component",
+        "stereotype": "component",
+        "parent": "ubuntu",
+        "notes": "API /api/v1, auth, permisos, archivos, quizzes y jobs.",
+        "x": 740,
+        "y": 290,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "postgres",
+        "name": "PostgreSQL 17 + pgvector",
+        "type": "Component",
+        "stereotype": "database",
+        "parent": "ubuntu",
+        "notes": "Datos relacionales, pgvector y cola pg-boss.",
+        "x": 380,
+        "y": 400,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "minio",
+        "name": "MinIO",
+        "type": "Component",
+        "stereotype": "storage",
+        "parent": "ubuntu",
+        "notes": "Objetos S3-compatible: archivos, avatares y snapshots.",
+        "x": 560,
+        "y": 400,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "whisper",
+        "name": "Whisper ASR",
+        "type": "Component",
+        "stereotype": "service",
+        "parent": "ubuntu",
+        "notes": "Transcripción de audio en CPU con faster-whisper.",
+        "x": 740,
+        "y": 400,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "agents",
+        "name": "FastAPI + LangGraph",
+        "type": "Component",
+        "stereotype": "service",
+        "parent": "ubuntu",
+        "notes": "Extracción multiformato y agentes de contenido.",
+        "x": 380,
+        "y": 520,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "mailpit",
+        "name": "Mailpit",
+        "type": "Component",
+        "stereotype": "service",
+        "parent": "ubuntu",
+        "notes": "SMTP de demo; se consulta por túnel SSM.",
+        "x": 560,
+        "y": 520,
+        "w": 160,
+        "h": 70
+      },
+      {
+        "id": "ebs",
+        "name": "EBS gp3 · 80 GB",
+        "type": "Node",
+        "stereotype": "awsResource",
+        "notes": "Volumen persistente de Docker, PostgreSQL y MinIO.",
+        "x": 340,
+        "y": 740,
+        "w": 200,
+        "h": 80
+      },
+      {
+        "id": "eip",
+        "name": "Elastic IP",
+        "type": "Node",
+        "stereotype": "awsResource",
+        "notes": "IP pública estable asociada a la instancia.",
+        "x": 560,
+        "y": 740,
+        "w": 220,
+        "h": 80
+      },
+      {
+        "id": "sg",
+        "name": "Security Group · 80/443",
+        "type": "Node",
+        "stereotype": "awsResource",
+        "notes": "Solo HTTP/HTTPS; administración por SSM, sin SSH público.",
+        "x": 800,
+        "y": 740,
+        "w": 200,
+        "h": 80
+      },
+      {
+        "id": "ssm",
+        "name": "AWS Systems Manager",
+        "type": "Node",
+        "stereotype": "awsService",
+        "notes": "Session Manager y Run Command para administrar la instancia.",
+        "x": 1000,
+        "y": 170,
+        "w": 220,
+        "h": 90
+      },
+      {
+        "id": "secrets",
+        "name": "AWS Secrets Manager",
+        "type": "Node",
+        "stereotype": "awsService",
+        "notes": "Guarda el .env de la demo: infinipaper/demo/env.",
+        "x": 1000,
+        "y": 300,
+        "w": 220,
+        "h": 90
+      },
+      {
+        "id": "opencode",
+        "name": "OpenCode Go",
+        "type": "Node",
+        "stereotype": "externalSystem",
+        "notes": "Proveedor LLM; modelo DeepSeek V4.1 Flash.",
+        "x": 1000,
+        "y": 440,
+        "w": 220,
+        "h": 100
+      }
+    ],
+    "relationships": [
+      {
+        "from": "pc",
+        "to": "dns",
+        "label": "DNS",
+        "notes": "Resolución de dominio"
+      },
+      {
+        "from": "dns",
+        "to": "eip",
+        "label": "A @ / www",
+        "notes": "Namecheap BasicDNS"
+      },
+      {
+        "from": "pc",
+        "to": "caddy",
+        "label": "HTTPS",
+        "notes": "Navegador web"
+      },
+      {
+        "from": "mobile",
+        "to": "caddy",
+        "label": "HTTPS /api/v1",
+        "notes": "App Expo"
+      },
+      {
+        "from": "eip",
+        "to": "caddy",
+        "label": "80/443",
+        "notes": "IP elástica asociada a la instancia"
+      },
+      {
+        "from": "sg",
+        "to": "eip",
+        "label": "filtra 80/443",
+        "notes": "Sin SSH público"
+      },
+      {
+        "from": "ebs",
+        "to": "ec2",
+        "label": "block storage",
+        "notes": "Volumen gp3"
+      },
+      {
+        "from": "caddy",
+        "to": "frontend",
+        "label": "HTTP localhost:3000",
+        "notes": "Reverse proxy"
+      },
+      {
+        "from": "frontend",
+        "to": "backend",
+        "label": "rewrite /api/*",
+        "notes": "Mismo origen"
+      },
+      {
+        "from": "backend",
+        "to": "postgres",
+        "label": "SQL · Prisma",
+        "notes": "Datos y pg-boss"
+      },
+      {
+        "from": "backend",
+        "to": "minio",
+        "label": "S3",
+        "notes": "Archivos"
+      },
+      {
+        "from": "backend",
+        "to": "whisper",
+        "label": "HTTP",
+        "notes": "Transcripción"
+      },
+      {
+        "from": "backend",
+        "to": "agents",
+        "label": "HTTP interno",
+        "notes": "Bearer token"
+      },
+      {
+        "from": "backend",
+        "to": "mailpit",
+        "label": "SMTP",
+        "notes": "Correos de demo"
+      },
+      {
+        "from": "agents",
+        "to": "opencode",
+        "label": "HTTPS",
+        "notes": "Modelo DeepSeek V4.1 Flash"
+      },
+      {
+        "from": "ssm",
+        "to": "ec2",
+        "label": "Session Manager",
+        "notes": "Administración sin SSH"
+      },
+      {
+        "from": "ec2",
+        "to": "secrets",
+        "label": "GetSecretValue",
+        "notes": "Carga del .env al arrancar"
+      }
+    ]
+  }
 }

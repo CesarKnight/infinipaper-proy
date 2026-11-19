@@ -1,0 +1,275 @@
+{
+  "rootPackage": "Infinipaper · Diseño de datos",
+  "notes": "Vista de diseño de datos de Infinipaper. Se genera desde modelo.json y se importa a Enterprise Architect con un script independiente.",
+  "layout": {
+    "x": 40,
+    "y": 40,
+    "columns": 4,
+    "gapX": 300,
+    "gapY": 260,
+    "width": 240,
+    "height": 150
+  },
+  "diagrams": [
+    {
+      "key": "general",
+      "name": "Diseño de datos · Vista general",
+      "description": "Entidades centrales de identidad, proyectos, recursos y evaluación.",
+      "classes": [
+        "User",
+        "Session",
+        "Project",
+        "ProjectMember",
+        "Folder",
+        "Resource",
+        "Quiz",
+        "QuizAssignment",
+        "QuizAttempt"
+      ]
+    },
+    {
+      "key": "identidad",
+      "name": "Diseño de datos · Identidad y acceso",
+      "description": "Usuarios, sesiones, confirmación de email, perfil docente y auditoría.",
+      "classes": [
+        "User",
+        "Session",
+        "EmailVerificationToken",
+        "TeacherProfile",
+        "AuditEvent"
+      ]
+    },
+    {
+      "key": "contenido",
+      "name": "Diseño de datos · Proyectos y contenido",
+      "description": "Proyectos, carpetas, recursos, extracciones, trabajos y trazabilidad.",
+      "classes": [
+        "User",
+        "Project",
+        "ProjectMember",
+        "Folder",
+        "Resource",
+        "ResourceSource",
+        "ResourceExtraction",
+        "TranscriptionJob",
+        "NoteStructureJob",
+        "ContentGenerationJob",
+        "ResourceEvent",
+        "ResourceChunk",
+        "ContentIndexJob",
+        "McpToken"
+      ]
+    },
+    {
+      "key": "evaluacion",
+      "name": "Diseño de datos · Evaluación",
+      "description": "Cuestionarios, preguntas, asignaciones, intentos y respuestas.",
+      "classes": [
+        "Project",
+        "Resource",
+        "Quiz",
+        "QuizQuestion",
+        "QuizOption",
+        "QuizAssignment",
+        "QuizAssignmentStudent",
+        "QuizAttempt",
+        "QuizAnswer"
+      ]
+    }
+  ],
+  "relationshipOverrides": [
+    {
+      "from": "NoteStructureJob",
+      "to": "Resource",
+      "label": "resultResource",
+      "type": "Dependency"
+    },
+    {
+      "from": "ContentGenerationJob",
+      "to": "Resource",
+      "label": "resultResource",
+      "type": "Dependency"
+    },
+    {
+      "from": "ResourceSource",
+      "to": "Resource",
+      "label": "sourceResource",
+      "type": "Dependency"
+    }
+  ],
+  "keyAttributes": {
+    "User": [
+      "id",
+      "username",
+      "email",
+      "role",
+      "status"
+    ],
+    "Session": [
+      "id",
+      "userId",
+      "expiresAt"
+    ],
+    "Project": [
+      "id",
+      "ownerId",
+      "name",
+      "type",
+      "status",
+      "visibility"
+    ],
+    "ProjectMember": [
+      "id",
+      "projectId",
+      "userId",
+      "role"
+    ],
+    "Folder": [
+      "id",
+      "projectId",
+      "parentId",
+      "name",
+      "isRoot"
+    ],
+    "Resource": [
+      "id",
+      "folderId",
+      "authorId",
+      "name",
+      "kind",
+      "origin",
+      "validationStatus"
+    ],
+    "ResourceSource": [
+      "id",
+      "resourceId",
+      "sourceResourceId",
+      "relation"
+    ],
+    "ContentGenerationJob": [
+      "id",
+      "type",
+      "folderId",
+      "requestedById",
+      "status",
+      "stage"
+    ],
+    "Quiz": [
+      "id",
+      "resourceId",
+      "title",
+      "status"
+    ],
+    "QuizAssignment": [
+      "id",
+      "quizId",
+      "projectId",
+      "status",
+      "dueAt"
+    ],
+    "QuizAttempt": [
+      "id",
+      "assignmentId",
+      "studentId",
+      "status",
+      "score"
+    ],
+    "EmailVerificationToken": [
+      "id",
+      "userId",
+      "expiresAt",
+      "usedAt"
+    ],
+    "TeacherProfile": [
+      "id",
+      "userId",
+      "status",
+      "method",
+      "institution"
+    ],
+    "AuditEvent": [
+      "id",
+      "actorId",
+      "action",
+      "entityType",
+      "createdAt"
+    ],
+    "ResourceExtraction": [
+      "id",
+      "resourceId",
+      "extractor",
+      "extractorVersion",
+      "status",
+      "checksum"
+    ],
+    "TranscriptionJob": [
+      "id",
+      "resourceId",
+      "requestedById",
+      "status",
+      "language"
+    ],
+    "NoteStructureJob": [
+      "id",
+      "resourceId",
+      "requestedById",
+      "status",
+      "resultResourceId"
+    ],
+    "ResourceEvent": [
+      "id",
+      "projectId",
+      "resourceId",
+      "userId",
+      "type",
+      "createdAt"
+    ],
+    "ResourceChunk": [
+      "id",
+      "resourceId",
+      "chunkIndex",
+      "tokens"
+    ],
+    "ContentIndexJob": [
+      "id",
+      "projectId",
+      "resourceId",
+      "status"
+    ],
+    "McpToken": [
+      "id",
+      "ownerId",
+      "projectId",
+      "name",
+      "expiresAt",
+      "revokedAt"
+    ],
+    "QuizQuestion": [
+      "id",
+      "quizId",
+      "type",
+      "prompt",
+      "points",
+      "order"
+    ],
+    "QuizOption": [
+      "id",
+      "questionId",
+      "text",
+      "isCorrect",
+      "order"
+    ],
+    "QuizAssignmentStudent": [
+      "assignmentId",
+      "studentId"
+    ],
+    "QuizAnswer": [
+      "id",
+      "attemptId",
+      "questionId",
+      "optionId",
+      "isCorrect",
+      "pointsAwarded"
+    ]
+  }
+}
