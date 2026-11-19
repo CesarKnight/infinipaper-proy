@@ -64,6 +64,7 @@ El material de referencia describe la sobrecarga documental académica, la lectu
 | RF-12 | La landing tiene metadatos de título y descripción. | Should |
 | RF-13 | La landing no muestra datos privados ni requiere sesión. | Must |
 | RF-14 | El dashboard y las rutas protegidas conservan su comportamiento actual. | Must |
+| RF-15 | `/empresa` presenta a los integrantes del equipo con nombre, rol y retrato. | Must |
 
 ## 5. Requisitos no funcionales
 
@@ -120,6 +121,12 @@ El material de referencia describe la sobrecarga documental académica, la lectu
 - **Dado** el dashboard existente,
 - **cuando** un usuario autenticado lo abre,
 - **entonces** sus datos y acciones siguen funcionando.
+
+### CA-08 · Equipo corporativo
+
+- **Dado** un visitante en `/empresa`,
+- **cuando** llega a la sección “Equipo”,
+- **entonces** ve los retratos, nombres y roles de Cesar Caballero Caballero y Keny Urgel Yoshiie.
 
 ## 7. Contratos e interfaces
 
@@ -185,4 +192,5 @@ El material de referencia describe la sobrecarga documental académica, la lectu
 | CA-05 | `scrollWidth === innerWidth` a 320, 768 y 1440 px; se corrigió el CTA móvil del header. | 2026-11-18 |
 | CA-06 | Landing y página corporativa revisadas en tema claro y oscuro. | 2026-11-18 |
 | CA-07 | El dashboard autenticado conservó su carga y navegación. | 2026-11-18 |
+| CA-08 | Sección “Equipo” con los dos retratos, nombres y roles; revisada en claro, oscuro y 320 px. | 2026-11-18 |
 | RNF-01–RNF-07 | `npm run lint` y `npm run build` correctos; sin dependencias nuevas. | 2026-11-18 |

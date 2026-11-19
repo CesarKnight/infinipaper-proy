@@ -35,6 +35,7 @@
 - [x] `T-030` Implementar presentación provisional de la empresa. <RF-08>
 - [x] `T-031` Añadir servicios, enfoque y aviso de sitio en construcción. <RF-08>
 - [x] `T-032` Enlazar de vuelta a la landing y al login. <RF-09>
+- [x] `T-033` Añadir sección de equipo con retratos, nombres y roles. <RF-15, CA-08>
 
 ## Fase 4 · Verificación
 

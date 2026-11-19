@@ -69,6 +69,14 @@ export function MarketingFooter() {
             </li>
             <li>
               <Link
+                href="/empresa#equipo"
+                className="text-mist transition-colors hover:text-white"
+              >
+                Equipo
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/login"
                 className="text-mist transition-colors hover:text-white"
               >

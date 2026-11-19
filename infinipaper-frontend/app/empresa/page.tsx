@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeftIcon,
@@ -47,6 +48,19 @@ const services = [
     title: "Consultoría técnica",
     description:
       "Acompañamos decisiones de arquitectura, producto y entrega para convertir una idea en software sostenible.",
+  },
+] as const;
+
+const team = [
+  {
+    name: "Cesar Caballero Caballero",
+    role: "Desarrollo de producto",
+    image: "/team/cesar-caballero.jpg",
+  },
+  {
+    name: "Keny Urgel Yoshiie",
+    role: "Ingeniería de software",
+    image: "/team/keny-urgel-yoshiie.jpg",
   },
 ] as const;
 
@@ -159,7 +173,7 @@ export default function CompanyPage() {
               Qué hacemos
             </p>
             <h2 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-              Software con propósito, no solo pantallas.
+              Capacidades para construir productos sostenibles.
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
               Trabajamos en la intersección entre producto, ingeniería y
@@ -182,6 +196,54 @@ export default function CompanyPage() {
                 </p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section id="equipo" className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div className="lg:sticky lg:top-24">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+                Equipo
+              </p>
+              <h2 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                Un equipo pequeño, enfocado en construir bien.
+              </h2>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Combinamos producto, ingeniería e inteligencia artificial
+                aplicada para desarrollar herramientas claras, mantenibles y
+                útiles para las personas que las usan.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {team.map((member) => (
+                <article
+                  key={member.name}
+                  className="group overflow-hidden rounded-2xl border bg-card shadow-sm"
+                >
+                  <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+                    <Image
+                      src={member.image}
+                      alt={`Retrato de ${member.name}`}
+                      fill
+                      sizes="(min-width: 640px) 50vw, 100vw"
+                      className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 bg-gradient-to-t from-night/55 via-transparent to-transparent"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-heading text-xl font-semibold tracking-tight">
+                      {member.name}
+                    </h3>
+                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                      {member.role}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -220,12 +282,12 @@ export default function CompanyPage() {
                 Sitio corporativo en preparación
               </span>
               <h2 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-                Mientras tanto, el producto ya está funcionando.
+                Estamos construyendo el sitio corporativo completo.
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-mist">
-                Infinipaper es nuestra primera plataforma pública. Si quieres
-                conocer cómo estamos aplicando producto, colaboración e IA,
-                empieza por ahí.
+                Estamos preparando el espacio donde presentaremos nuestros
+                servicios, casos y canales de contacto. Mientras tanto, el
+                producto ya está disponible.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Button
