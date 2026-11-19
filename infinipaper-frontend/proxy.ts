@@ -4,15 +4,18 @@ const PROTECTED_PREFIXES = ["/projects", "/profile"];
 const AUTH_PAGES = ["/login", "/register"];
 
 function isProtected(pathname: string): boolean {
-  return (
-    pathname === "/" ||
-    PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))
-  );
+  return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = request.cookies.has("session");
+
+  if (pathname === "/" && !hasSession) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/landing";
+    return NextResponse.rewrite(url);
+  }
 
   if (isProtected(pathname) && !hasSession) {
     const url = request.nextUrl.clone();
