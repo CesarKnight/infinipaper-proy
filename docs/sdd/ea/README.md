@@ -31,7 +31,7 @@ El script crea un paquete raíz llamado **`Infinipaper SDD`** con estas ramas:
 ```
 Infinipaper SDD
 ├── 01 · Casos de uso
-│   ├── Actores
+│   ├── Actores humanos
 │   ├── UC-01 … UC-12 y UC-15 … UC-26
 │   └── Diagrama "Casos de uso · Infinipaper"
 ├── 02 · Paquetes
@@ -88,7 +88,7 @@ El generador valida:
 ## Convenciones del modelo
 
 - **Caso de uso = spec:** `UC-01` corresponde a la spec `001`, y así sucesivamente. Las specs `013` y `014` son transversales de diseño y no tienen caso de uso; por eso no existen `UC-13` ni `UC-14`.
-- **Actores:** `Visitante`, `Usuario`, `Owner`, `Editor`, `Viewer`, `Administrador`, `Docente`, `Estudiante`, `Cliente MCP`, `Whisper ASR`, `MinIO`, `Mailpit` y `LLM`.
+- **Actores:** `Visitante`, `Usuario`, `Owner`, `Editor`, `Viewer`, `Administrador`, `Docente` y `Estudiante`. El diagrama general de casos de uso solo incluye actores humanos; los sistemas externos (`Whisper ASR`, `MinIO`, `Mailpit`, `LLM` y `Cliente MCP`) se modelan en C4 y en los diagramas de secuencia.
 - **Paquetes:** `infinipaper-frontend`, `infinipaper-backend` e `Infraestructura`.
 - **C4:** los elementos usan estereotipos `person`, `system`, `external_system`, `container`, `container_db` y `component`.
 - **Clases:** `User`, `Session`, `EmailVerificationToken`, `TeacherProfile`, `AuditEvent`, `Project`, `ProjectMember`, `Folder`, `Resource`, `TranscriptionJob`, `NoteStructureJob`, `Quiz`, `QuizQuestion`, `QuizOption`, `QuizAssignment`, `QuizAssignmentStudent`, `QuizAttempt`, `QuizAnswer`, `ResourceSource`, `ContentGenerationJob`, `ResourceEvent`, `ResourceChunk`, `ContentIndexJob` y `McpToken`, con atributos, enums y relaciones de composición, asociación y dependencia.

@@ -29,18 +29,6 @@
       "notes": "Participante con permiso de solo lectura."
     },
     {
-      "name": "Whisper ASR",
-      "notes": "Sistema externo de reconocimiento automático del habla."
-    },
-    {
-      "name": "MinIO",
-      "notes": "Sistema externo de almacenamiento de objetos compatible con S3."
-    },
-    {
-      "name": "LLM",
-      "notes": "Proveedor de modelo de lenguaje configurable usado por el servicio de agentes."
-    },
-    {
       "name": "Administrador",
       "notes": "Rol global ADMIN. Revisa verificaciones docentes, revoca docentes y puede ejecutar purgas."
     },
@@ -51,14 +39,6 @@
     {
       "name": "Estudiante",
       "notes": "Rol global STUDENT. Consulta cursos, responde tareas y ve solo sus resultados."
-    },
-    {
-      "name": "Mailpit",
-      "notes": "Sistema SMTP de desarrollo que captura los correos de confirmación y verificación."
-    },
-    {
-      "name": "Cliente MCP",
-      "notes": "Cliente externo compatible con MCP autorizado con token de solo lectura."
     }
   ],
   "useCases": [
@@ -71,8 +51,7 @@
         "Usuario",
         "Administrador",
         "Docente",
-        "Estudiante",
-        "Mailpit"
+        "Estudiante"
       ],
       "notes": "Registro, login, logout, perfil, avatar, cambio de contraseña, confirmación de email, rol global y archivado de cuenta."
     },
@@ -106,8 +85,7 @@
       "actors": [
         "Owner",
         "Editor",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Aviso Markdown configurable, visible y renderizado al tope de la carpeta."
     },
@@ -118,8 +96,7 @@
       "actors": [
         "Owner",
         "Editor",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Subida con drag-and-drop y selección múltiple; copiar/mover entre carpetas, listado, descarga, renombrado y borrado con límite configurable."
     },
@@ -130,8 +107,7 @@
       "actors": [
         "Visitante",
         "Usuario",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Visores de imagen, PDF, audio, video y documentos DOCX/XLSX/PPTX; marco visual común y preparación para colaboración."
     },
@@ -165,8 +141,7 @@
       "actors": [
         "Owner",
         "Editor",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Apuntes Markdown con MDXEditor, autoguardado, sanitización y permisos."
     },
@@ -177,8 +152,7 @@
       "actors": [
         "Usuario",
         "Owner",
-        "Editor",
-        "Whisper ASR"
+        "Editor"
       ],
       "notes": "Job asíncrono de transcripción, polling y guardado como apunte."
     },
@@ -200,8 +174,7 @@
       "spec": "012",
       "actors": [
         "Owner",
-        "Editor",
-        "LLM"
+        "Editor"
       ],
       "notes": "Job asíncrono que estructura un apunte Markdown con LangGraph y devuelve un nuevo apunte."
     },
@@ -212,8 +185,7 @@
       "actors": [
         "Usuario",
         "Docente",
-        "Administrador",
-        "Mailpit"
+        "Administrador"
       ],
       "notes": "Confirmación de email, solicitud docente, verificación automática o manual, aprobación, rechazo y revocación con auditoría."
     },
@@ -240,8 +212,7 @@
         "Owner",
         "Editor",
         "Viewer",
-        "Estudiante",
-        "MinIO"
+        "Estudiante"
       ],
       "notes": "Cuestionario como Resource(kind=QUIZ), preguntas MC/VF/corta, snapshot JSON, publicación y visibilidad solo para estudiantes asignados."
     },
@@ -333,8 +304,7 @@
       "actors": [
         "Docente",
         "Owner",
-        "Editor",
-        "Cliente MCP"
+        "Editor"
       ],
       "notes": "Tokens scoped, FastMCP de solo lectura, rate limit, revocación y auditoría."
     },

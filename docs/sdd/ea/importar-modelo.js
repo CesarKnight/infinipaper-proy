@@ -34,18 +34,6 @@ var MODEL = {
       "notes": "Participante con permiso de solo lectura."
     },
     {
-      "name": "Whisper ASR",
-      "notes": "Sistema externo de reconocimiento automático del habla."
-    },
-    {
-      "name": "MinIO",
-      "notes": "Sistema externo de almacenamiento de objetos compatible con S3."
-    },
-    {
-      "name": "LLM",
-      "notes": "Proveedor de modelo de lenguaje configurable usado por el servicio de agentes."
-    },
-    {
       "name": "Administrador",
       "notes": "Rol global ADMIN. Revisa verificaciones docentes, revoca docentes y puede ejecutar purgas."
     },
@@ -56,14 +44,6 @@ var MODEL = {
     {
       "name": "Estudiante",
       "notes": "Rol global STUDENT. Consulta cursos, responde tareas y ve solo sus resultados."
-    },
-    {
-      "name": "Mailpit",
-      "notes": "Sistema SMTP de desarrollo que captura los correos de confirmación y verificación."
-    },
-    {
-      "name": "Cliente MCP",
-      "notes": "Cliente externo compatible con MCP autorizado con token de solo lectura."
     }
   ],
   "useCases": [
@@ -76,8 +56,7 @@ var MODEL = {
         "Usuario",
         "Administrador",
         "Docente",
-        "Estudiante",
-        "Mailpit"
+        "Estudiante"
       ],
       "notes": "Registro, login, logout, perfil, avatar, cambio de contraseña, confirmación de email, rol global y archivado de cuenta."
     },
@@ -111,8 +90,7 @@ var MODEL = {
       "actors": [
         "Owner",
         "Editor",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Aviso Markdown configurable, visible y renderizado al tope de la carpeta."
     },
@@ -123,8 +101,7 @@ var MODEL = {
       "actors": [
         "Owner",
         "Editor",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Subida con drag-and-drop y selección múltiple; copiar/mover entre carpetas, listado, descarga, renombrado y borrado con límite configurable."
     },
@@ -135,8 +112,7 @@ var MODEL = {
       "actors": [
         "Visitante",
         "Usuario",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Visores de imagen, PDF, audio, video y documentos DOCX/XLSX/PPTX; marco visual común y preparación para colaboración."
     },
@@ -170,8 +146,7 @@ var MODEL = {
       "actors": [
         "Owner",
         "Editor",
-        "Viewer",
-        "MinIO"
+        "Viewer"
       ],
       "notes": "Apuntes Markdown con MDXEditor, autoguardado, sanitización y permisos."
     },
@@ -182,8 +157,7 @@ var MODEL = {
       "actors": [
         "Usuario",
         "Owner",
-        "Editor",
-        "Whisper ASR"
+        "Editor"
       ],
       "notes": "Job asíncrono de transcripción, polling y guardado como apunte."
     },
@@ -205,8 +179,7 @@ var MODEL = {
       "spec": "012",
       "actors": [
         "Owner",
-        "Editor",
-        "LLM"
+        "Editor"
       ],
       "notes": "Job asíncrono que estructura un apunte Markdown con LangGraph y devuelve un nuevo apunte."
     },
@@ -217,8 +190,7 @@ var MODEL = {
       "actors": [
         "Usuario",
         "Docente",
-        "Administrador",
-        "Mailpit"
+        "Administrador"
       ],
       "notes": "Confirmación de email, solicitud docente, verificación automática o manual, aprobación, rechazo y revocación con auditoría."
     },
@@ -245,8 +217,7 @@ var MODEL = {
         "Owner",
         "Editor",
         "Viewer",
-        "Estudiante",
-        "MinIO"
+        "Estudiante"
       ],
       "notes": "Cuestionario como Resource(kind=QUIZ), preguntas MC/VF/corta, snapshot JSON, publicación y visibilidad solo para estudiantes asignados."
     },
@@ -338,8 +309,7 @@ var MODEL = {
       "actors": [
         "Docente",
         "Owner",
-        "Editor",
-        "Cliente MCP"
+        "Editor"
       ],
       "notes": "Tokens scoped, FastMCP de solo lectura, rate limit, revocación y auditoría."
     },
@@ -6086,7 +6056,7 @@ function createUseCaseModel(root) {
 
   diagram.Update();
   Repository.ReloadDiagram(diagram.DiagramID);
-  out("Casos de uso: " + MODEL.useCases.length + " casos, " + MODEL.actors.length + " actores.");
+  out("Casos de uso: " + MODEL.useCases.length + " casos, " + MODEL.actors.length + " actores humanos.");
 }
 
 function createPackageChildren(parent, children, parentPath, map) {

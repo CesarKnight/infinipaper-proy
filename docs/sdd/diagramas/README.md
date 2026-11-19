@@ -4,7 +4,7 @@ Diagramas de referencia del sistema, escritos en **Mermaid** para que se renderi
 
 | Diagrama | Archivo | Propósito |
 |---|---|---|
-| Casos de uso | [`casos-de-uso.md`](./casos-de-uso.md) | Actores y las 24 historias de usuario como casos de uso (001–012 y 015–026) |
+| Casos de uso | [`casos-de-uso.md`](./casos-de-uso.md) | Actores humanos y las 24 historias de usuario como casos de uso (001–012 y 015–026) |
 | Clases | [`clases.md`](./clases.md) | Modelo de dominio, implementación del backend y clases de agentes |
 | Paquetes | [`paquetes.md`](./paquetes.md) | Paquetes del frontend, backend, agentes e infraestructura |
 | Arquitectura C4 | [`arquitectura-c4.md`](./arquitectura-c4.md) | Contexto, contenedores y componentes de backend y agentes |

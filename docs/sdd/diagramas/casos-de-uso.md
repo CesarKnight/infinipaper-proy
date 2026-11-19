@@ -2,6 +2,8 @@
 
 Cada caso de uso corresponde a una spec. Los actores `Owner`, `Editor`, `Viewer` y `Student` son roles dentro de un proyecto; heredan las capacidades de `Usuario` y añaden o restringen acciones según la matriz de permisos de la [spec 008](../specs/008-permisos/spec.md). Los roles globales `ADMIN`, `TEACHER` y `STUDENT` se representan con los actores `Administrador`, `Docente` y `Estudiante`.
 
+Este diagrama general incluye únicamente actores humanos. Los sistemas externos (`Whisper`, `MinIO`, `Mailpit`, `LLM` y clientes MCP) no se representan aquí como actores; aparecen en los diagramas C4 y de secuencia.
+
 > Las specs 013 (sistema de diseño) y 014 (tema de marca) son transversales de producto y no añaden un caso de uso funcional. Por eso la numeración de casos de uso salta de `UC-12` a `UC-15`.
 
 ```mermaid
@@ -9,9 +11,8 @@ Cada caso de uso corresponde a una spec. Los actores `Owner`, `Editor`, `Viewer`
 flowchart LR
   classDef actor fill:#fef3c7,stroke:#b45309,stroke-width:1px,color:#111
   classDef usecase fill:#e0f2fe,stroke:#0369a1,stroke-width:1px,color:#111
-  classDef external fill:#f3e8ff,stroke:#7e22ce,stroke-width:1px,color:#111
 
-  subgraph Actores["Actores"]
+  subgraph Actores["Actores humanos"]
     Visitante((Visitante)):::actor
     Usuario((Usuario)):::actor
     Owner((Owner)):::actor
@@ -20,11 +21,6 @@ flowchart LR
     Administrador((Administrador)):::actor
     Docente((Docente)):::actor
     Estudiante((Estudiante)):::actor
-    Whisper[Sistema ASR<br/>Whisper]:::external
-    MinIO[(MinIO<br/>S3)]:::external
-    Mailpit[Sistema SMTP<br/>Mailpit]:::external
-    ClienteMCP[Sistema externo<br/>Cliente MCP]:::external
-    LLM[Proveedor LLM]:::external
   end
 
   subgraph Sistema["Infinipaper"]
@@ -93,20 +89,10 @@ flowchart LR
   Viewer --> UC09
   Viewer --> UC11
 
-  Whisper --> UC10
-  MinIO --> UC04
-  MinIO --> UC05
-  MinIO --> UC06
-  MinIO --> UC09
-  MinIO --> UC17
-  Mailpit --> UC15
-  LLM --> UC12
-
   Usuario --> UC15
   Administrador --> UC01
   Docente --> UC01
   Estudiante --> UC01
-  Mailpit --> UC01
   Administrador --> UC08
   Docente --> UC08
   Estudiante --> UC08
@@ -151,7 +137,6 @@ flowchart LR
   Owner --> UC25
   Editor --> UC25
   Docente --> UC25
-  ClienteMCP --> UC25
   Usuario --> UC26
   Docente --> UC26
   Estudiante --> UC26
@@ -162,21 +147,21 @@ flowchart LR
 
 | Caso de uso | Spec | Actores principales |
 |---|---|---|
-| UC-01 Gestión de usuarios | [001](../specs/001-usuarios/spec.md) | Visitante, Usuario, Administrador, Docente, Estudiante, Mailpit |
+| UC-01 Gestión de usuarios | [001](../specs/001-usuarios/spec.md) | Visitante, Usuario, Administrador, Docente, Estudiante |
 | UC-02 Gestión de proyectos | [002](../specs/002-proyectos/spec.md) | Visitante, Usuario, Owner |
 | UC-03 Gestión de carpetas | [003](../specs/003-carpetas/spec.md) | Owner, Editor, Viewer |
-| UC-04 Aviso en carpeta | [004](../specs/004-aviso/spec.md) | Owner, Editor, Viewer, MinIO |
-| UC-05 Gestión de archivos | [005](../specs/005-archivos/spec.md) | Owner, Editor, Viewer, MinIO |
-| UC-06 Visualización multimedia | [006](../specs/006-visualizacion/spec.md) | Visitante, Usuario, Viewer, MinIO |
+| UC-04 Aviso en carpeta | [004](../specs/004-aviso/spec.md) | Owner, Editor, Viewer |
+| UC-05 Gestión de archivos | [005](../specs/005-archivos/spec.md) | Owner, Editor, Viewer |
+| UC-06 Visualización multimedia | [006](../specs/006-visualizacion/spec.md) | Visitante, Usuario, Viewer |
 | UC-07 Gestión de participantes | [007](../specs/007-participantes/spec.md) | Owner |
 | UC-08 Gestión de permisos | [008](../specs/008-permisos/spec.md) | Administrador, Docente, Owner, Editor, Viewer, Estudiante |
-| UC-09 Gestión de apuntes | [009](../specs/009-apuntes/spec.md) | Owner, Editor, Viewer, MinIO |
-| UC-10 Transcripción de audio | [010](../specs/010-transcripcion/spec.md) | Usuario, Editor, Owner, Whisper |
+| UC-09 Gestión de apuntes | [009](../specs/009-apuntes/spec.md) | Owner, Editor, Viewer |
+| UC-10 Transcripción de audio | [010](../specs/010-transcripcion/spec.md) | Usuario, Editor, Owner |
 | UC-11 Dashboard personal | [011](../specs/011-dashboard/spec.md) | Usuario, Owner, Editor, Viewer |
-| UC-12 Estructuración de apuntes con IA | [012](../specs/012-estructuracion-apuntes-ia/spec.md) | Owner, Editor, LLM |
-| UC-15 Perfil docente y verificación | [015](../specs/015-perfil-docente/spec.md) | Usuario, Docente, Administrador, Mailpit |
+| UC-12 Estructuración de apuntes con IA | [012](../specs/012-estructuracion-apuntes-ia/spec.md) | Owner, Editor |
+| UC-15 Perfil docente y verificación | [015](../specs/015-perfil-docente/spec.md) | Usuario, Docente, Administrador |
 | UC-16 Proyectos académicos y archivado | [016](../specs/016-proyectos-academicos/spec.md) | Docente, Owner, Editor, Viewer, Estudiante, Administrador |
-| UC-17 Cuestionarios como recursos | [017](../specs/017-cuestionarios/spec.md) | Docente, Owner, Editor, Viewer, Estudiante, MinIO |
+| UC-17 Cuestionarios como recursos | [017](../specs/017-cuestionarios/spec.md) | Docente, Owner, Editor, Viewer, Estudiante |
 | UC-18 Tareas, intentos y revisión | [018](../specs/018-tareas-intentos/spec.md) | Docente, Owner, Editor, Estudiante |
 | UC-19 Panel docente y progreso | [019](../specs/019-panel-docente/spec.md) | Docente, Owner, Editor, Estudiante |
 | UC-20 Trazabilidad y validación | [020](../specs/020-trazabilidad-recursos/spec.md) | Docente, Owner, Editor, Viewer, Estudiante |
@@ -184,7 +169,9 @@ flowchart LR
 | UC-22 Cuestionarios con IA | [022](../specs/022-cuestionarios-ia/spec.md) | Docente, Owner, Editor |
 | UC-23 Métricas de uso | [023](../specs/023-metricas-recursos/spec.md) | Docente, Owner, Editor |
 | UC-24 Búsqueda semántica | [024](../specs/024-busqueda-semantica/spec.md) | Usuario, Viewer, Estudiante |
-| UC-25 MCP de desempeño | [025](../specs/025-mcp-desempeno/spec.md) | Docente, Owner, Editor, Cliente MCP |
+| UC-25 MCP de desempeño | [025](../specs/025-mcp-desempeno/spec.md) | Docente, Owner, Editor |
 | UC-26 App móvil | [026](../specs/026-app-movil/spec.md) | Usuario, Docente, Estudiante, Administrador |
 
 > `Visitante` solo accede a proyectos públicos en modo lectura y a las pantallas de registro/login. Las acciones de escritura requieren un rol de proyecto. Los roles globales `Administrador`, `Docente` y `Estudiante` no conceden acceso implícito a proyectos privados.
+
+> Los sistemas externos (`Whisper`, `MinIO`, `Mailpit`, `LLM` y clientes MCP) se documentan en los diagramas C4 y de secuencia. No son actores del diagrama general de casos de uso.

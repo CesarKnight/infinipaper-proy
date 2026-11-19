@@ -23,9 +23,22 @@ function fail(message) {
 // ---------------------------------------------------------------
 // Validación del modelo
 // ---------------------------------------------------------------
+// El diagrama general de casos de uso solo contiene actores humanos.
+// Los sistemas externos se modelan en C4 y en los diagramas de secuencia.
+const externalActorNames = new Set([
+  "Whisper ASR",
+  "MinIO",
+  "LLM",
+  "Mailpit",
+  "Cliente MCP",
+]);
+
 const actorNames = new Set();
 for (const actor of model.actors) {
   if (!actor.name) fail("actor sin nombre");
+  if (externalActorNames.has(actor.name)) {
+    fail(`actor no humano en el diagrama de casos de uso: ${actor.name}`);
+  }
   if (actorNames.has(actor.name)) fail(`actor duplicado: ${actor.name}`);
   actorNames.add(actor.name);
 }
@@ -216,7 +229,7 @@ function createUseCaseModel(root) {
 
   diagram.Update();
   Repository.ReloadDiagram(diagram.DiagramID);
-  out("Casos de uso: " + MODEL.useCases.length + " casos, " + MODEL.actors.length + " actores.");
+  out("Casos de uso: " + MODEL.useCases.length + " casos, " + MODEL.actors.length + " actores humanos.");
 }
 
 function createPackageChildren(parent, children, parentPath, map) {
