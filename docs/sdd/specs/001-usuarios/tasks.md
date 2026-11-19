@@ -50,6 +50,17 @@
 - [ ] `T-050` Añadir tests automatizados de auth, sesiones, email y archivado. <G-01>
 - [ ] `T-051` Recuperación de contraseña. <G-02>
 
+## Fase 5 · Rediseño de login y registro
+
+- [x] `T-060` Crear la ilustración `public/brand/login-study.svg` con la composición de apuntes, carpetas e IA. <RF-21, RNF-07>
+- [x] `T-061` Rediseñar `/login` con layout de dos columnas, panel de marca y formulario. <RF-20, RF-22, CA-17, CA-19>
+- [x] `T-062` Ajustar responsive, temas, foco visible y `prefers-reduced-motion`. <RF-23, RF-24, RNF-06, RNF-09, RNF-10, CA-18, CA-20>
+- [x] `T-063` Verificar login real, lint y build. <CA-19, RNF-08>
+- [x] `T-064` Registrar evidencia de los criterios y actualizar la spec. <CA-17–CA-20>
+- [x] `T-065` Rediseñar `/register` con el layout compartido, `autoComplete` y errores accesibles. <RF-25, RF-26, CA-21–CA-23, G-03>
+- [x] `T-066` Extraer `AuthShell` y `AuthCard` para compartir el layout entre login y registro. <RF-25, RNF-11>
+- [x] `T-067` Verificar registro real, responsive, temas, lint y build. <CA-21–CA-23, RNF-11>
+
 ## Verificación final
 
 - [x] Criterios funcionales cubiertos por flujo manual y revisión.

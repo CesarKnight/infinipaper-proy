@@ -246,6 +246,7 @@ Desde las specs 008 y 015, la identidad incorpora un rol global (`ADMIN`, `TEACH
 |---|---|---|---|
 | G-01 | No hay tests automatizados específicos de auth, sesiones, email y archivado. | Regresiones de seguridad no detectadas en CI. | `T-050` |
 | G-02 | Sin recuperación de contraseña. | El usuario debe contactar soporte si la pierde. | `T-051` |
+| G-03 | El registro conservaba la tarjeta centrada anterior; el login ya usa el layout de marca. | Resuelta: `/register` comparte `AuthShell` y `AuthCard` con `/login`. | `T-065` |
 
 ## 11. Evidencia de validación
 
@@ -258,3 +259,146 @@ Desde las specs 008 y 015, la identidad incorpora un rol global (`ADMIN`, `TEACH
 | CA-15 | Perfil público con rol y estado docente revisado en `UsersService`. | 2026-11-18 |
 | CA-16 | Archivado de cuenta y conservación de proyectos públicos revisados. | 2026-11-18 |
 | RNF-01, RNF-03 | Revisión de `SessionService` y cookie de sesión. | 2026-11-11 |
+
+## 12. Iteración de diseño de login y registro (2026-11-18)
+
+| Campo | Valor |
+|---|---|
+| Estado de la iteración | `Implementada` |
+| Origen | Petición de modernizar `/login` con una imagen relacionada con el producto |
+| Dependencias | 013 (sistema de diseño) y 014 (tema de marca) |
+
+### 12.1 Contexto y problema
+
+El login actual es una tarjeta pequeña y centrada sobre un fondo vacío. Funciona, pero no comunica qué es Infinipaper, no aprovecha la identidad visual de las specs 013/014 y ofrece poca orientación a un usuario nuevo.
+
+### 12.2 Objetivo
+
+> Como **visitante**, quiero **entender rápidamente qué ofrece Infinipaper y acceder con una experiencia visual cuidada** para **confiar en el producto y completar el inicio de sesión sin fricción**.
+
+### 12.3 Alcance
+
+**Incluye**
+
+- Rediseño visual de `/login` con un layout de dos columnas en escritorio: panel de marca e ilustración a la izquierda y formulario a la derecha.
+- Rediseño de `/register` con el mismo shell, panel de marca y tarjeta, adaptado a sus cuatro campos.
+- Componentes compartidos `AuthShell` y `AuthCard` para evitar duplicar el layout entre login y registro.
+- Ilustración SVG original relacionada con el producto: apuntes, carpetas, proyectos y generación con IA.
+- Logo, propuesta de valor y mensajes breves de capacidades del producto.
+- Adaptación responsive: una columna en móvil, panel de marca compacto y formulario a ancho completo.
+- Conservar los formularios, la validación, el manejo de errores y las redirecciones existentes.
+- Estados de foco visibles, contraste AA y respeto por `prefers-reduced-motion`.
+- Enlaces visibles entre `/login` y `/register`.
+
+**No incluye**
+
+- Cambios en la API, la sesión, los DTOs o el backend.
+- Cambios funcionales en el perfil o la recuperación de contraseña.
+- Nuevas dependencias, fuentes o servicios externos.
+- Fotografías de stock con licencia o recursos remotos.
+- Rediseño de `/verify-email` en esta iteración.
+
+### 12.4 Requisitos funcionales
+
+| ID | Requisito | Prioridad |
+|---|---|---|
+| RF-20 | `/login` usa un layout de dos columnas en pantallas grandes: panel de marca con ilustración y formulario de acceso. | Must |
+| RF-21 | El panel de marca muestra el logo de Infinipaper, una frase de propuesta de valor y una ilustración SVG original relacionada con apuntes, proyectos e IA. | Must |
+| RF-22 | El formulario conserva el login por correo o usuario, la validación, los estados `Entrando…`/error y la redirección a `next`. | Must |
+| RF-23 | En móvil el layout se apila: marca compacta, formulario y enlace a registro, sin scroll horizontal a 320 px. | Must |
+| RF-24 | El login incluye un enlace visible a `/register` y un acceso al cambio de tema claro/oscuro. | Should |
+| RF-25 | `/register` reutiliza el mismo shell de marca, ilustración y tarjeta que `/login`. | Must |
+| RF-26 | El registro conserva sus cuatro campos, validación, errores y redirección a `/profile`; añade `autoComplete` y errores accesibles. | Must |
+
+### 12.5 Requisitos no funcionales
+
+| ID | Requisito | Cómo se verifica |
+|---|---|---|
+| RNF-06 | Todos los textos de login y registro cumplen WCAG AA en claro y oscuro. | Revisión de contraste y navegación visual. |
+| RNF-07 | La ilustración es un SVG local, sin recursos remotos ni fuentes externas, y pesa menos de 150 KB. | Revisión del archivo y del build. |
+| RNF-08 | No se añaden dependencias ni se modifican contratos de API, datos o autenticación. | `git diff` y `npm run build`. |
+| RNF-09 | El layout no provoca scroll horizontal a 320, 375, 768, 1024 y 1440 px. | Medición con el navegador. |
+| RNF-10 | Las animaciones decorativas se desactivan con `prefers-reduced-motion`. | Revisión de CSS y emulación. |
+| RNF-11 | Login y registro comparten `AuthShell` y `AuthCard`; el layout no se duplica entre páginas. | Revisión de imports y componentes. |
+
+### 12.6 Criterios de aceptación
+
+#### CA-17 · Login de escritorio
+
+- **Dado** un visitante en una pantalla de escritorio,
+- **cuando** abre `/login`,
+- **entonces** ve un panel de marca con logo, propuesta de valor e ilustración, y un formulario de acceso claramente diferenciado.
+
+#### CA-18 · Login móvil
+
+- **Dado** un visitante en un viewport de 320 px,
+- **cuando** abre `/login`,
+- **entonces** la marca y el formulario se apilan sin scroll horizontal y todos los controles son accesibles.
+
+#### CA-19 · Inicio de sesión sin regresiones
+
+- **Dado** un usuario activo,
+- **cuando** introduce credenciales válidas en el nuevo login,
+- **entonces** inicia sesión y se redirige a `next` o al dashboard como antes.
+
+#### CA-20 · Accesibilidad y temas
+
+- **Dado** el login en tema claro u oscuro,
+- **cuando** se navega con teclado y se revisan los contrastes,
+- **entonces** el foco es visible, los textos cumplen AA y la ilustración no transmite información esencial sin alternativa textual.
+
+#### CA-21 · Registro de escritorio
+
+- **Dado** un visitante en una pantalla de escritorio,
+- **cuando** abre `/register`,
+- **entonces** ve el mismo panel de marca y el mismo estilo de tarjeta que en `/login`, con los cuatro campos del registro.
+
+#### CA-22 · Registro móvil
+
+- **Dado** un visitante en un viewport de 320 px,
+- **cuando** abre `/register`,
+- **entonces** el formulario se apila bajo la marca compacta, es desplazable y no provoca scroll horizontal.
+
+#### CA-23 · Registro sin regresiones
+
+- **Dado** un visitante con datos válidos,
+- **cuando** completa el registro,
+- **entonces** la cuenta se crea, se muestra el aviso de confirmación de correo y se redirige a `/profile` como antes.
+
+### 12.7 Contratos e interfaces
+
+- **UI:** `app/login/page.tsx`, `app/register/page.tsx`, `components/auth/auth-shell.tsx`, `public/brand/login-study.svg` y utilidades visuales en `app/globals.css`.
+- **API:** sin cambios.
+- **Datos:** sin cambios.
+
+### 12.8 Decisiones
+
+| ID | Decisión | Estado |
+|---|---|---|
+| D-08 | Usar una ilustración SVG original de marca en lugar de una fotografía de stock. | Cerrada |
+| D-09 | Mantener el panel de marca oscuro en ambos temas para conservar el contraste y la identidad Midnight Study. | Cerrada |
+| D-10 | No cambiar la lógica del formulario ni los contratos; el rediseño es visual y de composición. | Cerrada |
+| D-11 | Extraer `AuthShell` y `AuthCard` para que login y registro compartan layout, tarjeta y estilos. | Cerrada |
+
+### 12.9 Evidencia
+
+| CA / RNF | Evidencia | Fecha |
+|---|---|---|
+| CA-17 | Revisión visual en 1024 × 768 y 1440 × 900: panel de marca con logo, titular, capacidades e ilustración; formulario en tarjeta separada. | 2026-11-18 |
+| CA-18 | Revisión en 320 × 568, 375 × 667 y 768 × 900. `scrollWidth` igual a `clientWidth` en los tres anchos; el formulario se apila bajo la marca compacta. | 2026-11-18 |
+| CA-19 | Login real con el usuario de prueba `logincheck` y `?next=/projects`: la sesión se creó y la redirección terminó en `/projects`. Envío vacío mostró los dos errores con `role="alert"`. | 2026-11-18 |
+| CA-20 | Revisión en tema claro y oscuro; foco visible en campos y botón; textos del panel sobre `night`/`surface`; ilustración con `alt` descriptivo. | 2026-11-18 |
+| CA-21, RNF-11 | Revisión de `/register` en 1024 × 768 y 1440 × 900: usa `AuthShell` y `AuthCard`, los mismos que `/login`, con cuatro campos y enlace a inicio de sesión. | 2026-11-18 |
+| CA-22 | Revisión de `/register` en 320 × 568, 375 × 667 y 768 × 900; el formulario se apila, la tarjeta es desplazable y no hay overflow horizontal. | 2026-11-18 |
+| CA-23 | Registro real con un usuario de prueba: la cuenta se creó, se mostró el aviso de confirmación y la redirección terminó en `/profile`. Envío vacío mostró los errores con `role="alert"`. | 2026-11-18 |
+| RNF-07 | `public/brand/login-study.svg` pesa 9 KB y no referencia recursos externos. | 2026-11-18 |
+| RNF-08, RNF-09 | `npm run lint` y `npm run build` pasan; la iteración no añade dependencias ni toca API o datos. Sin overflow horizontal en 320, 375, 768, 1024 y 1440 px. | 2026-11-18 |
+| RNF-10 | `login-float` se desactiva con `prefers-reduced-motion: reduce` en `globals.css`. | 2026-11-18 |
+
+### 12.10 Archivos implementados
+
+- `infinipaper-frontend/components/auth/auth-shell.tsx`: `AuthShell` con panel de marca e ilustración y `AuthCard` compartida.
+- `infinipaper-frontend/app/login/page.tsx`: formulario de acceso con el shell compartido.
+- `infinipaper-frontend/app/register/page.tsx`: registro con el shell compartido, campos accesibles y `autoComplete`.
+- `infinipaper-frontend/public/brand/login-study.svg`: ilustración original de apuntes, proyecto e IA.
+- `infinipaper-frontend/app/globals.css`: animación decorativa `login-float` con respeto a `prefers-reduced-motion`.

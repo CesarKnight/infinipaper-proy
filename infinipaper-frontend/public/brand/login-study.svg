@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="720" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">Espacio de estudio de Infinipaper</title>
+  <desc id="desc">Apuntes Markdown, una carpeta de proyecto y una tarjeta de resumen generado con inteligencia artificial.</desc>
+  <defs>
+    <linearGradient id="brand" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#4B2EA3"/>
+      <stop offset=".55" stop-color="#A1349F"/>
+      <stop offset="1" stop-color="#F0504F"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#A98BFF"/>
+      <stop offset="1" stop-color="#6D4AE8"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3B2A6E"/>
+      <stop offset="1" stop-color="#291054"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#A98BFF" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#A98BFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="20" stdDeviation="20" flood-color="#07021F" flood-opacity=".42"/>
+    </filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#07021F" flood-opacity=".30"/>
+    </filter>
+  </defs>
+
+  <circle cx="382" cy="278" r="278" fill="url(#glow)"/>
+
+  <g opacity=".5" fill="#C9B6E6">
+    <circle cx="88" cy="66" r="3"/>
+    <circle cx="640" cy="82" r="2.5"/>
+    <circle cx="672" cy="250" r="2"/>
+    <circle cx="54" cy="286" r="2"/>
+    <circle cx="618" cy="500" r="2.5"/>
+    <path d="M614 116l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+    <path d="M108 474l2.4 6.4 6.4 2.4-6.4 2.4-2.4 6.4-2.4-6.4-6.4-2.4 6.4-2.4z"/>
+  </g>
+  <g opacity=".35" stroke="#C9B6E6" stroke-width="2" stroke-linecap="round">
+    <path d="M70 150h18M79 141v18"/>
+    <path d="M640 390h14M647 383v14"/>
+    <path d="M330 490h12M336 484v12"/>
+  </g>
+
+  <!-- Carpeta de proyecto -->
+  <g transform="rotate(6 564 160)" filter="url(#soft)">
+    <rect x="444" y="78" width="240" height="170" rx="20" fill="url(#glass)" stroke="#A98BFF" stroke-opacity=".32"/>
+    <path d="M444 98V90a20 20 0 0 1 20-20h64l18 22H444z" fill="#4A3388"/>
+    <text x="470" y="146" fill="#FFFFFF" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600">Proyecto de Biología</text>
+    <text x="470" y="168" fill="#C9B6E6" font-family="Inter, system-ui, sans-serif" font-size="11">Unidad 3 · 8 apuntes</text>
+    <rect x="470" y="188" width="104" height="26" rx="13" fill="#FFFFFF" fill-opacity=".09"/>
+    <circle cx="485" cy="201" r="3.5" fill="#FFB84D"/>
+    <text x="496" y="205" fill="#F3ECDD" font-family="Inter, system-ui, sans-serif" font-size="10">En curso</text>
+    <rect x="586" y="188" width="62" height="26" rx="13" fill="#FFFFFF" fill-opacity=".09"/>
+    <text x="600" y="205" fill="#F3ECDD" font-family="Inter, system-ui, sans-serif" font-size="10">PDF</text>
+  </g>
+
+  <!-- Insignia con la mascota -->
+  <g filter="url(#soft)">
+    <circle cx="54" cy="482" r="42" fill="#12062F" stroke="#A98BFF" stroke-opacity=".45" stroke-width="2"/>
+    <g transform="translate(16 446) scale(1.0) translate(-13 -12)" fill="none" stroke="url(#brand)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m 20.953931,79.699774 c -10.476966,1.169303 -4.373199,-6.863818 -4.373199,-6.863818 13.189751,-19.363677 29.9108,-22.41556 29.9108,-22.41556 14.382521,-1.83344 23.901732,3.31587 30.384024,12.311703 4.960938,8.069792 6.103633,17.449266 3.102094,16.941081 z"/>
+      <path d="m 67.838446,31.65673 c 0,0 4.70339,-0.219712 5.950925,-4.902722 1.330292,-4.993662 -1.141676,-7.131409 -3.957846,-8.585153 -11.425308,-5.897895 -19.763223,2.783311 -23.08235,14.870327 -2.868021,10.444261 -10.49576,12.322861 -13.28033,12.091395 -4.607057,-0.382961 -8.998899,-0.260499 -10.176306,-7.058032 -1.43191,-8.26685 8.655842,-9.438578 14.278237,-9.24014 7.672917,-0.132292 38.241557,3.451259 46.660625,16.755785 3.116106,4.924334 -1.812342,14.986641 -6.870241,16.992969"/>
+      <path d="m 25.820027,61.258048 a 6.7820001,6.5013309 0 0 1 -0.831836,-6.577917 6.7820001,6.5013309 0 0 1 5.617556,-3.860804 6.7820001,6.5013309 0 0 1 6.231752,2.866692"/>
+      <path d="m 33.946392,62.570702 a 7.6238871,7.417068 0 0 1 3.756023,-8.45354 7.6238871,7.417068 0 0 1 9.318716,1.619907 7.6238871,7.417068 0 0 1 0.51447,9.195896 7.6238871,7.417068 0 0 1 -9.08295,2.594301"/>
+      <path d="m 33.799382,60.499209 a 4.165,4.3557534 0 0 1 4.549961,-1.141827 4.165,4.3557534 0 0 1 2.693468,4.001389 4.165,4.3557534 0 0 1 -2.562498,4.094385"/>
+      <circle cx="27.78" cy="70.38" r="2.6" fill="#F0504F"/>
+    </g>
+  </g>
+
+  <!-- Tarjeta principal de apuntes -->
+  <g transform="rotate(-4 270 270)" filter="url(#shadow)">
+    <rect x="96" y="92" width="366" height="342" rx="28" fill="#FFFDF8"/>
+    <circle cx="124" cy="120" r="5" fill="#FF6B57"/>
+    <circle cx="141" cy="120" r="5" fill="#FFB84D"/>
+    <circle cx="158" cy="120" r="5" fill="#A98BFF"/>
+    <text x="414" y="125" text-anchor="end" fill="#8B859C" font-family="Inter, system-ui, sans-serif" font-size="11">Guardado</text>
+    <path d="M96 146h366" stroke="#EDE6D8"/>
+
+    <text x="124" y="190" fill="#1B1633" font-family="Fraunces, Georgia, serif" font-size="26" font-weight="600">Apuntes de Cálculo</text>
+    <rect x="124" y="204" width="86" height="24" rx="12" fill="#FF6B57" fill-opacity=".14"/>
+    <text x="138" y="220" fill="#B33E2F" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" letter-spacing="1">MARKDOWN</text>
+
+    <rect x="124" y="246" width="288" height="10" rx="5" fill="#E9E2D5"/>
+    <rect x="124" y="266" width="254" height="10" rx="5" fill="#E9E2D5"/>
+    <rect x="124" y="286" width="304" height="10" rx="5" fill="url(#brand)" opacity=".28"/>
+    <rect x="124" y="306" width="206" height="10" rx="5" fill="#E9E2D5"/>
+
+    <rect x="124" y="332" width="310" height="48" rx="14" fill="#EEE8FB"/>
+    <text x="140" y="350" fill="#6C5E8E" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="700" letter-spacing="1.4">FÓRMULA</text>
+    <text x="140" y="369" fill="#4B2EA3" font-family="Geist Mono, ui-monospace, monospace" font-size="15">∫₀¹ x² dx = 1/3</text>
+
+    <g font-family="Inter, system-ui, sans-serif" font-size="12" fill="#5B5575">
+      <circle cx="132" cy="404" r="8" fill="#4B2EA3"/>
+      <path d="M128.5 404l2.4 2.4 4.1-4.4" fill="none" stroke="#FFFDF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="148" y="408">Repasar límites</text>
+      <circle cx="286" cy="404" r="8" fill="none" stroke="#C9C2D6" stroke-width="1.5"/>
+      <text x="302" y="408">Resolver ejercicios</text>
+    </g>
+  </g>
+
+  <!-- Tarjeta de IA -->
+  <g transform="rotate(3 560 420)" filter="url(#shadow)">
+    <rect x="450" y="340" width="240" height="160" rx="24" fill="#160A3D" stroke="#A98BFF" stroke-opacity=".4"/>
+    <rect x="472" y="360" width="32" height="32" rx="10" fill="url(#brand)"/>
+    <path d="M488 369l2.6 6.4 6.4 2.6-6.4 2.6-2.6 6.4-2.6-6.4-6.4-2.6 6.4-2.6z" fill="#FFFFFF"/>
+    <text x="516" y="374" fill="#FFFFFF" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600">Resumen con IA</text>
+    <text x="516" y="392" fill="#C9B6E6" font-family="Inter, system-ui, sans-serif" font-size="10">3 ideas clave detectadas</text>
+
+    <rect x="472" y="410" width="184" height="8" rx="4" fill="#FFFFFF" fill-opacity=".12"/>
+    <rect x="472" y="410" width="142" height="8" rx="4" fill="url(#violet)"/>
+    <rect x="472" y="430" width="150" height="8" rx="4" fill="#FFFFFF" fill-opacity=".12"/>
+    <rect x="472" y="430" width="96" height="8" rx="4" fill="url(#violet)" opacity=".7"/>
+
+    <rect x="472" y="454" width="88" height="28" rx="14" fill="url(#brand)"/>
+    <text x="493" y="472" fill="#FFFFFF" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600">Generar</text>
+    <text x="574" y="472" fill="#C9B6E6" font-family="Inter, system-ui, sans-serif" font-size="10">~ 2 min</text>
+  </g>
+
+  <!-- Chips flotantes -->
+  <g filter="url(#soft)">
+    <rect x="300" y="38" width="132" height="38" rx="19" fill="#1A0B3E" stroke="#A98BFF" stroke-opacity=".35"/>
+    <circle cx="320" cy="57" r="4" fill="#6EE7B7"/>
+    <text x="333" y="61" fill="#F3ECDD" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500">Compartido</text>
+  </g>
+  <g filter="url(#soft)">
+    <rect x="38" y="236" width="106" height="38" rx="19" fill="#1A0B3E" stroke="#A98BFF" stroke-opacity=".35"/>
+    <path d="M54 247h7l2 3h8v10H54z" fill="none" stroke="#FFB84D" stroke-width="1.6" stroke-linejoin="round"/>
+    <text x="78" y="260" fill="#F3ECDD" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500">3 proyectos</text>
+  </g>
+</svg>

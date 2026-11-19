@@ -127,3 +127,87 @@ La respuesta de login/registro establece `Set-Cookie: session=...; HttpOnly; Sam
 | RF-15, RF-16 | `T-001`, `T-025` |
 | RF-17, RF-18 | `T-026`, `T-035` |
 | RF-19 | `T-023` |
+
+## 11. Iteración de diseño de login (2026-11-18)
+
+| Campo | Valor |
+|---|---|
+| Estado | `Completado` |
+| Requisitos | `RF-20`–`RF-26`, `RNF-06`–`RNF-11`, `CA-17`–`CA-23` |
+
+### 11.1 Enfoque
+
+Sustituir la tarjeta centrada por una composición de dos columnas:
+
+- **Panel de marca:** fondo `night`/`surface` con degradado índigo-violeta, textura sutil, logo del ratón en blanco, titular en Fraunces, frase de valor, tres capacidades del producto y una ilustración SVG de un espacio de estudio.
+- **Formulario:** tarjeta elevada sobre el fondo Paper/Midnight, con los formularios de React Hook Form, validación Zod y llamadas `apiFetch`. Se añaden atributos `autoComplete` y estados de foco, sin cambiar la lógica.
+- **Registro:** reutiliza el mismo `AuthShell` y `AuthCard`, con cuatro campos y el mismo tratamiento de errores.
+- **Responsive:** dos columnas desde `lg`; en móvil el panel se reduce a una cabecera de marca y la ilustración se oculta.
+- **Tema:** el panel de marca se mantiene oscuro en ambos temas; la columna del formulario usa tokens semánticos y responde a claro/oscuro.
+
+### 11.2 Ilustración
+
+Crear `public/brand/login-study.svg` con:
+
+- Tarjetas de apuntes Markdown apiladas y una tarjeta destacada con líneas de texto, una fórmula y una lista.
+- Una carpeta de proyecto y chips de archivos.
+- Un nodo de IA con destellos y una minitarjeta de resumen.
+- La mascota del ratón integrada en la composición.
+- Degradado de marca índigo → violeta → coral, sin fuentes externas.
+- `role="img"` y texto alternativo descriptivo al consumirla.
+
+La ilustración se usará como imagen decorativa en el panel; el mensaje importante irá en texto HTML para no depender de la imagen.
+
+### 11.3 Archivos afectados
+
+| Archivo | Cambio |
+|---|---|
+| `infinipaper-frontend/components/auth/auth-shell.tsx` | `AuthShell` y `AuthCard` compartidos por login y registro |
+| `infinipaper-frontend/app/login/page.tsx` | Formulario de acceso con el shell compartido |
+| `infinipaper-frontend/app/register/page.tsx` | Registro con el shell compartido, `autoComplete` y errores accesibles |
+| `infinipaper-frontend/public/brand/login-study.svg` | Ilustración original del espacio de estudio |
+| `infinipaper-frontend/app/globals.css` | Animación `login-float` con `prefers-reduced-motion` |
+
+### 11.4 Riesgos y mitigaciones
+
+| Riesgo | Impacto | Mitigación |
+|---|---|---|
+| La ilustración SVG aumenta el peso de la página | Medio | SVG optimizado y sin imágenes embebidas; límite de 150 KB |
+| El panel oscuro falla en tema claro | Medio | Texto blanco sobre `night`/`surface`, contraste verificado |
+| El formulario pierde comportamiento | Alto | Mantener el mismo componente y flujo; probar login real |
+| Scroll horizontal en móvil | Medio | Layout de una columna, `min-w-0` y medición a 320 px |
+| Animación molesta | Bajo | Respetar `prefers-reduced-motion` |
+
+### 11.5 Verificación
+
+- `npm run lint` y `npm run build` en `infinipaper-frontend/`.
+- Login real con un usuario de prueba y redirección a `next`.
+- Registro real con un usuario de prueba y redirección a `/profile`.
+- Revisión visual en 320, 375, 768, 1024 y 1440 px.
+- Revisión en tema claro y oscuro, teclado y contraste.
+- Registrar evidencia de `CA-17`–`CA-23`.
+
+### 11.6 Rollback
+
+Revertir `app/login/page.tsx`, `app/register/page.tsx`, `components/auth/` y eliminar `public/brand/login-study.svg`. No hay cambios de API, datos ni variables de entorno.
+
+### 11.7 Resultado y trazabilidad
+
+| Requisito | Evidencia / tarea |
+|---|---|
+| `RF-20`, `RF-21`, `CA-17` | Layout de dos columnas y panel de marca con ilustración; `T-060`, `T-061`. |
+| `RF-22`, `CA-19` | Formulario conservado; login real con `?next=/projects`; `T-061`, `T-063`. |
+| `RF-23`, `RNF-09`, `CA-18` | Apilado responsive sin overflow en 320/375/768 px; `T-062`, `T-063`. |
+| `RF-24`, `RNF-06`, `RNF-10`, `CA-20` | Enlace a registro, `ThemeToggle`, foco visible y animación reducible; `T-062`. |
+| `RF-25`, `RNF-11`, `CA-21`, `CA-22` | `/register` usa `AuthShell`/`AuthCard` y mantiene el layout responsive; `T-065`, `T-066`. |
+| `RF-26`, `CA-23` | Registro real, validación y redirección a `/profile`; `T-065`, `T-067`. |
+| `RNF-07`, `RNF-08` | SVG de 9 KB, sin recursos externos; lint/build correctos; `T-060`, `T-067`. |
+| `G-03` | Resuelta: `/register` comparte el layout con `/login`; `T-065`. |
+
+### 11.8 Extensión a `/register`
+
+`AuthShell` centraliza el panel de marca, la ilustración, el tema y la columna desplazable; `AuthCard` centraliza la tarjeta, el acento degradado y la cabecera. Login y registro solo aportan su formulario y el enlace cruzado.
+
+El registro conserva el esquema Zod, la llamada `apiFetch("/auth/register")` y la redirección a `/profile`. Se añadieron `autoComplete` (`name`, `username`, `email`, `new-password`), `FieldGroup`/`Field` y errores con `role="alert"`.
+
+**Rollback:** revertir `app/register/page.tsx` y volver a la tarjeta anterior; `AuthShell`/`AuthCard` pueden conservarse para login. Sin cambios de API ni datos.

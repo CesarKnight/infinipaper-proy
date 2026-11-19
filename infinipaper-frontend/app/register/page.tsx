@@ -6,16 +6,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { ArrowRightIcon, UserPlusIcon } from "lucide-react";
+import { AuthCard, AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { apiFetch, ApiError } from "@/lib/api";
 
 const schema = z.object({
@@ -59,71 +59,124 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-16">
-      <Card>
-        <CardHeader>
-          <CardTitle>Crear cuenta</CardTitle>
-          <CardDescription>
-            Regístrate para acceder al sistema de estudio.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="displayName">Nombre</Label>
-              <Input id="displayName" {...form.register("displayName")} />
-              {form.formState.errors.displayName ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.displayName.message}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="username">Usuario</Label>
-              <Input id="username" {...form.register("username")} />
-              {form.formState.errors.username ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.username.message}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Correo</Label>
-              <Input id="email" type="email" {...form.register("email")} />
-              {form.formState.errors.email ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Contraseña</Label>
+    <AuthShell>
+      <AuthCard
+        icon={<UserPlusIcon className="size-5" />}
+        title="Crea tu cuenta"
+        description="Únete para organizar tus proyectos y apuntes en un solo lugar."
+      >
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
+          <FieldGroup className="gap-4">
+            <Field data-invalid={Boolean(form.formState.errors.displayName)}>
+              <FieldLabel htmlFor="displayName">Nombre</FieldLabel>
+              <Input
+                id="displayName"
+                autoComplete="name"
+                placeholder="Ana García"
+                aria-invalid={Boolean(form.formState.errors.displayName)}
+                aria-describedby={
+                  form.formState.errors.displayName
+                    ? "displayName-error"
+                    : undefined
+                }
+                className="h-11 rounded-xl bg-background/60 px-3 text-base md:text-sm"
+                {...form.register("displayName")}
+              />
+              <FieldError
+                id="displayName-error"
+                className="text-xs"
+                errors={[form.formState.errors.displayName]}
+              />
+            </Field>
+            <Field data-invalid={Boolean(form.formState.errors.username)}>
+              <FieldLabel htmlFor="username">Usuario</FieldLabel>
+              <Input
+                id="username"
+                autoComplete="username"
+                placeholder="ana.garcia"
+                aria-invalid={Boolean(form.formState.errors.username)}
+                aria-describedby={
+                  form.formState.errors.username
+                    ? "username-error"
+                    : undefined
+                }
+                className="h-11 rounded-xl bg-background/60 px-3 text-base md:text-sm"
+                {...form.register("username")}
+              />
+              <FieldError
+                id="username-error"
+                className="text-xs"
+                errors={[form.formState.errors.username]}
+              />
+            </Field>
+            <Field data-invalid={Boolean(form.formState.errors.email)}>
+              <FieldLabel htmlFor="email">Correo</FieldLabel>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="ana@ejemplo.com"
+                aria-invalid={Boolean(form.formState.errors.email)}
+                aria-describedby={
+                  form.formState.errors.email ? "email-error" : undefined
+                }
+                className="h-11 rounded-xl bg-background/60 px-3 text-base md:text-sm"
+                {...form.register("email")}
+              />
+              <FieldError
+                id="email-error"
+                className="text-xs"
+                errors={[form.formState.errors.email]}
+              />
+            </Field>
+            <Field data-invalid={Boolean(form.formState.errors.password)}>
+              <FieldLabel htmlFor="password">Contraseña</FieldLabel>
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
+                placeholder="Mínimo 8 caracteres"
+                aria-invalid={Boolean(form.formState.errors.password)}
+                aria-describedby={
+                  form.formState.errors.password
+                    ? "password-error"
+                    : undefined
+                }
+                className="h-11 rounded-xl bg-background/60 px-3 text-base md:text-sm"
                 {...form.register("password")}
               />
-              {form.formState.errors.password ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.password.message}
-                </p>
-              ) : null}
-            </div>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Creando…" : "Crear cuenta"}
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            ¿Ya tienes cuenta?{" "}
-            <Link href="/login" className="text-foreground underline">
-              Inicia sesión
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </main>
+              <FieldError
+                id="password-error"
+                className="text-xs"
+                errors={[form.formState.errors.password]}
+              />
+            </Field>
+          </FieldGroup>
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="mt-1 h-11 w-full rounded-xl text-sm font-semibold shadow-lg shadow-primary/20"
+          >
+            {form.formState.isSubmitting ? "Creando…" : "Crear cuenta"}
+            {form.formState.isSubmitting ? null : (
+              <ArrowRightIcon data-icon="inline-end" />
+            )}
+          </Button>
+        </form>
+
+        <p className="mt-6 border-t border-border/70 pt-5 text-center text-sm text-muted-foreground">
+          ¿Ya tienes cuenta?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Inicia sesión
+          </Link>
+        </p>
+      </AuthCard>
+    </AuthShell>
   );
 }

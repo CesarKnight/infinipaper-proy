@@ -7,16 +7,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { ArrowRightIcon, ShieldCheckIcon } from "lucide-react";
+import { AuthCard, AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { apiFetch, ApiError } from "@/lib/api";
 
 const schema = z.object({
@@ -57,53 +57,83 @@ function LoginForm() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-16">
-      <Card>
-        <CardHeader>
-          <CardTitle>Iniciar sesión</CardTitle>
-          <CardDescription>
-            Usa tu correo o nombre de usuario.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="identifier">Correo o usuario</Label>
-              <Input id="identifier" {...form.register("identifier")} />
-              {form.formState.errors.identifier ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.identifier.message}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Contraseña</Label>
+    <AuthShell>
+      <AuthCard
+        icon={<ShieldCheckIcon className="size-5" />}
+        title="Bienvenido de nuevo"
+        description="Entra para continuar con tus proyectos, apuntes y material de estudio."
+      >
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
+          <FieldGroup className="gap-4">
+            <Field data-invalid={Boolean(form.formState.errors.identifier)}>
+              <FieldLabel htmlFor="identifier">Correo o usuario</FieldLabel>
+              <Input
+                id="identifier"
+                autoComplete="username"
+                placeholder="ana@ejemplo.com"
+                aria-invalid={Boolean(form.formState.errors.identifier)}
+                aria-describedby={
+                  form.formState.errors.identifier
+                    ? "identifier-error"
+                    : undefined
+                }
+                className="h-11 rounded-xl bg-background/60 px-3 text-base md:text-sm"
+                {...form.register("identifier")}
+              />
+              <FieldError
+                id="identifier-error"
+                className="text-xs"
+                errors={[form.formState.errors.identifier]}
+              />
+            </Field>
+            <Field data-invalid={Boolean(form.formState.errors.password)}>
+              <FieldLabel htmlFor="password">Contraseña</FieldLabel>
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
+                placeholder="Tu contraseña"
+                aria-invalid={Boolean(form.formState.errors.password)}
+                aria-describedby={
+                  form.formState.errors.password
+                    ? "password-error"
+                    : undefined
+                }
+                className="h-11 rounded-xl bg-background/60 px-3 text-base md:text-sm"
                 {...form.register("password")}
               />
-              {form.formState.errors.password ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.password.message}
-                </p>
-              ) : null}
-            </div>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Entrando…" : "Entrar"}
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            ¿No tienes cuenta?{" "}
-            <Link href="/register" className="text-foreground underline">
-              Regístrate
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </main>
+              <FieldError
+                id="password-error"
+                className="text-xs"
+                errors={[form.formState.errors.password]}
+              />
+            </Field>
+          </FieldGroup>
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="mt-1 h-11 w-full rounded-xl text-sm font-semibold shadow-lg shadow-primary/20"
+          >
+            {form.formState.isSubmitting ? "Entrando…" : "Entrar"}
+            {form.formState.isSubmitting ? null : (
+              <ArrowRightIcon data-icon="inline-end" />
+            )}
+          </Button>
+        </form>
+
+        <p className="mt-6 border-t border-border/70 pt-5 text-center text-sm text-muted-foreground">
+          ¿No tienes cuenta?{" "}
+          <Link
+            href="/register"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Crea una cuenta
+          </Link>
+        </p>
+      </AuthCard>
+    </AuthShell>
   );
 }
